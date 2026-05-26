@@ -1,0 +1,254 @@
+---
+title: Servidor MCP
+description: "`@origoid/mcp-server` — servidor oficial Model Context Protocol. Permite que cualquier LLM compatible con MCP (Claude, Gemini, GPT, Codex, …) lea el spec OrigoID y llame al API directo."
+---
+
+El servidor MCP es el punto de integración oficial de OrigoID con
+asistentes AI de programación y chats que hablan
+[Model Context Protocol](https://modelcontextprotocol.io). Instálalo
+una vez en tu cliente y el LLM gana 26 tools: 7 para **construir** una
+integración OrigoID (gratis, sin API key) y 19 para **ejecutar** calls
+reales (requieren tu API key, se facturan por llamada).
+
+## Por qué existe
+
+Cuando le pides a un asistente AI "agrega validación CURP a mi app
+Express", quieres que el asistente escriba código contra el contrato
+OrigoID **actual**, no contra una copia desactualizada que vivía en su
+training set. El servidor MCP da al LLM acceso vivo y autoritativo a:
+
+- el spec OpenAPI completo de cada endpoint,
+- snippets SDK copy-paste en 8 lenguajes,
+- la lista completa de códigos `type` de resultado por endpoint,
+- y la opción de invocar el endpoint cuando ya tengas tu key.
+
+Todo excepto las llamadas reales al API es offline y gratis — el LLM
+puede diseñar y escribir una integración productiva completa sin
+consumir un solo crédito.
+
+## Compatibilidad
+
+MCP es un protocolo abierto adoptado por Anthropic (2024), OpenAI
+(2025) y Google (2025). El mismo server config funciona en cualquier
+cliente compliant:
+
+- **Claude Desktop** (app macOS)
+- **Claude Code** (CLI)
+- **Cursor**
+- **Windsurf**
+- **ChatGPT Desktop**
+- **Codex CLI**
+- **Gemini CLI / Antigravity**
+- **Zed**
+- cualquier otro cliente compatible con MCP
+
+## Instalación
+
+No instalas el paquete manualmente — tu cliente MCP lo lanza on demand
+vía `npx`. Elige el snippet de tu cliente:
+
+### Claude Code
+
+```bash
+claude mcp add origoid \
+  --env ORIGOID_API_KEY=tu_api_key \
+  -- npx -y @origoid/mcp-server
+```
+
+### Claude Desktop
+
+Edita `~/Library/Application Support/Claude/claude_desktop_config.json`
+(macOS) o `%APPDATA%\Claude\claude_desktop_config.json` (Windows) y
+agrega:
+
+```json
+{
+  "mcpServers": {
+    "origoid": {
+      "command": "npx",
+      "args": ["-y", "@origoid/mcp-server"],
+      "env": {
+        "ORIGOID_API_KEY": "tu_api_key"
+      }
+    }
+  }
+}
+```
+
+Reinicia Claude Desktop.
+
+### Cursor
+
+Edita `~/.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "origoid": {
+      "command": "npx",
+      "args": ["-y", "@origoid/mcp-server"],
+      "env": {
+        "ORIGOID_API_KEY": "tu_api_key"
+      }
+    }
+  }
+}
+```
+
+### Windsurf
+
+Edita `~/.codeium/windsurf/mcp_config.json` con el mismo bloque
+`mcpServers.origoid` de arriba.
+
+### ChatGPT Desktop
+
+Abre **Settings → Tools → Model Context Protocol** y pega el bloque
+`mcpServers.origoid` en el editor de config.
+
+### Codex CLI
+
+Edita `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.origoid]
+command = "npx"
+args = ["-y", "@origoid/mcp-server"]
+
+[mcp_servers.origoid.env]
+ORIGOID_API_KEY = "tu_api_key"
+```
+
+### Gemini CLI / Antigravity
+
+Edita `~/.gemini/settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "origoid": {
+      "command": "npx",
+      "args": ["-y", "@origoid/mcp-server"],
+      "env": {
+        "ORIGOID_API_KEY": "tu_api_key"
+      }
+    }
+  }
+}
+```
+
+### Cualquier otro cliente MCP
+
+Usa:
+
+- **Command:** `npx`
+- **Args:** `-y @origoid/mcp-server`
+- **Env:** `ORIGOID_API_KEY=<tu_api_key>`
+
+El servidor habla MCP sobre el transport estándar stdio.
+
+## API key opcional
+
+Si no defines `ORIGOID_API_KEY`, el servidor arranca en **modo
+docs-only**. Las 7 tools de documentación funcionan normalmente; las
+19 tools de API devuelven un error claro si las invocan. Este es el
+modo correcto para la fase de diseño — el LLM puede describir,
+scaffold, y escribir tu integración sin que tengas cuenta todavía.
+
+## Tools
+
+### Tools de docs (sin API key, sin créditos)
+
+| Tool | Qué devuelve |
+| --- | --- |
+| `list_endpoints({domain?})` | Catálogo de cada operación con `operationId`, método, path, y dominio. Filtro opcional por dominio (`renapo`, `sat`, `imss`, `ine`, `compliance`, `biometrics`, `email`, `documents`, `auth`). |
+| `get_endpoint({operationId})` | Operación OpenAPI completa: descripción, request schema, response examples para cada código `type`, costo en créditos. |
+| `get_sdk_example({operationId, language})` | Snippet copy-paste. Lenguajes: `curl`, `javascript`, `typescript`, `python`, `php`, `go`, `java`, `ruby`, `csharp`. |
+| `get_response_types({operationId})` | Cada `type` posible del endpoint con un sample envelope — alimenta tu lógica `switch`/`match`. |
+| `get_api_overview()` | El `info.description` completo del spec: autenticación, contrato envelope, headers rate-limit, convenciones de lenguaje, política image processing, y todos los catálogos (CURP status, IMSS modalities, SAT lists, OFAC lists, CFDI effects). |
+| `search_docs({query})` | Búsqueda free-text en summaries, descriptions y examples. |
+| `validate_envelope_shape({envelopeJson})` | Checker offline — ¿el JSON cumple el contrato canónico `Envelope`? Útil para unit-test de un parser custom. |
+
+### Tools de API (requieren `ORIGOID_API_KEY`)
+
+Una por endpoint. Calls van vía el SDK oficial `@origoid/sdk` a
+`https://api.origoid.com`. Cada call exitoso consume créditos según
+la [página de créditos](/es/credits).
+
+| Tool | Endpoint |
+| --- | --- |
+| `issue_token` | `POST /auth/token` |
+| `validate_curp` | `POST /mex/renapo/v1/curp-validations` |
+| `lookup_curp` | `POST /mex/renapo/v1/curp-lookups` |
+| `validate_rfc` | `POST /mex/sat/v1/rfc-validations` |
+| `extract_csf` | `POST /mex/sat/v1/csf-extractions` |
+| `validate_cfdi` | `POST /mex/sat/v1/cfdi-validations` |
+| `lookup_nss` | `POST /mex/imss/v1/nss-lookups` |
+| `get_employment_status` | `POST /mex/imss/v1/employment-status` |
+| `validate_voter_list` | `POST /mex/id/v1/voter-list-validations` |
+| `extract_voter_id_data` | `POST /mex/id/v1/voter-id-extractions` |
+| `extract_qr_data` | `POST /mex/id/v1/qr-extractions` |
+| `search_sat_69` | `POST /mex/compliance/v1/sat-69-searches` |
+| `search_sat_69b` | `POST /mex/compliance/v1/sat-69b-searches` |
+| `search_ofac` | `POST /global/compliance/v1/ofac-searches` |
+| `search_peps` | `POST /mex/compliance/v1/peps-searches` |
+| `match_faces` | `POST /global/biometrics/v1/face-matches` |
+| `check_liveness` | `POST /global/biometrics/v1/liveness-checks` |
+| `validate_email` | `POST /global/email/v1/email-validations` |
+| `extract_proof_of_address` | `POST /mex/documents/v1/proof-of-address-extractions` |
+
+Cada tool de API devuelve el envelope completo como JSON string para
+que el LLM tenga acceso a `status`, `type`, `data`, `errors[]`, y el
+`transactionId` (útil para tickets de soporte).
+
+## Sesión típica
+
+En tu IDE o chat, describe lo que necesitas:
+
+> Agrega validación CURP a mi API Express. Usa el MCP de OrigoID para
+> verificar el schema y dame un handler TypeScript que cubra todos
+> los tipos de resultado.
+
+El LLM internamente llama:
+
+1. `list_endpoints({domain: "renapo"})` — encuentra `validateCurp`
+2. `get_endpoint({operationId: "validateCurp"})` — lee el request
+   schema y cada response example
+3. `get_response_types({operationId: "validateCurp"})` — obtiene los
+   10 códigos `type` posibles para que el switch generado esté
+   completo
+4. `get_sdk_example({operationId: "validateCurp", language: "typescript"})`
+   — saca un snippet copy-paste
+
+Luego escribe el handler completo. Nada de eso consumió créditos.
+Cuando dices "ahora pruébalo", el LLM llama `validate_curp({curp:
+"..."})` — esa única call es facturada.
+
+## Comportamiento de costo
+
+- **Tools de docs:** costo cero para siempre. Leen del spec OpenAPI
+  empaquetado con el paquete.
+- **Tools de API:** facturadas según el pricing público. El LLM puede
+  ejecutarlas repetidamente mientras itera; revisa la lista de calls
+  antes de aprobar auto-ejecución.
+- Recomendamos una API key dedicada para desarrollo asistido por AI,
+  con un pool de créditos separado de tu tráfico productivo.
+
+## Autenticación
+
+El servidor lee `ORIGOID_API_KEY` de su entorno. El cliente host MCP
+es responsable de inyectarla vía el campo `env` en su configuración —
+nunca como argumento de tool ni dentro del chat. Si accidentalmente
+pegas tu key en un prompt, rótala.
+
+## Código fuente y versión
+
+- npm: [`@origoid/mcp-server`](https://www.npmjs.com/package/@origoid/mcp-server)
+- GitHub: [github.com/origoid/mcp-server](https://github.com/origoid/mcp-server)
+
+El código es público para que puedas auditar cada request que el
+servidor envía a `https://api.origoid.com`.
+
+## Soporte
+
+[support@origoid.com](mailto:support@origoid.com) — bugs, requests
+de features, o ayuda configurando un cliente que no listamos arriba.

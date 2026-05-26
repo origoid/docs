@@ -51,7 +51,8 @@
                   "en/sdks/overview",
                   "en/sdks/node",
                   "en/sdks/python",
-                  "en/sdks/go"
+                  "en/sdks/go",
+                  "en/sdks/mcp"
                 ]
               }
             ]
@@ -95,7 +96,8 @@
                   "es/sdks/overview",
                   "es/sdks/node",
                   "es/sdks/python",
-                  "es/sdks/go"
+                  "es/sdks/go",
+                  "es/sdks/mcp"
                 ]
               }
             ]

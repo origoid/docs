@@ -25,6 +25,7 @@ Privacy: No PII is persisted from successful responses. Operational metadata onl
 - [Node / TypeScript SDK](https://docs.origoid.com/en/sdks/node): `npm install @origoid/sdk`
 - [Python SDK](https://docs.origoid.com/en/sdks/python): `pip install origoid`
 - [Go SDK](https://docs.origoid.com/en/sdks/go): `go get github.com/origoid/sdk-go`
+- [MCP server](https://docs.origoid.com/en/sdks/mcp): `npx @origoid/mcp-server` — Model Context Protocol server, exposes the API to Claude/Gemini/Codex/Cursor/Windsurf/etc with both docs tools (no API key) and live API tools.
 
 ## OpenAPI specification
 
