@@ -1,100 +1,80 @@
 ---
 title: SDKs — visión general
-description: "Librerías oficiales en TypeScript, Python y Go. Misma cobertura, idiomáticas a cada ecosistema."
+description: "Librerías oficiales en TypeScript, Python y Go. Un método por endpoint, idiomáticas a cada ecosistema."
 ---
 
 Publicamos SDKs oficiales para los tres lenguajes más usados por los
-clientes de OrigoID. Los tres se generan automáticamente desde la misma
-especificación OpenAPI, así que siempre cubren todos los endpoints y
-permanecen sincronizados con el API. No hay variantes mantenidas por la
-comunidad — estos son los clientes oficiales y soportados.
+clientes de OrigoID. Son los clientes oficiales y soportados — no hay
+variantes mantenidas por la comunidad.
 
 ## Por qué usar un SDK en lugar de HTTP crudo
 
-Puedes llamar a nuestros endpoints REST con `curl`, `fetch`, `requests`,
-o `net/http`. Los SDKs agregan:
+Puedes llamar a nuestros endpoints REST con `curl`, `fetch`,
+`requests` o `net/http`. Los SDKs agregan:
 
 - **Modelos tipados de request y response** — tu IDE autocompleta cada
-  campo, tu compilador detecta typos, tu linter marca valores requeridos
-  faltantes.
-- **Base URL embebido** — `https://api.origoid.com` está integrado. No
-  hay nada que configurar más allá del API key.
-- **Manejo del header de auth** — pasa tu key una sola vez al construir.
+  campo, tu compilador detecta typos, tu linter marca valores
+  requeridos faltantes.
+- **Nada que configurar más allá del API key.** La URL base de
+  producción está integrada; pasas tu key al construir el cliente y
+  empiezas a llamar.
 - **Reintentos automáticos** — errores `5xx` transitorios y de red se
   reintentan con backoff exponencial (configurable por llamada).
-- **Enums fuertemente tipados** — códigos `type`, `cancellationStatus`,
-  `riskLevel`, etc. aparecen como enums o uniones de strings, nunca como
-  strings crudos.
-- **Errores útiles** — un `401 UNAUTHORIZED` lanza `UnauthorizedError`
-  con el envelope ya deserializado, no un `HTTPError` genérico.
+- **Enums fuertemente tipados** — códigos `type`,
+  `cancellationStatus`, `riskLevel`, etc. aparecen como enums o
+  uniones de strings, nunca strings crudos.
+- **Errores útiles** — un `401 UNAUTHORIZED` lanza un error tipado con
+  el envelope ya deserializado, no un `HTTPError` genérico.
 
 Si sólo necesitas llamar un endpoint ocasionalmente desde un script,
-`curl` es suficiente. Para cualquier integración productiva recomendamos
-fuertemente el SDK.
+`curl` es suficiente. Para cualquier integración productiva
+recomendamos el SDK.
 
 ## Elige tu lenguaje
 
 <CardGroup cols={3}>
   <Card title="TypeScript / Node" icon="js" href="/es/sdks/node">
     `npm install @origoid/sdk`. Funciona en Node 18+ y Deno. Trae
-    definiciones de tipos integradas. API `async`/`await`.
+    definiciones TypeScript integradas.
   </Card>
   <Card title="Python" icon="python" href="/es/sdks/python">
-    `pip install origoid`. Python 3.9+. Clientes sync y async
-    (`OrigoID` y `AsyncOrigoID`). Modelos de respuesta con Pydantic v2.
+    `pip install origoid`. Python 3.9+. Cliente sync `OrigoID` más
+    `AsyncOrigoID` para casos FastAPI / aiohttp.
   </Card>
   <Card title="Go" icon="golang" href="/es/sdks/go">
     `go get github.com/origoid/sdk-go`. Context-aware, estilo Go
-    idiomático. Tipos generados para cada request y response.
+    idiomático, tipos generados para cada request y response.
   </Card>
 </CardGroup>
 
-## Matriz de paridad
+## Código fuente y distribución
 
-| Capacidad | Node | Python | Go |
-| --- | :---: | :---: | :---: |
-| Los 19 endpoints | ✅ | ✅ | ✅ |
-| Llamadas async (`await`) | ✅ nativo | ✅ via `AsyncOrigoID` | ✅ via `context.Context` |
-| Llamadas sync | n/a (JS es async) | ✅ via `OrigoID` | ✅ (context puede ser `Background`) |
-| Base URL embebido | ✅ | ✅ | ✅ |
-| Reintentos automáticos | ✅ (2 por default) | ✅ | ✅ |
-| Override de timeout por llamada | ✅ | ✅ | ✅ |
-| Envelope tipado (`status`, `type`, `data`) | ✅ | ✅ Pydantic | ✅ struct |
-| Errores tipados (401, 429) | ✅ | ✅ | ✅ |
-| Soporte navegador | Usa Node SDK o llama el API directo con CORS configurado ([pide allowlist CORS](/es/authentication#integraciones-desde-navegador-cors)). | n/a | n/a |
-
-## Código fuente y releases
-
-| SDK | Repositorio | Registry |
+| SDK | Código fuente | Instalación |
 | --- | --- | --- |
-| TypeScript / Node | [github.com/origoid/sdk-node](https://github.com/origoid/sdk-node) | [npmjs.com/package/@origoid/sdk](https://www.npmjs.com/package/@origoid/sdk) |
-| Python | [github.com/origoid/sdk-python](https://github.com/origoid/sdk-python) | [pypi.org/project/origoid](https://pypi.org/project/origoid/) |
-| Go | [github.com/origoid/sdk-go](https://github.com/origoid/sdk-go) | (Go modules baja directo de GitHub via `go get`) |
+| TypeScript / Node | [github.com/origoid/sdk-node](https://github.com/origoid/sdk-node) | `npm install @origoid/sdk` |
+| Python | [github.com/origoid/sdk-python](https://github.com/origoid/sdk-python) | `pip install origoid` |
+| Go | [github.com/origoid/sdk-go](https://github.com/origoid/sdk-go) | `go get github.com/origoid/sdk-go` |
 
-Los tres repos son públicos y open source. El código se genera
-automáticamente con [Fern](https://buildwithfern.com) desde
-[`docs.origoid.com/openapi.json`](https://docs.origoid.com/openapi.json)
-en cada release del API.
+Los tres repositorios son públicos. Los paquetes publicados en npm y
+PyPI son los canales oficiales de distribución; el código en GitHub se
+provee para que puedas auditar antes de instalar.
 
 ## Versionado
 
 Los SDKs siguen [semver](https://semver.org/lang/es/).
 
-- **Major** (`1.0.0` → `2.0.0`) — cambios incompatibles en la shape del
-  SDK (raro; sólo cuando el OpenAPI subyacente rompe). Siempre acompañado
-  por una guía de migración en las release notes.
+- **Major** (`1.0.0` → `2.0.0`) — cambios incompatibles en la shape
+  del SDK. Siempre acompañado por una guía de migración en las release
+  notes.
 - **Minor** (`0.1.0` → `0.2.0`) — endpoints nuevos, campos nuevos,
   helpers nuevos. Compatible hacia atrás.
-- **Patch** (`0.1.0` → `0.1.1`) — fixes de bugs, actualización de
-  dependencias, mejoras de docs.
+- **Patch** (`0.1.0` → `0.1.1`) — fixes y mejoras.
 
-Mientras los SDKs están en `0.x.y` seguimos la convención de subir la
-versión **minor** para cambios incompatibles (según semver pre-1.0) y la
-patch para todo lo demás. Cuando un SDK llega a `1.0.0` aplican las
-reglas semver clásicas.
+Mientras los SDKs están en `0.x.y` subimos la versión **minor** para
+cambios incompatibles (según semver pre-1.0). Cuando un SDK llega a
+`1.0.0` aplican las reglas semver clásicas.
 
 ## Soporte
 
-- Preguntas API / requests de features: [support@origoid.com](mailto:support@origoid.com)
-- Bugs SDK / pull requests: abre un issue en el repo GitHub correspondiente
+- Preguntas del API, requests de features, o reportes de bugs del SDK: [support@origoid.com](mailto:support@origoid.com)
 - Estado del servicio: [status.origoid.com](https://status.origoid.com)

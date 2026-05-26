@@ -4,8 +4,8 @@ description: "`@origoid/sdk` — cliente oficial para Node.js 18+ y proyectos Ty
 ---
 
 El SDK de Node trae definiciones TypeScript completas, reintentos
-automáticos, base URL de producción embebido y un método tipado por cada
-endpoint de OrigoID. Funciona en cualquier runtime Node 18+ y en Deno.
+automáticos y un método tipado por cada endpoint de OrigoID. Funciona
+en cualquier runtime Node 18+ y en Deno.
 
 ## Instalación
 
@@ -29,9 +29,9 @@ bun add @origoid/sdk
 
 </CodeGroup>
 
-Paquete publicado en el registry público de npm como
-[`@origoid/sdk`](https://www.npmjs.com/package/@origoid/sdk). Código en
-[github.com/origoid/sdk-node](https://github.com/origoid/sdk-node).
+Paquete en npm: [`@origoid/sdk`](https://www.npmjs.com/package/@origoid/sdk).
+Código en [github.com/origoid/sdk-node](https://github.com/origoid/sdk-node)
+(público, para auditar).
 
 ## Inicializa el cliente
 
@@ -43,21 +43,16 @@ const client = new OrigoidApiClient({
 });
 ```
 
-Ese es todo el setup. La base URL `https://api.origoid.com` está
-**embebida en el SDK** — no necesitas pasar `environment` ni `baseUrl`.
-Sólo override para apuntar a staging o dev:
-
-```typescript
-const client = new OrigoidApiClient({
-  apiKey: process.env.ORIGOID_API_KEY!,
-  environment: "https://staging-api.origoid.com",
-});
-```
-
-Nunca hardcodees la API key en código. Cárgala desde `process.env`,
-secrets manager, o la capa de config de tu plataforma.
+Ese es todo el setup — no hay nada más que configurar. Nunca
+hardcodees la API key. Cárgala desde `process.env`, un secrets manager
+(Vault, 1Password, Doppler, etc.), o la capa de config de tu
+plataforma.
 
 ## Tu primera llamada
+
+El ejemplo usa `PELJ900101HDFRRN09`, un **CURP sintético de los
+ejemplos del OpenAPI** — no es CURP de persona real. Reemplázalo con
+el CURP que necesites validar.
 
 ```typescript
 import { OrigoidApiClient } from "@origoid/sdk";
@@ -65,24 +60,26 @@ import { OrigoidApiClient } from "@origoid/sdk";
 const client = new OrigoidApiClient({ apiKey: process.env.ORIGOID_API_KEY! });
 
 const envelope = await client.renapo.validateCurp({
-  curp: "PELJ900101HDFRRN09",
+  curp: "PELJ900101HDFRRN09", // sintético — reemplazar con input real
 });
 
-console.log(envelope.status);          // "OK"
-console.log(envelope.type);            // "SUCCESS" | "CURP_DECEASED" | ...
-console.log(envelope.transactionId);   // uuid
-console.log(envelope.data);            // registro RENAPO tipado
+if (envelope.status === "OK" && envelope.type === "SUCCESS") {
+  // envelope.data trae el registro RENAPO.
+  console.log("Titular del CURP:", envelope.data);
+} else {
+  // Otro tipo de resultado — revisa el catálogo de respuestas del endpoint para tu lógica.
+  console.log(envelope.type, "—", envelope.message);
+}
 ```
 
-Cada método devuelve la misma shape `Envelope`: `{ status, type, message,
-data, transactionId, processedAt, billable, errors? }`. Ver [Envelope de
-respuesta](/es/envelope) para el contrato completo.
+Cada método devuelve la misma shape `Envelope`: `{ status, type,
+message, data, transactionId, processedAt, billable, errors? }`. Ver
+[Envelope de respuesta](/es/envelope) para el contrato completo.
 
 ## Métodos por recurso
 
-El cliente agrupa operaciones bajo una propiedad por dominio regulatorio.
-Los nombres de método coinciden con el `operationId` del OpenAPI en
-camelCase.
+El cliente agrupa operaciones bajo una propiedad por dominio
+regulatorio.
 
 ### `client.authentication`
 
@@ -148,8 +145,9 @@ await client.compliance.searchPeps({
 });
 ```
 
-Nota la `B` mayúscula en `searchSat69B` — el SDK preserva la convención
-de casing de Fern para sufijos de letra única al final.
+Nota: el método para la lista SAT 69-B es `searchSat69B` (con B
+mayúscula). Los demás métodos de compliance siguen el patrón regular
+camelCase.
 
 ### `client.biometrics`
 
@@ -183,30 +181,25 @@ tipadas).
 
 ### Errores de negocio — léelos del envelope
 
-Para cualquier respuesta HTTP 200, incluyendo resultados
-`INVALID_REQUEST`, el SDK devuelve un objeto `Envelope` normal. Revisa
-`status` y `type`:
+Para cualquier respuesta HTTP 200, incluyendo `INVALID_REQUEST`, el
+SDK devuelve un objeto `Envelope` normal. Revisa `status` y `type`
+antes de usar `data`:
 
 ```typescript
 const env = await client.renapo.validateCurp({ curp: "BAD" });
 
 if (env.status === "ERROR") {
-  // Ejemplos: INVALID_REQUEST (con env.errors[]), SERVICE_UNAVAILABLE
+  // INVALID_REQUEST, SERVICE_UNAVAILABLE, …
   console.error(env.type, env.message);
 } else {
   // status === "OK" — puede ser un NOT_FOUND de negocio
-  // (CURP_NOT_FOUND, RFC_NOT_FOUND, etc.). Switch en env.type.
   switch (env.type) {
-    case "SUCCESS":             /* happy path */ break;
-    case "CURP_DECEASED":       /* resultado de negocio */ break;
-    case "CURP_NOT_FOUND":      /* sin match */ break;
-    // ...
+    case "SUCCESS":            /* env.data trae el registro */ break;
+    case "CURP_NOT_FOUND":     /* sin match */ break;
+    // ver /es/errors y /es/catalogs para el catálogo completo
   }
 }
 ```
-
-El catálogo completo de códigos `type` está en [Errores](/es/errors) y
-[Catálogos](/es/catalogs).
 
 ### Errores de transporte — try/catch
 
@@ -222,6 +215,7 @@ import {
 
 try {
   const env = await client.renapo.validateCurp({ curp: "PELJ900101HDFRRN09" });
+  // … usa env
 } catch (err) {
   if (err instanceof OrigoidApiTimeoutError) {
     // request no completó dentro del timeout configurado
@@ -234,36 +228,53 @@ try {
 }
 ```
 
-## Configuración por llamada
+## Configuración por llamada (avanzado)
 
-Cada método acepta un segundo argumento opcional con opciones
-específicas del request:
+Cada método acepta un segundo argumento opcional:
 
 ```typescript
 await client.ine.validateVoterList(
   { cic: "123456789", citizenIdentifier: "987654321" },
   {
-    timeoutInSeconds: 120,    // default 60
-    maxRetries: 3,            // default 2
-    abortSignal: ac.signal,   // AbortController estándar
+    timeoutInSeconds: 120,   // default 60
+    maxRetries: 3,           // default 2
+    abortSignal: ac.signal,  // AbortController estándar
     headers: { "x-trace-id": "..." },
   },
 );
 ```
 
+<Info>
+  **Lee esto antes de tunear timeouts o retries.** El SDK sólo
+  reintenta errores `5xx` y fallas de red, nunca respuestas de negocio
+  exitosas — entonces los retries **no** crean llamadas duplicadas
+  facturables cuando el API respondió correctamente. **Sí** crean
+  llamadas extra cuando el request realmente falló: un request que
+  hace timeout tres veces puede consumir tres créditos si la llamada
+  eventualmente tuvo éxito en un intento posterior.
+
+  - **Los defaults (`timeoutInSeconds: 60`, `maxRetries: 2`) son
+    correctos para casi cualquier workload.** Cambia sólo con razón
+    específica.
+  - Combinar timeout largo con `maxRetries` alto (ej. `120s` × `5`)
+    significa que un único request fallando puede ocupar un thread
+    cliente hasta 10 minutos — malo para tu throughput y tu
+    infraestructura.
+  - Sobrescribe per-call sólo en endpoints con cold starts lentos
+    conocidos (algunas llamadas de compliance y de lista INE).
+</Info>
+
 ## TypeScript
 
-El SDK está escrito en TypeScript y trae definiciones de tipo de primera
-clase. Cada tipo de request y response se exporta bajo el namespace
+Cada tipo de request y response se exporta bajo el namespace
 `OrigoidApi`:
 
 ```typescript
 import { OrigoidApi } from "@origoid/sdk";
 
 function handleResult(env: OrigoidApi.Envelope) {
-  if (env.type === "SUCCESS" && env.data) {
-    const renapo = env.data as OrigoidApi.RenapoRecord;
-    // ...
+  if (env.status === "OK" && env.type === "SUCCESS" && env.data) {
+    // env.data está tipado
   }
 }
 ```
@@ -279,7 +290,20 @@ const client = new OrigoidApiClient({ apiKey: process.env.ORIGOID_API_KEY });
 
 ## Uso desde navegador
 
-El SDK de Node está hecho para Node.js. Para aplicaciones de navegador
-(SPA, widget), no bundlees el Node SDK — llama al API directamente con
-`fetch` después de [pedir allowlist CORS](/es/authentication#integraciones-desde-navegador-cors)
-para tu origen.
+**No llames a OrigoID directo desde un navegador.** Las API keys son
+credenciales de larga vida con acceso facturable a tu cuenta; en el
+momento que una key llega al bundle del navegador, a la consola, o a
+local storage, queda efectivamente pública y en riesgo de abuso — del
+mismo modo que nunca pondrías la secret key de un procesador de
+tarjetas en código del lado cliente.
+
+El patrón correcto es **backend-for-frontend (BFF)**: tu navegador
+habla con tu servidor, tu servidor guarda la API key y llama a OrigoID
+desde un ambiente confiable (Node, Python, Go).
+
+Si tu caso de uso genuinamente requiere llamadas directas desde
+navegador (widget de partner, formulario embebido, etc.) podemos
+habilitar CORS para tus orígenes específicos. La key sólo permanece
+segura si la escopeas con cuidado y la complementas con restricciones
+de referrer/origen — te ayudamos a diseñar ese flujo. Contáctanos y
+trabajamos la arquitectura contigo.

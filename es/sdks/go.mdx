@@ -3,11 +3,11 @@ title: SDK Go
 description: "Cliente oficial Go. Context-aware, idiomático, distribuido via Go modules."
 ---
 
-El SDK de Go se distribuye como un módulo Go estándar. No hay registry
-separado — `go get` baja el código directo de GitHub. El SDK provee una
-función tipada por cada endpoint de OrigoID, sigue patrones Go
-idiomáticos (`context.Context`, structs exportados, errores explícitos),
-y embebe la base URL de producción.
+El SDK de Go se distribuye como un módulo Go estándar. No hay
+registry separado — `go get` baja el código directo de GitHub. El SDK
+provee una función tipada por cada endpoint de OrigoID y sigue
+patrones Go idiomáticos (`context.Context`, structs exportados,
+errores explícitos).
 
 ## Instalación
 
@@ -22,9 +22,8 @@ require github.com/origoid/sdk-go v0.1.0
 ```
 
 Luego corre `go mod tidy`. Código en
-[github.com/origoid/sdk-go](https://github.com/origoid/sdk-go).
-
-Requiere Go **1.21 o más reciente**.
+[github.com/origoid/sdk-go](https://github.com/origoid/sdk-go)
+(público, para auditar). Requiere Go **1.21 o más reciente**.
 
 ## Inicializa el cliente
 
@@ -32,7 +31,6 @@ Requiere Go **1.21 o más reciente**.
 package main
 
 import (
-    "context"
     "fmt"
     "os"
 
@@ -49,21 +47,15 @@ func main() {
 }
 ```
 
-Ese es todo el setup. La base URL `https://api.origoid.com` está
-**embebida en el SDK** — no requiere `WithBaseURL` para producción. Sólo
-override para staging o dev:
-
-```go
-c := client.NewClient(
-    option.WithAPIKey(os.Getenv("ORIGOID_API_KEY")),
-    option.WithBaseURL("https://staging-api.origoid.com"),
-)
-```
-
-Nunca hardcodees la key. Léela de `os.Getenv`, [`viper`](https://github.com/spf13/viper),
-o tu secrets backend.
+Ese es todo el setup — no hay nada más que configurar. Nunca
+hardcodees la key. Léela de `os.Getenv`, [`viper`](https://github.com/spf13/viper),
+o un secrets manager (HashiCorp Vault, 1Password, Doppler, etc.).
 
 ## Tu primera llamada
+
+El ejemplo usa `PELJ900101HDFRRN09`, un **CURP sintético de los
+ejemplos del OpenAPI** — no es CURP de persona real. Reemplázalo con
+el CURP que necesites validar.
 
 ```go
 package main
@@ -86,27 +78,32 @@ func main() {
 
     env, err := c.Renapo.ValidateCurp(
         context.Background(),
-        &origoid.ValidateCurpRequest{Curp: "PELJ900101HDFRRN09"},
+        &origoid.ValidateCurpRequest{
+            Curp: "PELJ900101HDFRRN09", // sintético — reemplazar con input real
+        },
     )
     if err != nil {
         log.Fatal(err)
     }
 
-    fmt.Println(env.Status)          // "OK"
-    fmt.Println(env.Type)            // "SUCCESS", "CURP_DECEASED", ...
-    fmt.Println(env.TransactionId)   // uuid
-    fmt.Println(env.Data)            // map[string]any con registro RENAPO
+    if env.Status == "OK" && env.Type == "SUCCESS" {
+        // env.Data trae el registro RENAPO.
+        fmt.Println("Titular del CURP:", env.Data)
+    } else {
+        // Otro tipo de resultado — revisa el catálogo de respuestas del endpoint para tu lógica.
+        fmt.Println(env.Type, "—", env.Message)
+    }
 }
 ```
 
-Cada método devuelve `(*origoid.Envelope, error)`. La shape del envelope
-es `{ Status, Type, Message, Data, TransactionId, ProcessedAt, Billable,
-Errors }`. Ver [Envelope de respuesta](/es/envelope) para el contrato.
+Cada método devuelve `(*origoid.Envelope, error)`. La shape del
+envelope es `{ Status, Type, Message, Data, TransactionId,
+ProcessedAt, Billable, Errors }`. Ver [Envelope de respuesta](/es/envelope)
+para el contrato.
 
 ## Métodos por recurso
 
-El cliente agrupa operaciones por dominio regulatorio. Los nombres de
-método replican el `operationId` del OpenAPI en PascalCase exportado de Go.
+El cliente agrupa operaciones por dominio regulatorio.
 
 ### `c.Authentication`
 
@@ -131,8 +128,8 @@ c.Renapo.LookupCurp(ctx, &origoid.LookupCurpRequest{
 })
 ```
 
-`origoid.String(...)` es un helper para campos string opcionales (Go no
-tiene `Option<T>`; la opcionalidad se modela con punteros).
+`origoid.String(...)` es un helper para campos string opcionales (Go
+no tiene `Option<T>`; la opcionalidad se modela con punteros).
 
 ### `c.Sat`
 
@@ -153,7 +150,8 @@ c.Sat.ValidateCfdi(ctx, map[string]any{
 ```
 
 `ExtractCsf` y `ValidateCfdi` aceptan `map[string]any` porque los
-schemas usan `oneOf` — identificadores directos o modo documento.
+schemas permiten shapes alternativas (identificadores directos O
+upload de documento).
 
 ### `c.Imss`
 
@@ -191,8 +189,8 @@ c.Compliance.SearchSat69(ctx, map[string]any{"rfc": "PEZJ811011KI1"})
 c.Compliance.SearchSat69B(ctx, map[string]any{"rfc": "PEZJ811011KI1"})
 
 c.Compliance.SearchOfac(ctx, &origoid.SearchOfacRequest{
-    Name:                "John Doe",
-    MinSimilarityScore:  origoid.Int(85),
+    Name:               "John Doe",
+    MinSimilarityScore: origoid.Int(85),
 })
 
 c.Compliance.SearchPeps(ctx, map[string]any{
@@ -236,12 +234,14 @@ c.ProofOfAddress.ExtractProofOfAddress(ctx, &origoid.ExtractProofOfAddressReques
 ## Manejo de errores
 
 El SDK distingue entre **errores de negocio** (vienen dentro del
-envelope) y **errores de transporte** (devueltos como `error` no nulo).
+envelope) y **errores de transporte** (devueltos como `error` no
+nulo).
 
 ### Errores de negocio — inspecciona el envelope
 
-Para cualquier HTTP 200, incluyendo `INVALID_REQUEST`, el SDK devuelve
-un `*Envelope` normal. Revisa `Status` y `Type`:
+Para cualquier HTTP 200, incluyendo `INVALID_REQUEST`, el SDK
+devuelve un `*Envelope` normal. Revisa `Status` y `Type` antes de
+usar `Data`:
 
 ```go
 env, err := c.Renapo.ValidateCurp(ctx, &origoid.ValidateCurpRequest{Curp: "BAD"})
@@ -251,9 +251,7 @@ if err != nil {
 
 switch env.Type {
 case "SUCCESS":
-    // happy path
-case "CURP_DECEASED":
-    // resultado de negocio
+    // env.Data trae el registro
 case "CURP_NOT_FOUND":
     // sin match
 case "INVALID_REQUEST":
@@ -286,7 +284,7 @@ if err != nil {
 }
 ```
 
-## Configuración por llamada
+## Configuración por llamada (avanzado)
 
 Usa helpers `option.With*` como argumentos adicionales:
 
@@ -303,6 +301,25 @@ env, err := c.Ine.ValidateVoterList(
 
 Pasa un `context.Context` para respetar deadlines o cancelaciones del
 caller; el SDK respeta `ctx.Done()` y aborta requests en vuelo.
+
+<Info>
+  **Lee esto antes de tunear timeouts o retries.** El SDK sólo
+  reintenta errores `5xx` y fallas de red, nunca respuestas de negocio
+  exitosas — entonces los retries **no** crean llamadas duplicadas
+  facturables cuando el API respondió correctamente. **Sí** crean
+  llamadas extra cuando el request realmente falló: un request que
+  hace timeout tres veces puede consumir tres créditos si la llamada
+  eventualmente tuvo éxito en un intento posterior.
+
+  - **Los defaults (60 s, 2 reintentos) son correctos para casi
+    cualquier workload.** Cambia sólo con razón específica.
+  - Combinar timeout largo con `MaxAttempts` alto (ej. 120 s × 5)
+    significa que un único request fallando puede ocupar una
+    goroutine hasta 10 minutos — malo para tu throughput y tu
+    infraestructura.
+  - Sobrescribe per-call sólo en endpoints con cold starts lentos
+    conocidos.
+</Info>
 
 ## Punteros para campos opcionales
 

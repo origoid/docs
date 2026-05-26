@@ -3,11 +3,11 @@ title: Go SDK
 description: "Official Go client. Context-aware, idiomatic, distributed via Go modules."
 ---
 
-The Go SDK is distributed as a standard Go module. There is no separate
-registry — `go get` fetches the source directly from GitHub. The SDK
-provides one strongly-typed function per OrigoID endpoint, follows
-idiomatic Go patterns (`context.Context`, exported structs, explicit
-error returns), and bakes in the production base URL.
+The Go SDK is distributed as a standard Go module. There is no
+separate registry — `go get` fetches the source directly from GitHub.
+The SDK provides one strongly-typed function per OrigoID endpoint and
+follows idiomatic Go patterns (`context.Context`, exported structs,
+explicit error returns).
 
 ## Install
 
@@ -21,10 +21,9 @@ Or add it to `go.mod`:
 require github.com/origoid/sdk-go v0.1.0
 ```
 
-Then run `go mod tidy`. Source lives at
-[github.com/origoid/sdk-go](https://github.com/origoid/sdk-go).
-
-Requires Go **1.21 or newer**.
+Then run `go mod tidy`. Source on
+[github.com/origoid/sdk-go](https://github.com/origoid/sdk-go) (public,
+for auditing). Requires Go **1.21 or newer**.
 
 ## Initialize the client
 
@@ -32,7 +31,6 @@ Requires Go **1.21 or newer**.
 package main
 
 import (
-    "context"
     "fmt"
     "os"
 
@@ -49,21 +47,15 @@ func main() {
 }
 ```
 
-That's the entire setup. The base URL `https://api.origoid.com` is
-**baked into the SDK** — there is no `WithBaseURL` call required for
-production. Override only for staging or dev:
-
-```go
-c := client.NewClient(
-    option.WithAPIKey(os.Getenv("ORIGOID_API_KEY")),
-    option.WithBaseURL("https://staging-api.origoid.com"),
-)
-```
-
-Never hardcode the key. Pull from `os.Getenv`, [`viper`](https://github.com/spf13/viper),
-or your secrets backend.
+That's the whole setup — there is nothing else to configure. Never
+hardcode the key. Load it from `os.Getenv`, [`viper`](https://github.com/spf13/viper),
+or a secrets manager (HashiCorp Vault, 1Password, Doppler, etc.).
 
 ## Your first call
+
+The example below uses `PELJ900101HDFRRN09`, a **synthetic CURP from
+the OpenAPI examples** — not a real person's CURP. Replace it with the
+CURP you need to validate.
 
 ```go
 package main
@@ -86,27 +78,32 @@ func main() {
 
     env, err := c.Renapo.ValidateCurp(
         context.Background(),
-        &origoid.ValidateCurpRequest{Curp: "PELJ900101HDFRRN09"},
+        &origoid.ValidateCurpRequest{
+            Curp: "PELJ900101HDFRRN09", // synthetic — replace with real input
+        },
     )
     if err != nil {
         log.Fatal(err)
     }
 
-    fmt.Println(env.Status)          // "OK"
-    fmt.Println(env.Type)            // "SUCCESS", "CURP_DECEASED", ...
-    fmt.Println(env.TransactionId)   // uuid
-    fmt.Println(env.Data)            // map[string]any with RENAPO record
+    if env.Status == "OK" && env.Type == "SUCCESS" {
+        // env.Data holds the RENAPO record.
+        fmt.Println("CURP holder:", env.Data)
+    } else {
+        // Other result type — check the endpoint's response catalog to drive your logic.
+        fmt.Println(env.Type, "—", env.Message)
+    }
 }
 ```
 
 Every method returns `(*origoid.Envelope, error)`. The envelope shape
-is `{ Status, Type, Message, Data, TransactionId, ProcessedAt, Billable,
-Errors }`. See [Response envelope](/en/envelope) for the contract.
+is `{ Status, Type, Message, Data, TransactionId, ProcessedAt,
+Billable, Errors }`. See [Response envelope](/en/envelope) for the
+contract.
 
-## Resource methods
+## Methods by resource
 
-The client groups operations by regulatory domain. Method names mirror
-the OpenAPI `operationId` in Go's exported PascalCase.
+The client groups operations by regulatory domain.
 
 ### `c.Authentication`
 
@@ -131,8 +128,8 @@ c.Renapo.LookupCurp(ctx, &origoid.LookupCurpRequest{
 })
 ```
 
-`origoid.String(...)` is a helper for optional string fields (Go has no
-`Option<T>`; optionality is modeled with pointers).
+`origoid.String(...)` is a helper for optional string fields (Go has
+no `Option<T>`; optionality is modeled with pointers).
 
 ### `c.Sat`
 
@@ -153,7 +150,8 @@ c.Sat.ValidateCfdi(ctx, map[string]any{
 ```
 
 `ExtractCsf` and `ValidateCfdi` accept a `map[string]any` because the
-underlying schemas use `oneOf` — direct identifiers or document mode.
+underlying schemas allow alternative shapes (direct identifiers OR a
+document upload).
 
 ### `c.Imss`
 
@@ -191,8 +189,8 @@ c.Compliance.SearchSat69(ctx, map[string]any{"rfc": "PEZJ811011KI1"})
 c.Compliance.SearchSat69B(ctx, map[string]any{"rfc": "PEZJ811011KI1"})
 
 c.Compliance.SearchOfac(ctx, &origoid.SearchOfacRequest{
-    Name:                "John Doe",
-    MinSimilarityScore:  origoid.Int(85),
+    Name:               "John Doe",
+    MinSimilarityScore: origoid.Int(85),
 })
 
 c.Compliance.SearchPeps(ctx, map[string]any{
@@ -240,8 +238,8 @@ envelope) and **transport errors** (returned as a non-nil `error`).
 
 ### Business errors — inspect the envelope
 
-For any HTTP 200, including `INVALID_REQUEST`, the SDK returns a normal
-`*Envelope`. Check `Status` and `Type`:
+For any HTTP 200, including `INVALID_REQUEST`, the SDK returns a
+`*Envelope`. Check `Status` and `Type` before using `Data`:
 
 ```go
 env, err := c.Renapo.ValidateCurp(ctx, &origoid.ValidateCurpRequest{Curp: "BAD"})
@@ -251,9 +249,7 @@ if err != nil {
 
 switch env.Type {
 case "SUCCESS":
-    // happy path
-case "CURP_DECEASED":
-    // business outcome
+    // env.Data holds the record
 case "CURP_NOT_FOUND":
     // no match
 case "INVALID_REQUEST":
@@ -286,9 +282,9 @@ if err != nil {
 }
 ```
 
-## Per-call configuration
+## Per-call configuration (advanced)
 
-Use `option.With*Options` helpers as additional arguments:
+Use `option.With*` helpers as additional arguments:
 
 ```go
 import "time"
@@ -304,10 +300,28 @@ env, err := c.Ine.ValidateVoterList(
 Pass a `context.Context` to honor deadlines or cancellations from the
 caller; the SDK respects `ctx.Done()` and aborts in-flight requests.
 
+<Info>
+  **Read this before tuning timeouts or retries.** The SDK only
+  retries `5xx` and network failures, never successful business
+  responses — so retries do **not** create duplicate billable calls
+  when the API responded correctly. They **do** create extra calls
+  when the request actually failed: a request that times out three
+  times can consume three credits if the call eventually succeeded on
+  a later attempt.
+
+  - **Defaults (60 s, 2 retries) are right for almost every workload.**
+    Change only with a specific reason.
+  - Combining a long timeout with high `MaxAttempts` (e.g. 120 s × 5)
+    means a single failing request can occupy a goroutine for up to 10
+    minutes — bad for your throughput and your infrastructure.
+  - Override per-call only on endpoints with known slow cold starts.
+</Info>
+
 ## Pointers for optional fields
 
-Go has no `Option<T>`, so optional fields in request structs are pointer
-types. The SDK exposes helper constructors to make this less verbose:
+Go has no `Option<T>`, so optional fields in request structs are
+pointer types. The SDK exposes helper constructors to make this less
+verbose:
 
 ```go
 origoid.String("optional value")  // *string

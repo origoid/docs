@@ -1,11 +1,12 @@
 ---
 title: Python SDK
-description: "`origoid` — official client for Python 3.9+. Sync and async, Pydantic v2 models."
+description: "`origoid` — official client for Python 3.9+. Sync, async, typed response models."
 ---
 
 The Python SDK ships with both synchronous and asynchronous clients,
-Pydantic v2 response models, full type hints, an embedded production base
-URL, and one strongly-typed method per OrigoID endpoint.
+typed response models (built on [Pydantic](https://docs.pydantic.dev/),
+the standard Python data-validation library), full type hints, and one
+strongly-typed method per OrigoID endpoint.
 
 ## Install
 
@@ -13,7 +14,7 @@ URL, and one strongly-typed method per OrigoID endpoint.
 pip install origoid
 ```
 
-Or with [`uv`](https://docs.astral.sh/uv/) / [`poetry`](https://python-poetry.org/):
+Or with [`uv`](https://docs.astral.sh/uv/) / [`poetry`](https://python-poetry.org/) / [`pdm`](https://pdm-project.org/):
 
 <CodeGroup>
 
@@ -31,10 +32,9 @@ pdm add origoid
 
 </CodeGroup>
 
-The package is published to [PyPI as `origoid`](https://pypi.org/project/origoid/).
-Source lives at [github.com/origoid/sdk-python](https://github.com/origoid/sdk-python).
-
-Requires Python **3.9 or newer**.
+Package on PyPI: [`origoid`](https://pypi.org/project/origoid/). Source
+on [github.com/origoid/sdk-python](https://github.com/origoid/sdk-python)
+(public, for auditing). Requires Python **3.9 or newer**.
 
 ## Initialize the client
 
@@ -45,43 +45,42 @@ from origoid import OrigoID
 client = OrigoID(api_key=os.environ["ORIGOID_API_KEY"])
 ```
 
-That's the whole setup. The base URL `https://api.origoid.com` is **baked
-into the SDK** — no `base_url` parameter required. Override only when
-targeting staging or dev:
-
-```python
-client = OrigoID(
-    api_key=os.environ["ORIGOID_API_KEY"],
-    base_url="https://staging-api.origoid.com",
-)
-```
-
-Never hardcode the API key. Load from `os.environ`, a `.env` file via
-`python-dotenv`, or your secrets manager.
+That's the whole setup — there is nothing else to configure. Never
+hardcode the API key. Load from `os.environ`, a `.env` file via
+[`python-dotenv`](https://pypi.org/project/python-dotenv/), or a
+secrets manager (HashiCorp Vault, 1Password, Doppler, etc.).
 
 ## Your first call
+
+The example below uses `PELJ900101HDFRRN09`, a **synthetic CURP from
+the OpenAPI examples** — not a real person's CURP. Replace it with the
+CURP you need to validate.
 
 ```python
 from origoid import OrigoID
 
 client = OrigoID(api_key="...")
 
-envelope = client.renapo.validate_curp(curp="PELJ900101HDFRRN09")
+envelope = client.renapo.validate_curp(
+    curp="PELJ900101HDFRRN09",  # synthetic — replace with real input
+)
 
-print(envelope.status)         # "OK"
-print(envelope.type)           # "SUCCESS", "CURP_DECEASED", ...
-print(envelope.transaction_id) # uuid
-print(envelope.data)           # Pydantic model with typed RENAPO record
+if envelope.status == "OK" and envelope.type == "SUCCESS":
+    # envelope.data holds the RENAPO record.
+    print("CURP holder:", envelope.data)
+else:
+    # Other result type — check the endpoint's response catalog to drive your logic.
+    print(envelope.type, "—", envelope.message)
 ```
 
-Every method returns an `Envelope` Pydantic model: `{ status, type,
-message, data, transaction_id, processed_at, billable, errors? }`. See
+Every method returns an `Envelope` instance: `{ status, type, message,
+data, transaction_id, processed_at, billable, errors? }`. See
 [Response envelope](/en/envelope) for the contract.
 
-## Resource methods
+## Methods by resource
 
-Methods are grouped by regulatory domain. Names use Python `snake_case`
-(the OpenAPI `operationId` is converted automatically).
+Methods are grouped by regulatory domain. Names use Python
+`snake_case`.
 
 ### `client.authentication`
 
@@ -105,9 +104,10 @@ client.renapo.lookup_curp(
 
 ### `client.sat`
 
-`extract_csf` and `validate_cfdi` accept a `request=` dict because their
-OpenAPI schemas use `oneOf` (direct identifiers OR document mode). The
-keys inside the dict use the camelCase wire names:
+`extract_csf` and `validate_cfdi` accept a `request=` dict because the
+underlying schemas allow alternative shapes (direct identifiers OR a
+document upload). Inside that dict use the JSON wire names
+(camelCase):
 
 ```python
 client.sat.validate_rfc(rfc="PEZJ811011KI1")
@@ -190,7 +190,11 @@ client.proof_of_address.extract_proof_of_address(file="<base64 pdf or jpg>")
 
 ## Async client
 
-Every endpoint also has an async variant via `AsyncOrigoID`:
+For applications built on [FastAPI](https://fastapi.tiangolo.com/),
+[aiohttp](https://docs.aiohttp.org/), [Starlette](https://www.starlette.io/),
+or other async frameworks, use `AsyncOrigoID`. Same method names, same
+arguments, same return types — you just `await` each call so it does
+not block the event loop while the HTTP request is in flight.
 
 ```python
 import asyncio
@@ -199,13 +203,27 @@ from origoid import AsyncOrigoID
 async def main():
     client = AsyncOrigoID(api_key="...")
     env = await client.renapo.validate_curp(curp="PELJ900101HDFRRN09")
-    print(env.type)
+    if env.status == "OK":
+        print(env.type)
 
 asyncio.run(main())
 ```
 
-Same method names, same arguments, same response shapes — just `await`
-each call. The underlying HTTP client is `httpx`'s async transport.
+To fire several calls in parallel (e.g. validating multiple CURPs at
+once), use `asyncio.gather` — the same pattern as `Promise.all` in
+JavaScript:
+
+```python
+results = await asyncio.gather(
+    client.renapo.validate_curp(curp="PELJ900101HDFRRN09"),
+    client.sat.validate_rfc(rfc="PEZJ811011KI1"),
+    client.compliance.search_ofac(name="John Doe"),
+)
+```
+
+If your application is not built on an async stack, use `OrigoID` —
+async only adds value when you need to handle many concurrent
+operations without spawning threads.
 
 ## Error handling
 
@@ -214,30 +232,28 @@ envelope) and **transport errors** (raised as exceptions).
 
 ### Business errors — inspect the envelope
 
-For any HTTP 200 response, including `INVALID_REQUEST`, the SDK returns
-an `Envelope`. Check `status` and `type`:
+For any HTTP 200, including `INVALID_REQUEST`, the SDK returns an
+`Envelope`. Check `status` and `type` before using `data`:
 
 ```python
 env = client.renapo.validate_curp(curp="BAD")
 
 if env.status == "ERROR":
-    # INVALID_REQUEST, SERVICE_UNAVAILABLE, etc.
+    # INVALID_REQUEST, SERVICE_UNAVAILABLE, …
     print(env.type, env.message)
     for err in (env.errors or []):
         print(f"  {err.field}: {err.code} — {err.message}")
 else:
-    # status == "OK" — could still be a NOT_FOUND business outcome
+    # status == "OK" — could still be a business-level NOT_FOUND
     match env.type:
         case "SUCCESS":
-            ...
-        case "CURP_DECEASED":
-            ...
+            print("CURP holder:", env.data)
         case "CURP_NOT_FOUND":
-            ...
+            print("No match")
 ```
 
-See [Errors](/en/errors) and [Catalogs](/en/catalogs) for the full code
-catalog.
+See [Errors](/en/errors) and [Catalogs](/en/catalogs) for the full
+catalog of `type` codes.
 
 ### Transport errors — `try`/`except`
 
@@ -254,13 +270,14 @@ try:
     env = client.renapo.validate_curp(curp="PELJ900101HDFRRN09")
 except ApiError as e:
     # e.status_code — 401, 429, etc.
-    # e.body — the envelope returned by the server
+    # e.body — envelope returned by the server
     print(e.status_code, e.body)
 ```
 
-## Per-call configuration
+## Per-call configuration (advanced)
 
-Pass `request_options` to override timeout, retries, or headers per call:
+Pass `request_options` to override timeout, retries, or headers per
+call:
 
 ```python
 client.ine.validate_voter_list(
@@ -273,24 +290,18 @@ client.ine.validate_voter_list(
 )
 ```
 
-## Type hints
+<Info>
+  **Read this before tuning timeouts or retries.** The SDK only retries
+  `5xx` and network failures, never successful business responses — so
+  retries do **not** create duplicate billable calls when the API
+  responded correctly. They **do** create extra calls when the request
+  actually failed: a request that times out three times can consume
+  three credits if the call eventually succeeded on a later attempt.
 
-All response models are Pydantic v2 instances. Your IDE autocompletes
-fields and your type checker (mypy, pyright) catches missing attributes:
-
-```python
-env = client.renapo.validate_curp(curp="PELJ900101HDFRRN09")
-reveal_type(env)         # Envelope
-reveal_type(env.data)    # Optional[Dict[str, Any]] (data shape varies per endpoint)
-```
-
-To get a strongly-typed `data` payload, parse it manually into the
-endpoint-specific model exported under `origoid.<resource>`:
-
-```python
-from origoid.renapo.types import RenapoRecord  # example name
-
-if env.type == "SUCCESS" and env.data:
-    record = RenapoRecord(**env.data)
-    print(record.curp, record.given_names)
-```
+  - **Defaults (60 s, 2 retries) are right for almost every workload.**
+    Change only with a specific reason.
+  - Combining a long timeout with high `max_retries` (e.g. 120 s × 5)
+    means a single failing request can occupy a thread for up to 10
+    minutes — bad for your throughput and your infrastructure.
+  - Override per-call only on endpoints with known slow cold starts.
+</Info>

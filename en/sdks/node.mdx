@@ -3,9 +3,9 @@ title: Node / TypeScript SDK
 description: "`@origoid/sdk` — official client for Node.js 18+ and TypeScript projects."
 ---
 
-The Node SDK ships with full TypeScript definitions, automatic retries, an
-embedded production base URL, and one strongly-typed method per OrigoID
-endpoint. It works in any Node 18+ runtime and in Deno.
+The Node SDK ships with full TypeScript definitions, automatic retries,
+and one strongly-typed method per OrigoID endpoint. It works in any
+Node 18+ runtime and in Deno.
 
 ## Install
 
@@ -29,9 +29,9 @@ bun add @origoid/sdk
 
 </CodeGroup>
 
-The package is published to the public npm registry at
-[`@origoid/sdk`](https://www.npmjs.com/package/@origoid/sdk). Source lives
-at [github.com/origoid/sdk-node](https://github.com/origoid/sdk-node).
+Package on npm: [`@origoid/sdk`](https://www.npmjs.com/package/@origoid/sdk).
+Source on [github.com/origoid/sdk-node](https://github.com/origoid/sdk-node)
+(public, for auditing).
 
 ## Initialize the client
 
@@ -43,21 +43,16 @@ const client = new OrigoidApiClient({
 });
 ```
 
-That's the entire setup. The base URL `https://api.origoid.com` is
-**embedded in the SDK** — you do not need to pass an `environment` or
-`baseUrl`. Override only when targeting a staging or dev environment:
-
-```typescript
-const client = new OrigoidApiClient({
-  apiKey: process.env.ORIGOID_API_KEY!,
-  environment: "https://staging-api.origoid.com",
-});
-```
-
-Never hardcode the API key in source. Load it from `process.env`, a
-secrets manager, or your platform's config layer.
+That's the whole setup — there is nothing else to configure. Never
+hardcode the API key in source. Load it from `process.env`, a secrets
+manager (Vault, 1Password, Doppler, etc.), or your platform's config
+layer.
 
 ## Your first call
+
+The example below uses `PELJ900101HDFRRN09`, a **synthetic CURP from
+the OpenAPI examples** — not a real person's CURP. Replace it with the
+CURP you need to validate.
 
 ```typescript
 import { OrigoidApiClient } from "@origoid/sdk";
@@ -65,23 +60,25 @@ import { OrigoidApiClient } from "@origoid/sdk";
 const client = new OrigoidApiClient({ apiKey: process.env.ORIGOID_API_KEY! });
 
 const envelope = await client.renapo.validateCurp({
-  curp: "PELJ900101HDFRRN09",
+  curp: "PELJ900101HDFRRN09", // synthetic — replace with real input
 });
 
-console.log(envelope.status);          // "OK"
-console.log(envelope.type);            // "SUCCESS" | "CURP_DECEASED" | ...
-console.log(envelope.transactionId);   // uuid
-console.log(envelope.data);            // typed RENAPO record
+if (envelope.status === "OK" && envelope.type === "SUCCESS") {
+  // envelope.data holds the RENAPO record.
+  console.log("CURP holder:", envelope.data);
+} else {
+  // Other result type — check the endpoint's response catalog to drive your logic.
+  console.log(envelope.type, "—", envelope.message);
+}
 ```
 
-Every method returns the same `Envelope` shape: `{ status, type, message,
-data, transactionId, processedAt, billable, errors? }`. See [Response
-envelope](/en/envelope) for the full contract.
+Every method returns the same `Envelope` shape: `{ status, type,
+message, data, transactionId, processedAt, billable, errors? }`. See
+[Response envelope](/en/envelope) for the full contract.
 
-## Resource methods
+## Methods by resource
 
 The client groups operations under one property per regulatory domain.
-Method names match the OpenAPI `operationId` in camelCase.
 
 ### `client.authentication`
 
@@ -147,8 +144,8 @@ await client.compliance.searchPeps({
 });
 ```
 
-Note the capital `B` in `searchSat69B` — the SDK preserves Fern's
-casing convention for trailing single-letter suffixes.
+Note: the method for the SAT 69-B list is `searchSat69B` (capital B).
+The other compliance methods follow the regular camelCase pattern.
 
 ### `client.biometrics`
 
@@ -181,29 +178,25 @@ envelope) and **transport errors** (thrown as typed exceptions).
 
 ### Business errors — read from the envelope
 
-For any HTTP 200 response, including `INVALID_REQUEST` results, the SDK
-returns a normal `Envelope` object. Inspect `status` and `type`:
+For any HTTP 200, including `INVALID_REQUEST`, the SDK returns a
+normal `Envelope` object. Inspect `status` and `type` before using
+`data`:
 
 ```typescript
 const env = await client.renapo.validateCurp({ curp: "BAD" });
 
 if (env.status === "ERROR") {
-  // Examples: INVALID_REQUEST (with env.errors[]), SERVICE_UNAVAILABLE
+  // INVALID_REQUEST, SERVICE_UNAVAILABLE, …
   console.error(env.type, env.message);
 } else {
-  // status === "OK" — could still be a business-level NOT_FOUND
-  // (CURP_NOT_FOUND, RFC_NOT_FOUND, etc.). Switch on env.type.
+  // status === "OK" — could still be a business-level NOT_FOUND.
   switch (env.type) {
-    case "SUCCESS":             /* happy path */ break;
-    case "CURP_DECEASED":       /* business outcome */ break;
-    case "CURP_NOT_FOUND":      /* no match */ break;
-    // ...
+    case "SUCCESS":            /* env.data holds the record */ break;
+    case "CURP_NOT_FOUND":     /* no match */ break;
+    // see /en/errors and /en/catalogs for the full catalog
   }
 }
 ```
-
-The full list of `type` codes lives at [Errors](/en/errors) and
-[Catalogs](/en/catalogs).
 
 ### Transport errors — caught with try/catch
 
@@ -219,38 +212,55 @@ import {
 
 try {
   const env = await client.renapo.validateCurp({ curp: "PELJ900101HDFRRN09" });
+  // … use env
 } catch (err) {
   if (err instanceof OrigoidApiTimeoutError) {
     // request did not complete within the configured timeout
   } else if (err instanceof OrigoidApiError) {
     // err.statusCode — 401, 429, etc.
-    // err.body — the envelope returned by the server (with status, type, message)
+    // err.body — the envelope returned by the server
   } else {
     throw err; // unexpected
   }
 }
 ```
 
-## Per-call configuration
+## Per-call configuration (advanced)
 
-Every method accepts an optional second argument with request-specific
-options:
+Every method accepts an optional second argument:
 
 ```typescript
 await client.ine.validateVoterList(
   { cic: "123456789", citizenIdentifier: "987654321" },
   {
-    timeoutInSeconds: 120,    // default 60
-    maxRetries: 3,            // default 2
-    abortSignal: ac.signal,   // standard AbortController
+    timeoutInSeconds: 120,   // default 60
+    maxRetries: 3,           // default 2
+    abortSignal: ac.signal,  // standard AbortController
     headers: { "x-trace-id": "..." },
   },
 );
 ```
 
+<Info>
+  **Read this before tuning timeouts or retries.** The SDK only sends a
+  retry for `5xx` and network failures, never for successful business
+  responses — so retries do **not** create duplicate billable calls when
+  the API responded correctly. They **do** create extra calls when the
+  request actually failed: a request that times out three times can
+  consume three credits if the request eventually succeeded on a later
+  attempt.
+
+  - **Defaults (`timeoutInSeconds: 60`, `maxRetries: 2`) are right for
+    almost every workload.** Change them only with a specific reason.
+  - Combining a long timeout with high `maxRetries` (e.g. `120s` × `5`)
+    means a single failing request can occupy a client thread for up to
+    10 minutes — bad for your own throughput and infrastructure.
+  - Set per-call overrides only on endpoints with known slow cold
+    starts (some compliance and INE-list calls).
+</Info>
+
 ## TypeScript
 
-The SDK is written in TypeScript and ships first-class type definitions.
 Every request and response type is exported under the `OrigoidApi`
 namespace:
 
@@ -258,16 +268,16 @@ namespace:
 import { OrigoidApi } from "@origoid/sdk";
 
 function handleResult(env: OrigoidApi.Envelope) {
-  if (env.type === "SUCCESS" && env.data) {
-    const renapo = env.data as OrigoidApi.RenapoRecord;
-    // ...
+  if (env.status === "OK" && env.type === "SUCCESS" && env.data) {
+    // env.data is typed
   }
 }
 ```
 
 ## CommonJS
 
-The package ships both ESM and CJS entry points. In a CommonJS project:
+The package ships both ESM and CJS entry points. In a CommonJS
+project:
 
 ```javascript
 const { OrigoidApiClient } = require("@origoid/sdk");
@@ -276,7 +286,19 @@ const client = new OrigoidApiClient({ apiKey: process.env.ORIGOID_API_KEY });
 
 ## Browser usage
 
-The Node SDK targets Node.js. For browser-based applications (single-page
-apps, widgets), do not bundle the Node SDK — call the API directly with
-`fetch` after [requesting a CORS allow-list](/en/authentication#browser-based-integrations-cors)
-for your origin.
+**Do not call OrigoID directly from a browser.** API keys are
+long-lived credentials that grant billable access to your account; the
+moment a key reaches a browser bundle, browser console, or local
+storage, it is effectively public and at risk of abuse — the same way
+you would never put a credit-card processor's secret key in
+client-side code.
+
+The correct pattern is **backend-for-frontend (BFF)**: your browser
+talks to your server, your server holds the API key and calls OrigoID
+from a trusted environment (Node, Python, Go).
+
+If your use case truly requires browser-direct calls (partner widget,
+embedded form, etc.) we can enable CORS for your specific origins. The
+key stays out of the browser only if you scope it carefully and pair
+it with referrer/origin restrictions — we will help you design that
+flow. Reach out and we will work through the architecture with you.
