@@ -44,6 +44,15 @@
                   "en/catalogs",
                   "en/image-handling"
                 ]
+              },
+              {
+                "group": "SDKs",
+                "pages": [
+                  "en/sdks/overview",
+                  "en/sdks/node",
+                  "en/sdks/python",
+                  "en/sdks/go"
+                ]
               }
             ]
           },
@@ -78,6 +87,15 @@
                   "es/errors",
                   "es/catalogs",
                   "es/image-handling"
+                ]
+              },
+              {
+                "group": "SDKs",
+                "pages": [
+                  "es/sdks/overview",
+                  "es/sdks/node",
+                  "es/sdks/python",
+                  "es/sdks/go"
                 ]
               }
             ]

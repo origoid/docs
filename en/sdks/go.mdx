@@ -1,0 +1,322 @@
+---
+title: Go SDK
+description: "Official Go client. Context-aware, idiomatic, distributed via Go modules."
+---
+
+The Go SDK is distributed as a standard Go module. There is no separate
+registry — `go get` fetches the source directly from GitHub. The SDK
+provides one strongly-typed function per OrigoID endpoint, follows
+idiomatic Go patterns (`context.Context`, exported structs, explicit
+error returns), and bakes in the production base URL.
+
+## Install
+
+```bash
+go get github.com/origoid/sdk-go@v0.1.0
+```
+
+Or add it to `go.mod`:
+
+```go
+require github.com/origoid/sdk-go v0.1.0
+```
+
+Then run `go mod tidy`. Source lives at
+[github.com/origoid/sdk-go](https://github.com/origoid/sdk-go).
+
+Requires Go **1.21 or newer**.
+
+## Initialize the client
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+
+    "github.com/origoid/sdk-go/client"
+    "github.com/origoid/sdk-go/option"
+)
+
+func main() {
+    c := client.NewClient(
+        option.WithAPIKey(os.Getenv("ORIGOID_API_KEY")),
+    )
+    _ = c
+    fmt.Println("client ready")
+}
+```
+
+That's the entire setup. The base URL `https://api.origoid.com` is
+**baked into the SDK** — there is no `WithBaseURL` call required for
+production. Override only for staging or dev:
+
+```go
+c := client.NewClient(
+    option.WithAPIKey(os.Getenv("ORIGOID_API_KEY")),
+    option.WithBaseURL("https://staging-api.origoid.com"),
+)
+```
+
+Never hardcode the key. Pull from `os.Getenv`, [`viper`](https://github.com/spf13/viper),
+or your secrets backend.
+
+## Your first call
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "os"
+
+    origoid "github.com/origoid/sdk-go"
+    "github.com/origoid/sdk-go/client"
+    "github.com/origoid/sdk-go/option"
+)
+
+func main() {
+    c := client.NewClient(
+        option.WithAPIKey(os.Getenv("ORIGOID_API_KEY")),
+    )
+
+    env, err := c.Renapo.ValidateCurp(
+        context.Background(),
+        &origoid.ValidateCurpRequest{Curp: "PELJ900101HDFRRN09"},
+    )
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Println(env.Status)          // "OK"
+    fmt.Println(env.Type)            // "SUCCESS", "CURP_DECEASED", ...
+    fmt.Println(env.TransactionId)   // uuid
+    fmt.Println(env.Data)            // map[string]any with RENAPO record
+}
+```
+
+Every method returns `(*origoid.Envelope, error)`. The envelope shape
+is `{ Status, Type, Message, Data, TransactionId, ProcessedAt, Billable,
+Errors }`. See [Response envelope](/en/envelope) for the contract.
+
+## Resource methods
+
+The client groups operations by regulatory domain. Method names mirror
+the OpenAPI `operationId` in Go's exported PascalCase.
+
+### `c.Authentication`
+
+```go
+c.Authentication.IssueToken(ctx, &origoid.IssueTokenRequest{ExpireAfter: 1800})
+```
+
+### `c.Renapo`
+
+```go
+c.Renapo.ValidateCurp(ctx, &origoid.ValidateCurpRequest{
+    Curp: "PELJ900101HDFRRN09",
+})
+
+c.Renapo.LookupCurp(ctx, &origoid.LookupCurpRequest{
+    GivenNames:     "JUAN",
+    FirstSurname:   "PEREZ",
+    SecondSurname:  origoid.String("LOPEZ"),
+    DateOfBirth:    "1990-01-01",
+    Gender:         origoid.LookupCurpRequestGenderH,
+    BirthStateCode: "DF",
+})
+```
+
+`origoid.String(...)` is a helper for optional string fields (Go has no
+`Option<T>`; optionality is modeled with pointers).
+
+### `c.Sat`
+
+```go
+c.Sat.ValidateRfc(ctx, &origoid.ValidateRfcRequest{Rfc: "PEZJ811011KI1"})
+
+c.Sat.ExtractCsf(ctx, map[string]any{
+    "rfc": "PEZJ811011KI1",
+    "cif": "17060597619",
+})
+
+c.Sat.ValidateCfdi(ctx, map[string]any{
+    "uuid":        "7C8BD4EA-AE86-4CB5-88B8-C6E61E988A8B",
+    "rfcEmisor":   "PEZJ811011KI1",
+    "rfcReceptor": "EMP170623KI3",
+    "total":       "999999.99",
+})
+```
+
+`ExtractCsf` and `ValidateCfdi` accept a `map[string]any` because the
+underlying schemas use `oneOf` — direct identifiers or document mode.
+
+### `c.Imss`
+
+```go
+c.Imss.LookupNss(ctx, &origoid.LookupNssRequest{Curp: "PELJ900101HDFRRN09"})
+
+c.Imss.GetEmploymentStatus(ctx, &origoid.GetEmploymentStatusRequest{
+    Curp: "PELJ900101HDFRRN09",
+    Nss:  "92038109713",
+})
+```
+
+### `c.Ine`
+
+```go
+c.Ine.ValidateVoterList(ctx, map[string]any{
+    "cic":               "123456789",
+    "citizenIdentifier": "987654321",
+})
+
+c.Ine.ExtractVoterIdData(ctx, &origoid.ExtractVoterIdDataRequest{
+    Front: "<base64 jpg>",
+    Back:  origoid.String("<base64 jpg>"),
+})
+
+c.Ine.ExtractQrData(ctx, &origoid.ExtractQrDataRequest{
+    Back: "<base64 jpg of credential back>",
+})
+```
+
+### `c.Compliance`
+
+```go
+c.Compliance.SearchSat69(ctx, map[string]any{"rfc": "PEZJ811011KI1"})
+c.Compliance.SearchSat69B(ctx, map[string]any{"rfc": "PEZJ811011KI1"})
+
+c.Compliance.SearchOfac(ctx, &origoid.SearchOfacRequest{
+    Name:                "John Doe",
+    MinSimilarityScore:  origoid.Int(85),
+})
+
+c.Compliance.SearchPeps(ctx, map[string]any{
+    "givenNames":    "JUAN",
+    "firstSurname":  "PEREZ",
+    "secondSurname": "LOPEZ",
+})
+```
+
+### `c.Biometrics`
+
+```go
+c.Biometrics.MatchFaces(ctx, &origoid.MatchFacesRequest{
+    Face:         "<base64 selfie>",
+    Front:        "<base64 id front>",
+    Threshold:    origoid.Int(80),
+    DocumentType: origoid.MatchFacesRequestDocumentTypeIne.Ptr(),
+})
+
+c.Biometrics.CheckLiveness(ctx, &origoid.CheckLivenessRequest{
+    Selfie: "<base64 selfie>",
+})
+```
+
+### `c.Email`
+
+```go
+c.Email.ValidateEmail(ctx, &origoid.ValidateEmailRequest{
+    Email: "user@example.com",
+})
+```
+
+### `c.ProofOfAddress`
+
+```go
+c.ProofOfAddress.ExtractProofOfAddress(ctx, &origoid.ExtractProofOfAddressRequest{
+    File: "<base64 pdf or jpg>",
+})
+```
+
+## Error handling
+
+The SDK distinguishes between **business errors** (returned inside the
+envelope) and **transport errors** (returned as a non-nil `error`).
+
+### Business errors — inspect the envelope
+
+For any HTTP 200, including `INVALID_REQUEST`, the SDK returns a normal
+`*Envelope`. Check `Status` and `Type`:
+
+```go
+env, err := c.Renapo.ValidateCurp(ctx, &origoid.ValidateCurpRequest{Curp: "BAD"})
+if err != nil {
+    log.Fatal(err)
+}
+
+switch env.Type {
+case "SUCCESS":
+    // happy path
+case "CURP_DECEASED":
+    // business outcome
+case "CURP_NOT_FOUND":
+    // no match
+case "INVALID_REQUEST":
+    for _, e := range env.Errors {
+        fmt.Printf("  %s: %s — %s\n", e.Field, e.Code, e.Message)
+    }
+}
+```
+
+### Transport errors — non-nil `error`
+
+For `401`, `429`, network failures, the SDK returns a typed error:
+
+```go
+import "errors"
+
+env, err := c.Renapo.ValidateCurp(ctx, req)
+if err != nil {
+    var unauth *origoid.UnauthorizedError
+    var rl *origoid.TooManyRequestsError
+    switch {
+    case errors.As(err, &unauth):
+        // 401
+    case errors.As(err, &rl):
+        // 429 — read rl.Body for the rate-limit envelope
+    default:
+        // network / timeout / unexpected
+        log.Fatal(err)
+    }
+}
+```
+
+## Per-call configuration
+
+Use `option.With*Options` helpers as additional arguments:
+
+```go
+import "time"
+
+env, err := c.Ine.ValidateVoterList(
+    ctx,
+    map[string]any{"cic": "123456789", "citizenIdentifier": "987654321"},
+    option.WithRequestTimeout(120 * time.Second),
+    option.WithMaxAttempts(3),
+)
+```
+
+Pass a `context.Context` to honor deadlines or cancellations from the
+caller; the SDK respects `ctx.Done()` and aborts in-flight requests.
+
+## Pointers for optional fields
+
+Go has no `Option<T>`, so optional fields in request structs are pointer
+types. The SDK exposes helper constructors to make this less verbose:
+
+```go
+origoid.String("optional value")  // *string
+origoid.Int(42)                   // *int
+origoid.Bool(true)                // *bool
+```
+
+For enums:
+
+```go
+origoid.MatchFacesRequestDocumentTypeIne.Ptr()
+```

@@ -19,6 +19,13 @@ Privacy: No PII is persisted from successful responses. Operational metadata onl
 - [Image handling (EN)](https://docs.origoid.com/en/image-handling): Sending images for OCR/biometric endpoints
 - [Credits (EN)](https://docs.origoid.com/en/credits): Per-endpoint usage costs
 
+## SDKs
+
+- [SDKs overview (EN)](https://docs.origoid.com/en/sdks/overview): Comparison of the three official SDKs
+- [Node / TypeScript SDK](https://docs.origoid.com/en/sdks/node): `npm install @origoid/sdk`
+- [Python SDK](https://docs.origoid.com/en/sdks/python): `pip install origoid`
+- [Go SDK](https://docs.origoid.com/en/sdks/go): `go get github.com/origoid/sdk-go`
+
 ## OpenAPI specification
 
 - [OpenAPI 3.0 JSON](https://docs.origoid.com/openapi.json): Full machine-readable contract for all endpoints

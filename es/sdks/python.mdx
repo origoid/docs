@@ -1,0 +1,301 @@
+---
+title: SDK Python
+description: "`origoid` — cliente oficial para Python 3.9+. Sync y async, modelos Pydantic v2."
+---
+
+El SDK de Python trae clientes sync y async, modelos de respuesta
+Pydantic v2, type hints completos, base URL de producción embebido y un
+método tipado por cada endpoint de OrigoID.
+
+## Instalación
+
+```bash
+pip install origoid
+```
+
+O con [`uv`](https://docs.astral.sh/uv/) / [`poetry`](https://python-poetry.org/):
+
+<CodeGroup>
+
+```bash uv
+uv add origoid
+```
+
+```bash poetry
+poetry add origoid
+```
+
+```bash pdm
+pdm add origoid
+```
+
+</CodeGroup>
+
+El paquete se publica en [PyPI como `origoid`](https://pypi.org/project/origoid/).
+Código en [github.com/origoid/sdk-python](https://github.com/origoid/sdk-python).
+
+Requiere Python **3.9 o más reciente**.
+
+## Inicializa el cliente
+
+```python
+import os
+from origoid import OrigoID
+
+client = OrigoID(api_key=os.environ["ORIGOID_API_KEY"])
+```
+
+Ese es todo el setup. La base URL `https://api.origoid.com` está
+**embebida en el SDK** — no requiere parámetro `base_url`. Sólo override
+para apuntar a staging o dev:
+
+```python
+client = OrigoID(
+    api_key=os.environ["ORIGOID_API_KEY"],
+    base_url="https://staging-api.origoid.com",
+)
+```
+
+Nunca hardcodees la API key. Cárgala desde `os.environ`, un `.env` via
+`python-dotenv`, o tu secrets manager.
+
+## Tu primera llamada
+
+```python
+from origoid import OrigoID
+
+client = OrigoID(api_key="...")
+
+envelope = client.renapo.validate_curp(curp="PELJ900101HDFRRN09")
+
+print(envelope.status)         # "OK"
+print(envelope.type)           # "SUCCESS", "CURP_DECEASED", ...
+print(envelope.transaction_id) # uuid
+print(envelope.data)           # modelo Pydantic con registro RENAPO
+```
+
+Cada método devuelve un modelo Pydantic `Envelope`: `{ status, type,
+message, data, transaction_id, processed_at, billable, errors? }`. Ver
+[Envelope de respuesta](/es/envelope) para el contrato.
+
+## Métodos por recurso
+
+Los métodos están agrupados por dominio regulatorio. Los nombres usan
+`snake_case` Python (el `operationId` del OpenAPI se convierte
+automáticamente).
+
+### `client.authentication`
+
+```python
+client.authentication.issue_token(expire_after=1800)
+```
+
+### `client.renapo`
+
+```python
+client.renapo.validate_curp(curp="PELJ900101HDFRRN09")
+client.renapo.lookup_curp(
+    given_names="JUAN",
+    first_surname="PEREZ",
+    second_surname="LOPEZ",
+    date_of_birth="1990-01-01",
+    gender="H",
+    birth_state_code="DF",
+)
+```
+
+### `client.sat`
+
+`extract_csf` y `validate_cfdi` aceptan un dict `request=` porque sus
+schemas OpenAPI usan `oneOf` (identificadores directos O modo
+documento). Las llaves dentro del dict usan los nombres camelCase del
+wire:
+
+```python
+client.sat.validate_rfc(rfc="PEZJ811011KI1")
+
+client.sat.extract_csf(request={
+    "rfc": "PEZJ811011KI1",
+    "cif": "17060597619",
+})
+
+client.sat.validate_cfdi(request={
+    "uuid": "7C8BD4EA-AE86-4CB5-88B8-C6E61E988A8B",
+    "rfcEmisor": "PEZJ811011KI1",
+    "rfcReceptor": "EMP170623KI3",
+    "total": "999999.99",
+})
+```
+
+### `client.imss`
+
+```python
+client.imss.lookup_nss(curp="PELJ900101HDFRRN09")
+client.imss.get_employment_status(
+    curp="PELJ900101HDFRRN09",
+    nss="92038109713",
+)
+```
+
+### `client.ine`
+
+```python
+client.ine.validate_voter_list(request={
+    "cic": "123456789",
+    "citizenIdentifier": "987654321",
+})
+
+client.ine.extract_voter_id_data(
+    front="<jpg base64>",
+    back="<jpg base64>",
+)
+
+client.ine.extract_qr_data(back="<jpg base64 del reverso>")
+```
+
+### `client.compliance`
+
+```python
+client.compliance.search_sat69(request={"rfc": "PEZJ811011KI1"})
+client.compliance.search_sat69b(request={"rfc": "PEZJ811011KI1"})
+client.compliance.search_ofac(name="John Doe", min_similarity_score=85)
+client.compliance.search_peps(request={
+    "givenNames": "JUAN",
+    "firstSurname": "PEREZ",
+    "secondSurname": "LOPEZ",
+})
+```
+
+### `client.biometrics`
+
+```python
+client.biometrics.match_faces(
+    face="<selfie base64>",
+    front="<frente id base64>",
+    threshold=80,
+    document_type="INE",
+)
+client.biometrics.check_liveness(selfie="<selfie base64>")
+```
+
+### `client.email`
+
+```python
+client.email.validate_email(email="user@example.com")
+```
+
+### `client.proof_of_address`
+
+```python
+client.proof_of_address.extract_proof_of_address(file="<pdf o jpg base64>")
+```
+
+## Cliente async
+
+Cada endpoint tiene también una variante async via `AsyncOrigoID`:
+
+```python
+import asyncio
+from origoid import AsyncOrigoID
+
+async def main():
+    client = AsyncOrigoID(api_key="...")
+    env = await client.renapo.validate_curp(curp="PELJ900101HDFRRN09")
+    print(env.type)
+
+asyncio.run(main())
+```
+
+Mismos nombres de método, mismos argumentos, mismas shapes de respuesta
+— sólo `await` cada llamada. El cliente HTTP subyacente es el transport
+async de `httpx`.
+
+## Manejo de errores
+
+El SDK distingue entre **errores de negocio** (vienen dentro del
+envelope) y **errores de transporte** (se lanzan como excepciones).
+
+### Errores de negocio — inspecciona el envelope
+
+Para cualquier respuesta HTTP 200, incluyendo `INVALID_REQUEST`, el SDK
+devuelve un `Envelope`. Revisa `status` y `type`:
+
+```python
+env = client.renapo.validate_curp(curp="BAD")
+
+if env.status == "ERROR":
+    # INVALID_REQUEST, SERVICE_UNAVAILABLE, etc.
+    print(env.type, env.message)
+    for err in (env.errors or []):
+        print(f"  {err.field}: {err.code} — {err.message}")
+else:
+    # status == "OK" — puede ser un NOT_FOUND de negocio
+    match env.type:
+        case "SUCCESS":
+            ...
+        case "CURP_DECEASED":
+            ...
+        case "CURP_NOT_FOUND":
+            ...
+```
+
+Ver [Errores](/es/errors) y [Catálogos](/es/catalogs) para el catálogo
+completo.
+
+### Errores de transporte — `try`/`except`
+
+Para `401`, `429` y fallas irrecuperables el SDK lanza excepciones
+tipadas:
+
+```python
+from origoid import OrigoID
+from origoid.core.api_error import ApiError
+
+client = OrigoID(api_key="...")
+
+try:
+    env = client.renapo.validate_curp(curp="PELJ900101HDFRRN09")
+except ApiError as e:
+    # e.status_code — 401, 429, etc.
+    # e.body — envelope que devolvió el servidor
+    print(e.status_code, e.body)
+```
+
+## Configuración por llamada
+
+Pasa `request_options` para override de timeout, retries o headers por
+llamada:
+
+```python
+client.ine.validate_voter_list(
+    request={"cic": "123456789", "citizenIdentifier": "987654321"},
+    request_options={
+        "timeout_in_seconds": 120,   # default 60
+        "max_retries": 3,            # default 2
+        "additional_headers": {"x-trace-id": "..."},
+    },
+)
+```
+
+## Type hints
+
+Todos los modelos de respuesta son instancias Pydantic v2. Tu IDE
+autocompleta campos y tu type checker (mypy, pyright) atrapa atributos
+faltantes:
+
+```python
+env = client.renapo.validate_curp(curp="PELJ900101HDFRRN09")
+reveal_type(env)         # Envelope
+reveal_type(env.data)    # Optional[Dict[str, Any]] (shape varía por endpoint)
+```
+
+Para obtener un payload `data` fuertemente tipado, parséalo manualmente
+al modelo específico del endpoint exportado bajo `origoid.<resource>`:
+
+```python
+from origoid.renapo.types import RenapoRecord  # nombre ejemplo
+
+if env.type == "SUCCESS" and env.data:
+    record = RenapoRecord(**env.data)
+    print(record.curp, record.given_names)
+```

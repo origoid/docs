@@ -1,0 +1,285 @@
+---
+title: SDK Node / TypeScript
+description: "`@origoid/sdk` — cliente oficial para Node.js 18+ y proyectos TypeScript."
+---
+
+El SDK de Node trae definiciones TypeScript completas, reintentos
+automáticos, base URL de producción embebido y un método tipado por cada
+endpoint de OrigoID. Funciona en cualquier runtime Node 18+ y en Deno.
+
+## Instalación
+
+<CodeGroup>
+
+```bash npm
+npm install @origoid/sdk
+```
+
+```bash yarn
+yarn add @origoid/sdk
+```
+
+```bash pnpm
+pnpm add @origoid/sdk
+```
+
+```bash bun
+bun add @origoid/sdk
+```
+
+</CodeGroup>
+
+Paquete publicado en el registry público de npm como
+[`@origoid/sdk`](https://www.npmjs.com/package/@origoid/sdk). Código en
+[github.com/origoid/sdk-node](https://github.com/origoid/sdk-node).
+
+## Inicializa el cliente
+
+```typescript
+import { OrigoidApiClient } from "@origoid/sdk";
+
+const client = new OrigoidApiClient({
+  apiKey: process.env.ORIGOID_API_KEY!,
+});
+```
+
+Ese es todo el setup. La base URL `https://api.origoid.com` está
+**embebida en el SDK** — no necesitas pasar `environment` ni `baseUrl`.
+Sólo override para apuntar a staging o dev:
+
+```typescript
+const client = new OrigoidApiClient({
+  apiKey: process.env.ORIGOID_API_KEY!,
+  environment: "https://staging-api.origoid.com",
+});
+```
+
+Nunca hardcodees la API key en código. Cárgala desde `process.env`,
+secrets manager, o la capa de config de tu plataforma.
+
+## Tu primera llamada
+
+```typescript
+import { OrigoidApiClient } from "@origoid/sdk";
+
+const client = new OrigoidApiClient({ apiKey: process.env.ORIGOID_API_KEY! });
+
+const envelope = await client.renapo.validateCurp({
+  curp: "PELJ900101HDFRRN09",
+});
+
+console.log(envelope.status);          // "OK"
+console.log(envelope.type);            // "SUCCESS" | "CURP_DECEASED" | ...
+console.log(envelope.transactionId);   // uuid
+console.log(envelope.data);            // registro RENAPO tipado
+```
+
+Cada método devuelve la misma shape `Envelope`: `{ status, type, message,
+data, transactionId, processedAt, billable, errors? }`. Ver [Envelope de
+respuesta](/es/envelope) para el contrato completo.
+
+## Métodos por recurso
+
+El cliente agrupa operaciones bajo una propiedad por dominio regulatorio.
+Los nombres de método coinciden con el `operationId` del OpenAPI en
+camelCase.
+
+### `client.authentication`
+
+```typescript
+await client.authentication.issueToken({ expireAfter: 1800 });
+```
+
+### `client.renapo`
+
+```typescript
+await client.renapo.validateCurp({ curp: "PELJ900101HDFRRN09" });
+await client.renapo.lookupCurp({
+  givenNames: "JUAN",
+  firstSurname: "PEREZ",
+  secondSurname: "LOPEZ",
+  dateOfBirth: "1990-01-01",
+  gender: "H",
+  birthStateCode: "DF",
+});
+```
+
+### `client.sat`
+
+```typescript
+await client.sat.validateRfc({ rfc: "PEZJ811011KI1" });
+await client.sat.extractCsf({ rfc: "PEZJ811011KI1", cif: "17060597619" });
+await client.sat.validateCfdi({
+  uuid: "7C8BD4EA-AE86-4CB5-88B8-C6E61E988A8B",
+  rfcEmisor: "PEZJ811011KI1",
+  rfcReceptor: "EMP170623KI3",
+  total: "999999.99",
+});
+```
+
+### `client.imss`
+
+```typescript
+await client.imss.lookupNss({ curp: "PELJ900101HDFRRN09" });
+await client.imss.getEmploymentStatus({
+  curp: "PELJ900101HDFRRN09",
+  nss: "92038109713",
+});
+```
+
+### `client.ine`
+
+```typescript
+await client.ine.validateVoterList({ cic: "123456789", citizenIdentifier: "987654321" });
+await client.ine.extractVoterIdData({ front: "<jpg base64>", back: "<jpg base64>" });
+await client.ine.extractQrData({ back: "<jpg base64 del reverso>" });
+```
+
+### `client.compliance`
+
+```typescript
+await client.compliance.searchSat69({ rfc: "PEZJ811011KI1" });
+await client.compliance.searchSat69B({ rfc: "PEZJ811011KI1" });
+await client.compliance.searchOfac({ name: "John Doe", minSimilarityScore: 85 });
+await client.compliance.searchPeps({
+  givenNames: "JUAN",
+  firstSurname: "PEREZ",
+  secondSurname: "LOPEZ",
+});
+```
+
+Nota la `B` mayúscula en `searchSat69B` — el SDK preserva la convención
+de casing de Fern para sufijos de letra única al final.
+
+### `client.biometrics`
+
+```typescript
+await client.biometrics.matchFaces({
+  face: "<selfie base64>",
+  front: "<frente id base64>",
+  threshold: 80,
+  documentType: "INE",
+});
+await client.biometrics.checkLiveness({ selfie: "<selfie base64>" });
+```
+
+### `client.email`
+
+```typescript
+await client.email.validateEmail({ email: "user@example.com" });
+```
+
+### `client.proofOfAddress`
+
+```typescript
+await client.proofOfAddress.extractProofOfAddress({ file: "<pdf o jpg base64>" });
+```
+
+## Manejo de errores
+
+El SDK distingue entre **errores de negocio** (vienen dentro del
+envelope) y **errores de transporte** (lanzados como excepciones
+tipadas).
+
+### Errores de negocio — léelos del envelope
+
+Para cualquier respuesta HTTP 200, incluyendo resultados
+`INVALID_REQUEST`, el SDK devuelve un objeto `Envelope` normal. Revisa
+`status` y `type`:
+
+```typescript
+const env = await client.renapo.validateCurp({ curp: "BAD" });
+
+if (env.status === "ERROR") {
+  // Ejemplos: INVALID_REQUEST (con env.errors[]), SERVICE_UNAVAILABLE
+  console.error(env.type, env.message);
+} else {
+  // status === "OK" — puede ser un NOT_FOUND de negocio
+  // (CURP_NOT_FOUND, RFC_NOT_FOUND, etc.). Switch en env.type.
+  switch (env.type) {
+    case "SUCCESS":             /* happy path */ break;
+    case "CURP_DECEASED":       /* resultado de negocio */ break;
+    case "CURP_NOT_FOUND":      /* sin match */ break;
+    // ...
+  }
+}
+```
+
+El catálogo completo de códigos `type` está en [Errores](/es/errors) y
+[Catálogos](/es/catalogs).
+
+### Errores de transporte — try/catch
+
+Para `401`, `429` y fallas de transporte irrecuperables el SDK lanza
+errores tipados:
+
+```typescript
+import {
+  OrigoidApiClient,
+  OrigoidApiError,
+  OrigoidApiTimeoutError,
+} from "@origoid/sdk";
+
+try {
+  const env = await client.renapo.validateCurp({ curp: "PELJ900101HDFRRN09" });
+} catch (err) {
+  if (err instanceof OrigoidApiTimeoutError) {
+    // request no completó dentro del timeout configurado
+  } else if (err instanceof OrigoidApiError) {
+    // err.statusCode — 401, 429, etc.
+    // err.body — envelope que devolvió el servidor
+  } else {
+    throw err; // inesperado
+  }
+}
+```
+
+## Configuración por llamada
+
+Cada método acepta un segundo argumento opcional con opciones
+específicas del request:
+
+```typescript
+await client.ine.validateVoterList(
+  { cic: "123456789", citizenIdentifier: "987654321" },
+  {
+    timeoutInSeconds: 120,    // default 60
+    maxRetries: 3,            // default 2
+    abortSignal: ac.signal,   // AbortController estándar
+    headers: { "x-trace-id": "..." },
+  },
+);
+```
+
+## TypeScript
+
+El SDK está escrito en TypeScript y trae definiciones de tipo de primera
+clase. Cada tipo de request y response se exporta bajo el namespace
+`OrigoidApi`:
+
+```typescript
+import { OrigoidApi } from "@origoid/sdk";
+
+function handleResult(env: OrigoidApi.Envelope) {
+  if (env.type === "SUCCESS" && env.data) {
+    const renapo = env.data as OrigoidApi.RenapoRecord;
+    // ...
+  }
+}
+```
+
+## CommonJS
+
+El paquete trae ambos entry points ESM y CJS. En proyectos CommonJS:
+
+```javascript
+const { OrigoidApiClient } = require("@origoid/sdk");
+const client = new OrigoidApiClient({ apiKey: process.env.ORIGOID_API_KEY });
+```
+
+## Uso desde navegador
+
+El SDK de Node está hecho para Node.js. Para aplicaciones de navegador
+(SPA, widget), no bundlees el Node SDK — llama al API directamente con
+`fetch` después de [pedir allowlist CORS](/es/authentication#integraciones-desde-navegador-cors)
+para tu origen.
