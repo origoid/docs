@@ -538,7 +538,13 @@
                   "Unauthorized": {
                     "summary": "Unauthorized",
                     "value": {
-                      "message": "Unauthorized"
+                      "status": "ERROR",
+                      "type": "UNAUTHORIZED",
+                      "message": "Invalid credentials",
+                      "data": null,
+                      "transactionId": "71d64fd8-8a54-4792-a844-7e2466eb01f7",
+                      "processedAt": "2026-05-21T10:00:00-06:00",
+                      "billable": false
                     }
                   }
                 },
@@ -1005,7 +1011,13 @@
                   "Unauthorized": {
                     "summary": "Unauthorized",
                     "value": {
-                      "message": "Unauthorized"
+                      "status": "ERROR",
+                      "type": "UNAUTHORIZED",
+                      "message": "Invalid credentials",
+                      "data": null,
+                      "transactionId": "71d64fd8-8a54-4792-a844-7e2466eb01f7",
+                      "processedAt": "2026-05-21T10:00:00-06:00",
+                      "billable": false
                     }
                   }
                 },
@@ -1256,7 +1268,13 @@
                   "Unauthorized": {
                     "summary": "Unauthorized",
                     "value": {
-                      "message": "Unauthorized"
+                      "status": "ERROR",
+                      "type": "UNAUTHORIZED",
+                      "message": "Invalid credentials",
+                      "data": null,
+                      "transactionId": "71d64fd8-8a54-4792-a844-7e2466eb01f7",
+                      "processedAt": "2026-05-21T10:00:00-06:00",
+                      "billable": false
                     }
                   }
                 },
@@ -1540,7 +1558,13 @@
                   "Unauthorized": {
                     "summary": "Unauthorized",
                     "value": {
-                      "message": "Unauthorized"
+                      "status": "ERROR",
+                      "type": "UNAUTHORIZED",
+                      "message": "Invalid credentials",
+                      "data": null,
+                      "transactionId": "71d64fd8-8a54-4792-a844-7e2466eb01f7",
+                      "processedAt": "2026-05-21T10:00:00-06:00",
+                      "billable": false
                     }
                   }
                 },
@@ -2002,7 +2026,13 @@
                   "Unauthorized": {
                     "summary": "Unauthorized",
                     "value": {
-                      "message": "Unauthorized"
+                      "status": "ERROR",
+                      "type": "UNAUTHORIZED",
+                      "message": "Invalid credentials",
+                      "data": null,
+                      "transactionId": "71d64fd8-8a54-4792-a844-7e2466eb01f7",
+                      "processedAt": "2026-05-21T10:00:00-06:00",
+                      "billable": false
                     }
                   }
                 },
@@ -2373,7 +2403,13 @@
                   "Unauthorized": {
                     "summary": "Unauthorized",
                     "value": {
-                      "message": "Unauthorized"
+                      "status": "ERROR",
+                      "type": "UNAUTHORIZED",
+                      "message": "Invalid credentials",
+                      "data": null,
+                      "transactionId": "71d64fd8-8a54-4792-a844-7e2466eb01f7",
+                      "processedAt": "2026-05-21T10:00:00-06:00",
+                      "billable": false
                     }
                   }
                 },
@@ -2665,7 +2701,13 @@
                   "Unauthorized": {
                     "summary": "Unauthorized",
                     "value": {
-                      "message": "Unauthorized"
+                      "status": "ERROR",
+                      "type": "UNAUTHORIZED",
+                      "message": "Invalid credentials",
+                      "data": null,
+                      "transactionId": "71d64fd8-8a54-4792-a844-7e2466eb01f7",
+                      "processedAt": "2026-05-21T10:00:00-06:00",
+                      "billable": false
                     }
                   }
                 },
@@ -2980,7 +3022,13 @@
                   "Unauthorized": {
                     "summary": "Unauthorized",
                     "value": {
-                      "message": "Unauthorized"
+                      "status": "ERROR",
+                      "type": "UNAUTHORIZED",
+                      "message": "Invalid credentials",
+                      "data": null,
+                      "transactionId": "71d64fd8-8a54-4792-a844-7e2466eb01f7",
+                      "processedAt": "2026-05-21T10:00:00-06:00",
+                      "billable": false
                     }
                   }
                 },
@@ -3279,7 +3327,13 @@
                   "Unauthorized": {
                     "summary": "Unauthorized",
                     "value": {
-                      "message": "Unauthorized"
+                      "status": "ERROR",
+                      "type": "UNAUTHORIZED",
+                      "message": "Invalid credentials",
+                      "data": null,
+                      "transactionId": "71d64fd8-8a54-4792-a844-7e2466eb01f7",
+                      "processedAt": "2026-05-21T10:00:00-06:00",
+                      "billable": false
                     }
                   }
                 },
@@ -3599,7 +3653,13 @@
                   "Unauthorized": {
                     "summary": "Unauthorized",
                     "value": {
-                      "message": "Unauthorized"
+                      "status": "ERROR",
+                      "type": "UNAUTHORIZED",
+                      "message": "Invalid credentials",
+                      "data": null,
+                      "transactionId": "71d64fd8-8a54-4792-a844-7e2466eb01f7",
+                      "processedAt": "2026-05-21T10:00:00-06:00",
+                      "billable": false
                     }
                   }
                 },
@@ -3919,7 +3979,13 @@
                   "Unauthorized": {
                     "summary": "Unauthorized",
                     "value": {
-                      "message": "Unauthorized"
+                      "status": "ERROR",
+                      "type": "UNAUTHORIZED",
+                      "message": "Invalid credentials",
+                      "data": null,
+                      "transactionId": "71d64fd8-8a54-4792-a844-7e2466eb01f7",
+                      "processedAt": "2026-05-21T10:00:00-06:00",
+                      "billable": false
                     }
                   }
                 },
@@ -4162,7 +4228,13 @@
                   "Unauthorized": {
                     "summary": "Unauthorized",
                     "value": {
-                      "message": "Unauthorized"
+                      "status": "ERROR",
+                      "type": "UNAUTHORIZED",
+                      "message": "Invalid credentials",
+                      "data": null,
+                      "transactionId": "71d64fd8-8a54-4792-a844-7e2466eb01f7",
+                      "processedAt": "2026-05-21T10:00:00-06:00",
+                      "billable": false
                     }
                   }
                 },
@@ -4475,7 +4547,13 @@
                   "Unauthorized": {
                     "summary": "Unauthorized",
                     "value": {
-                      "message": "Unauthorized"
+                      "status": "ERROR",
+                      "type": "UNAUTHORIZED",
+                      "message": "Invalid credentials",
+                      "data": null,
+                      "transactionId": "71d64fd8-8a54-4792-a844-7e2466eb01f7",
+                      "processedAt": "2026-05-21T10:00:00-06:00",
+                      "billable": false
                     }
                   }
                 },
@@ -4602,91 +4680,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/Envelope"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "data": {
-                          "type": "object",
-                          "properties": {
-                            "email": {
-                              "type": "string",
-                              "description": "The normalized email address evaluated."
-                            },
-                            "deliverability": {
-                              "type": "string",
-                              "description": "Final state: deliverable, risky, or undeliverable."
-                            },
-                            "riskLevel": {
-                              "type": "string",
-                              "description": "Standardized risk level (NONE, LOW, MEDIUM, HIGH, CRITICAL)."
-                            },
-                            "score": {
-                              "type": "integer",
-                              "description": "Overall quality score from 0 to 100."
-                            },
-                            "toxicityScore": {
-                              "type": "integer",
-                              "description": "Likelihood of being a spammer or malicious actor (0-100)."
-                            },
-                            "verdicts": {
-                              "type": "object",
-                              "description": "Binary validation flags.",
-                              "properties": {
-                                "isFree": {
-                                  "type": "boolean",
-                                  "description": "True if using a free provider like Gmail or Outlook."
-                                },
-                                "isDisposable": {
-                                  "type": "boolean",
-                                  "description": "True if the domain is a temporary/disposable email service."
-                                },
-                                "isRoleAccount": {
-                                  "type": "boolean",
-                                  "description": "True if the account is generic (e.g., support@, admin@)."
-                                },
-                                "isFull": {
-                                  "type": "boolean",
-                                  "description": "True if the mailbox has exceeded its storage quota."
-                                },
-                                "isCatchAll": {
-                                  "type": "boolean",
-                                  "description": "True if the server accepts all emails sent to the domain."
-                                },
-                                "isToxic": {
-                                  "type": "boolean",
-                                  "description": "True if the email or domain is present in global blacklists."
-                                }
-                              }
-                            },
-                            "infrastructure": {
-                              "type": "object",
-                              "description": "Technical details of the email hosting.",
-                              "properties": {
-                                "domain": {
-                                  "type": "string",
-                                  "description": "The root domain extracted from the email."
-                                },
-                                "provider": {
-                                  "type": "string",
-                                  "description": "Identified email hosting provider (e.g., Google, Microsoft)."
-                                },
-                                "mxRecord": {
-                                  "type": "string",
-                                  "description": "The primary MX record associated with the domain.",
-                                  "nullable": true
-                                }
-                              }
-                            }
-                          },
-                          "nullable": true
-                        }
-                      }
-                    }
-                  ]
+                  "$ref": "#/components/schemas/Envelope"
                 },
                 "examples": {
                   "Deliverable": {
@@ -4842,7 +4836,13 @@
                   "Unauthorized": {
                     "summary": "Unauthorized",
                     "value": {
-                      "message": "Unauthorized"
+                      "status": "ERROR",
+                      "type": "UNAUTHORIZED",
+                      "message": "Invalid credentials",
+                      "data": null,
+                      "transactionId": "71d64fd8-8a54-4792-a844-7e2466eb01f7",
+                      "processedAt": "2026-05-21T10:00:00-06:00",
+                      "billable": false
                     }
                   }
                 },
@@ -5296,7 +5296,13 @@
                   "Unauthorized": {
                     "summary": "Unauthorized",
                     "value": {
-                      "message": "Unauthorized"
+                      "status": "ERROR",
+                      "type": "UNAUTHORIZED",
+                      "message": "Invalid credentials",
+                      "data": null,
+                      "transactionId": "71d64fd8-8a54-4792-a844-7e2466eb01f7",
+                      "processedAt": "2026-05-21T10:00:00-06:00",
+                      "billable": false
                     }
                   }
                 },
@@ -5543,7 +5549,13 @@
                   "Unauthorized": {
                     "summary": "Unauthorized",
                     "value": {
-                      "message": "Unauthorized"
+                      "status": "ERROR",
+                      "type": "UNAUTHORIZED",
+                      "message": "Invalid credentials",
+                      "data": null,
+                      "transactionId": "71d64fd8-8a54-4792-a844-7e2466eb01f7",
+                      "processedAt": "2026-05-21T10:00:00-06:00",
+                      "billable": false
                     }
                   }
                 },
@@ -5895,7 +5907,13 @@
                   "Unauthorized": {
                     "summary": "Unauthorized",
                     "value": {
-                      "message": "Unauthorized"
+                      "status": "ERROR",
+                      "type": "UNAUTHORIZED",
+                      "message": "Invalid credentials",
+                      "data": null,
+                      "transactionId": "71d64fd8-8a54-4792-a844-7e2466eb01f7",
+                      "processedAt": "2026-05-21T10:00:00-06:00",
+                      "billable": false
                     }
                   }
                 },
@@ -6195,7 +6213,13 @@
                   "Unauthorized": {
                     "summary": "Unauthorized",
                     "value": {
-                      "message": "Unauthorized"
+                      "status": "ERROR",
+                      "type": "UNAUTHORIZED",
+                      "message": "Invalid credentials",
+                      "data": null,
+                      "transactionId": "71d64fd8-8a54-4792-a844-7e2466eb01f7",
+                      "processedAt": "2026-05-21T10:00:00-06:00",
+                      "billable": false
                     }
                   }
                 },
