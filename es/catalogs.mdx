@@ -1,0 +1,181 @@
+---
+title: Catálogos de referencia
+description: "Tablas de códigos estables usados en las respuestas de OrigoID."
+---
+
+Esta página consolida los catálogos de códigos estables que aparecen dentro de las respuestas de varios endpoints de OrigoID. Estos códigos no cambian entre versiones — puedes confiar en ellos para tu lógica de negocio.
+
+# Catálogos
+
+#### 1. Estado de CURP (`statusCurp`)
+
+Código de estado devuelto por RENAPO dentro de `personalInfo.statusCurp` y campos similares.
+
+| `statusCurp` | Estado | Descripción |
+| :--- | :--- | :--- |
+| `AN` | Activo | Alta normal. Vigente y al corriente. |
+| `AH` | Activo | Alta con homonimia. Los primeros 16 caracteres coinciden con otra CURP. |
+| `RCC` | Activo | Registro con cambio que afecta CURP. Corrección de datos modificó la clave. |
+| `RCN` | Activo | Cambio que no afecta CURP. Corrección menor de datos. |
+| `BAP` | Inactivo | Baja por documento apócrifo. |
+| `BSU` | Inactivo | Baja sin uso. Requiere reactivación en módulo RENAPO. |
+| `BD` | Inactivo | Baja por defunción. |
+| `BDM` | Inactivo | Baja administrativa. |
+| `BDP` | Inactivo | Baja por adopción. |
+| `BJD` | Inactivo | Baja judicial. |
+
+#### 2. Documento probatorio (`docProbatorio`)
+
+Código que identifica el documento civil que respalda el registro de CURP.
+
+| `docProbatorio` | Documento |
+| :--- | :--- |
+| `1` | Acta de Nacimiento |
+| `3` | Documento Migratorio |
+| `4` | Carta de Naturalización |
+| `7` | Certificado de Nacionalidad Mexicana |
+| `8` | Trámite ante SEGOB |
+
+#### 3. Códigos de estados mexicanos (`entidad` / `claveEntidad`)
+
+Códigos de dos letras usados en CURP, composición de RFC, registro INE y direcciones. Los nombres de estados se preservan en español.
+
+| `entidad` | Estado | `entidad` | Estado |
+| :--- | :--- | :--- | :--- |
+| `AS` | Aguascalientes | `QR` | Quintana Roo |
+| `BC` | Baja California | `SP` | San Luis Potosí |
+| `BS` | Baja California Sur | `SL` | Sinaloa |
+| `CC` | Campeche | `SR` | Sonora |
+| `CL` | Coahuila | `TC` | Tabasco |
+| `CM` | Colima | `TS` | Tamaulipas |
+| `CS` | Chiapas | `TL` | Tlaxcala |
+| `CH` | Chihuahua | `VZ` | Veracruz |
+| `DF` | Ciudad de México | `YN` | Yucatán |
+| `DG` | Durango | `ZS` | Zacatecas |
+| `GT` | Guanajuato | `NE` | Nacido en el Extranjero |
+| `GR` | Guerrero | `MC` | Estado de México |
+| `HG` | Hidalgo | `MN` | Michoacán |
+| `JC` | Jalisco | `MS` | Morelos |
+| `NT` | Nayarit | `NL` | Nuevo León |
+| `OC` | Oaxaca | `PL` | Puebla |
+| `QT` | Querétaro | | |
+
+#### 4. Modalidades de cobertura IMSS (`modalidad`)
+
+Los códigos de modalidad IMSS describen el tipo de afiliación del trabajador. Las descripciones oficiales se preservan en español para trazabilidad legal con el instituto.
+
+| `modalidad` | Descripción |
+| :--- | :--- |
+| `10` | Trabajadores permanentes y eventuales de la ciudad |
+| `13` | Trabajadores eventuales del campo |
+| `14` | Trabajadores permanentes del campo |
+| `17` | Reingreso de trabajadores eventuales del campo |
+| `18` | Reingreso de trabajadores permanentes del campo |
+| `30` | Reingreso de trabajadores permanentes y eventuales de la ciudad |
+| `31` | Continuación voluntaria al régimen obligatorio |
+| `32` | Trabajadores independientes |
+| `33` | Trabajadores domésticos |
+| `34` | Trabajadores del gobierno federal o estatal |
+| `35` | Estudiantes afiliados al IMSS |
+| `36` | Becarios o programas sociales |
+| `40` | Continuación voluntaria al régimen obligatorio (alterna) |
+| `42` | Patrón persona física con trabajadores domésticos |
+| `43` | Trabajadores de organismos internacionales |
+| `44` | Trabajadores por temporada o tiempo determinado |
+| `45` | Pensionados reincorporados al régimen obligatorio |
+| `46` | Trabajadores eventuales de la construcción |
+| `47` | Trabajadores de confianza con régimen especial |
+| `48` | Servidores públicos municipales afiliados |
+| `50` | Continuación voluntaria con cobertura extendida |
+| `51` | Afiliación voluntaria para estudiantes o aprendices |
+| `60` | Régimen especial de incorporación social (RESICO) |
+| `70` | Modalidad IMSS-Bienestar o programas comunitarios |
+| `72` | Convenio entre dependencias públicas y el IMSS |
+
+#### 5. Sub-listas SAT Artículo 69 (`listType`)
+
+| `listType` | Sub-lista (SAT) | Nivel de Riesgo |
+| :--- | :--- | :--- |
+| `SAT_69_FIRMES` | Firmes | MEDIO |
+| `SAT_69_CANCELADOS` | Cancelados (Insolvencia, general) | MEDIO |
+| `SAT_69_CANCELADOS_07_15` | Cancelados 2007–2015 (Art. 146-A) | MEDIO |
+| `SAT_69_EXIGIBLES` | Exigibles | MEDIO |
+| `SAT_69_NO_LOCALIZADOS` | No Localizados | ALTO |
+| `SAT_69_CSD_SIN_EFECTOS` | Certificados de Sello Digital (CSD) sin Efectos | ALTO |
+| `SAT_69_SENTENCIAS` | Sentencias | CRÍTICO |
+| `SAT_69_REDUCCION_74_CFF` | Reducción Art. 74 CFF | BAJO |
+| `SAT_69_CONDONADOS_07_15` | Condonados 2007–2015 (Decreto) | BAJO |
+| `SAT_69_CONDONADOS_146B_CFF` | Condonados Art. 146-B CFF | BAJO |
+| `SAT_69_CONDONADOS_DECRETO` | Condonados por Decreto | BAJO |
+| `SAT_69_CONDONADOS_21_CFF` | Condonados Art. 21 CFF | BAJO |
+| `SAT_69_RETORNO_INVERSIONES` | Retorno de Inversiones | BAJO |
+| `SAT_69_ENTES_PUBLICOS_OMISOS` | Entes Públicos y de Gobierno Omisos | BAJO |
+
+#### 6. Estado SAT Artículo 69-B (`complianceDetails.status`)
+
+El endpoint SAT 69-B siempre devuelve `listType: SAT_69B`. El estado granular vive en `complianceDetails.status`:
+
+| `status` | Descripción | Nivel de Riesgo |
+| :--- | :--- | :--- |
+| `PRESUNTO` | Actualmente bajo investigación por operaciones simuladas (EFOS) | ALTO |
+| `DEFINITIVO` | Empresa fantasma / EFOS confirmada | CRÍTICO |
+| `DESVIRTUADO` | Investigada pero demostró su inocencia | BAJO |
+| `SENTENCIA_FAVORABLE` | Ganó en corte / absuelta por fallo judicial | BAJO |
+
+#### 7. Categorías PEP (`listType`)
+
+Taxonomía estable de OrigoID. Se mantiene consistente en el tiempo para que tus integraciones no cambien aunque las fuentes evolucionen.
+
+| `listType` | Descripción | Nivel de Riesgo |
+| :--- | :--- | :--- |
+| `PEP` | Persona Políticamente Expuesta — actualmente en funciones | ALTO |
+| `EX_PEP` | Ex-PEP — ocupó funciones en el pasado | MEDIO |
+| `PEP_AFFINITY` | Familiar o asociado cercano de un PEP activo | MEDIO |
+| `EX_PEP_AFFINITY` | Familiar o asociado cercano de un ex-PEP | BAJO |
+
+#### 8. Listas OFAC (`listType`)
+
+Cada entrada también expone `complianceDetails.programs[]` (códigos de programa de sanciones como CUBA, IRAN, RUSSIA, etc.) y `complianceDetails.entityType` (`INDIVIDUAL` | `ENTITY` | `VESSEL` | `AIRCRAFT`).
+
+| `listType` | Lista oficial OFAC | Nivel de Riesgo |
+| :--- | :--- | :--- |
+| `OFAC_SDN` | Specially Designated Nationals & Blocked Persons | CRÍTICO |
+| `OFAC_NON_SDN` | Consolidated Non-SDN List | ALTO |
+| `OFAC_FSE` | Foreign Sanctions Evaders | CRÍTICO |
+| `OFAC_NS_ISA` | Non-SDN Iran Sanctions Act List | ALTO |
+| `OFAC_SSI` | Sectoral Sanctions Identifications List | MEDIO |
+| `OFAC_CAPTA` | Foreign Financial Institutions sujetas a sanciones de cuentas corresponsales | ALTO |
+| `OFAC_NS_PLC` | Non-SDN Palestinian Legislative Council | BAJO |
+
+#### 9. Efecto CFDI (`effect`)
+
+Propósito fiscal de la factura según la clasificación SAT. Cada CFDI tiene exactamente un efecto.
+
+| `effect` | Código SAT | Descripción |
+| :--- | :--- | :--- |
+| `INCOME` | I (Ingreso) | Factura de venta / ingreso. El emisor recibió pago por bienes o servicios. |
+| `EXPENSE` | E (Egreso) | Devolución, nota de crédito o descuento. Revierte o reduce una factura de ingreso previa. |
+| `TRANSPORT` | T (Traslado) | Comprobante de traslado de bienes (Carta Porte). No refleja venta, solo movimiento de mercancía. |
+| `PAYROLL` | N (Nómina) | Recibo de nómina emitido por un empleador a un empleado. |
+| `PAYMENT` | P (Pago) | Complemento de recibo de pago (REP) para facturas pagadas en parcialidades (PPD). |
+
+#### 10. Estado CFDI (`status`)
+
+Estado fiscal actual del CFDI según el servicio de verificación SAT.
+
+| `status` | Descripción |
+| :--- | :--- |
+| `VALID` | Vigente. El CFDI está actualizado y es fiscalmente válido. |
+| `CANCELED` | Cancelada. El CFDI ha sido cancelado y ya no es fiscalmente válido. |
+
+#### 11. Estado de cancelación CFDI (`cancellationStatus`)
+
+Refleja las reglas de cancelación SAT 2022 ("cancelación con aceptación"), que requieren consentimiento del receptor en algunos escenarios.
+
+| `cancellationStatus` | Descripción |
+| :--- | :--- |
+| `NOT_CANCELABLE` | No puede cancelarse (ej. complementos de pago, recibos de nómina o facturas vinculadas a otros CFDIs activos). |
+| `CANCELABLE_WITHOUT_ACCEPTANCE` | El emisor puede cancelar unilateralmente (montos pequeños, correcciones de nómina, etc.). |
+| `CANCELABLE_WITH_ACCEPTANCE` | El emisor puede solicitar cancelación, pero el receptor debe aceptarla dentro de 72 horas. |
+| `CANCELED_WITHOUT_ACCEPTANCE` | Ya cancelada; no se requirió aceptación. |
+| `CANCELED_WITH_ACCEPTANCE` | Ya cancelada; el receptor aprobó la cancelación. |

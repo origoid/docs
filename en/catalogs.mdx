@@ -1,0 +1,181 @@
+---
+title: Reference catalogs
+description: "Stable code tables used across OrigoID responses."
+---
+
+This page consolidates the catalogs of stable codes that appear inside responses from various OrigoID endpoints. These codes do not change between versions — you can safely rely on them in your business logic.
+
+# Catalogs
+
+#### 1. CURP Status (`statusCurp`)
+
+Status code returned by RENAPO inside `personalInfo.statusCurp` and similar fields.
+
+| `statusCurp` | State | Description |
+| :--- | :--- | :--- |
+| `AN` | Active | Normal registration (Alta Normal). Valid and current. |
+| `AH` | Active | Homonymy alert (Alta con Homonimia). First 16 chars match another CURP. |
+| `RCC` | Active | Change affecting CURP (Registro con Cambio). Data correction modified the key. |
+| `RCN` | Active | Change not affecting CURP. Minor data correction. |
+| `BAP` | Inactive | Apocryphal document (Baja por documento apócrifo). |
+| `BSU` | Inactive | Unused (Baja sin uso). Requires reactivation at a RENAPO module. |
+| `BD` | Inactive | Deceased (Baja por defunción). |
+| `BDM` | Inactive | Administrative cancellation (Baja administrativa). |
+| `BDP` | Inactive | Adoption-related cancellation (Baja por adopción). |
+| `BJD` | Inactive | Judicial cancellation (Baja judicial). |
+
+#### 2. Probatory Document (`docProbatorio`)
+
+Code identifying which civil document supports the CURP registration.
+
+| `docProbatorio` | Document |
+| :--- | :--- |
+| `1` | Birth Certificate (Acta de Nacimiento) |
+| `3` | Migration Document (Documento Migratorio) |
+| `4` | Naturalization Certificate (Carta de Naturalización) |
+| `7` | Mexican Nationality Certificate (Certificado de Nacionalidad Mexicana) |
+| `8` | SEGOB Processing (Trámite ante SEGOB) |
+
+#### 3. Mexican State Codes (`entidad` / `claveEntidad`)
+
+Two-letter codes used in CURP, RFC composition, INE registration, and addresses. State names preserved in Spanish (proper nouns).
+
+| `entidad` | State | `entidad` | State |
+| :--- | :--- | :--- | :--- |
+| `AS` | Aguascalientes | `QR` | Quintana Roo |
+| `BC` | Baja California | `SP` | San Luis Potosí |
+| `BS` | Baja California Sur | `SL` | Sinaloa |
+| `CC` | Campeche | `SR` | Sonora |
+| `CL` | Coahuila | `TC` | Tabasco |
+| `CM` | Colima | `TS` | Tamaulipas |
+| `CS` | Chiapas | `TL` | Tlaxcala |
+| `CH` | Chihuahua | `VZ` | Veracruz |
+| `DF` | Ciudad de México | `YN` | Yucatán |
+| `DG` | Durango | `ZS` | Zacatecas |
+| `GT` | Guanajuato | `NE` | Born Abroad (Nacido en el Extranjero) |
+| `GR` | Guerrero | `MC` | Estado de México |
+| `HG` | Hidalgo | `MN` | Michoacán |
+| `JC` | Jalisco | `MS` | Morelos |
+| `NT` | Nayarit | `NL` | Nuevo León |
+| `OC` | Oaxaca | `PL` | Puebla |
+| `QT` | Querétaro | | |
+
+#### 4. IMSS Coverage Modalities (`modalidad`)
+
+IMSS modality codes describe the worker's affiliation type. Official descriptions preserved in Spanish for legal traceability with the institute.
+
+| `modalidad` | Description |
+| :--- | :--- |
+| `10` | Urban permanent and temporary workers (Trabajadores permanentes y eventuales de la ciudad) |
+| `13` | Rural temporary workers (Trabajadores eventuales del campo) |
+| `14` | Rural permanent workers (Trabajadores permanentes del campo) |
+| `17` | Re-entry rural temporary workers (Reingreso de trabajadores eventuales del campo) |
+| `18` | Re-entry rural permanent workers (Reingreso de trabajadores permanentes del campo) |
+| `30` | Re-entry urban permanent and temporary workers (Reingreso de trabajadores permanentes y eventuales de la ciudad) |
+| `31` | Voluntary continuation in the mandatory regime (Continuación voluntaria al régimen obligatorio) |
+| `32` | Independent workers (Trabajadores independientes) |
+| `33` | Domestic workers (Trabajadores domésticos) |
+| `34` | Federal or state government workers (Trabajadores del gobierno federal o estatal) |
+| `35` | IMSS-affiliated students (Estudiantes afiliados al IMSS) |
+| `36` | Scholarship holders or social programs (Becarios o programas sociales) |
+| `40` | Voluntary continuation in the mandatory regime (alternate) |
+| `42` | Individual employer with domestic workers (Patrón persona física con trabajadores domésticos) |
+| `43` | International organization workers (Trabajadores de organismos internacionales) |
+| `44` | Seasonal or fixed-term workers (Trabajadores por temporada o tiempo determinado) |
+| `45` | Re-entered retirees in mandatory regime (Pensionados reincorporados al régimen obligatorio) |
+| `46` | Construction temporary workers (Trabajadores eventuales de la construcción) |
+| `47` | Trust workers with special regime (Trabajadores de confianza con régimen especial) |
+| `48` | Affiliated municipal public servants (Servidores públicos municipales afiliados) |
+| `50` | Voluntary continuation with extended coverage (Continuación voluntaria con cobertura extendida) |
+| `51` | Voluntary affiliation for students or apprentices (Afiliación voluntaria para estudiantes o aprendices) |
+| `60` | Special social incorporation regime — RESICO (Régimen especial de incorporación social) |
+| `70` | IMSS-Bienestar or community programs modality |
+| `72` | Inter-agency public agreement with IMSS (Convenio entre dependencias públicas y el IMSS) |
+
+#### 5. SAT Article 69 Sub-lists (`listType`)
+
+| `listType` | Sub-list (SAT) | Risk Level |
+| :--- | :--- | :--- |
+| `SAT_69_FIRMES` | Firmes | MEDIUM |
+| `SAT_69_CANCELADOS` | Cancelados (Insolvencia, general) | MEDIUM |
+| `SAT_69_CANCELADOS_07_15` | Cancelados 2007–2015 (Art. 146-A) | MEDIUM |
+| `SAT_69_EXIGIBLES` | Exigibles | MEDIUM |
+| `SAT_69_NO_LOCALIZADOS` | No Localizados | HIGH |
+| `SAT_69_CSD_SIN_EFECTOS` | Certificados de Sello Digital (CSD) sin Efectos | HIGH |
+| `SAT_69_SENTENCIAS` | Sentencias | CRITICAL |
+| `SAT_69_REDUCCION_74_CFF` | Reducción Art. 74 CFF | LOW |
+| `SAT_69_CONDONADOS_07_15` | Condonados 2007–2015 (Decreto) | LOW |
+| `SAT_69_CONDONADOS_146B_CFF` | Condonados Art. 146-B CFF | LOW |
+| `SAT_69_CONDONADOS_DECRETO` | Condonados por Decreto | LOW |
+| `SAT_69_CONDONADOS_21_CFF` | Condonados Art. 21 CFF | LOW |
+| `SAT_69_RETORNO_INVERSIONES` | Retorno de Inversiones | LOW |
+| `SAT_69_ENTES_PUBLICOS_OMISOS` | Entes Públicos y de Gobierno Omisos | LOW |
+
+#### 6. SAT Article 69-B Status (`complianceDetails.status`)
+
+The SAT 69-B endpoint always returns `listType: SAT_69B`. The granular state lives in `complianceDetails.status`:
+
+| `status` | Description | Risk Level |
+| :--- | :--- | :--- |
+| `PRESUNTO` | Currently under investigation for simulated operations (EFOS) | HIGH |
+| `DEFINITIVO` | Confirmed shell company / EFOS | CRITICAL |
+| `DESVIRTUADO` | Investigated but successfully proved innocence | LOW |
+| `SENTENCIA_FAVORABLE` | Won in court / cleared by judicial ruling | LOW |
+
+#### 7. PEPs Categories (`listType`)
+
+These are OrigoID's stable taxonomy codes. They remain consistent over time so client integrations don't need to change when data sources evolve.
+
+| `listType` | Description | Risk Level |
+| :--- | :--- | :--- |
+| `PEP` | Politically Exposed Person — currently in office | HIGH |
+| `EX_PEP` | Former PEP — held office in the past | MEDIUM |
+| `PEP_AFFINITY` | Family member or close associate of an active PEP | MEDIUM |
+| `EX_PEP_AFFINITY` | Family member or close associate of a former PEP | LOW |
+
+#### 8. OFAC Lists (`listType`)
+
+We query the official OFAC sanctions lists in real time and consolidate them under the `listType` codes below. Each entry also exposes `complianceDetails.programs[]` (sanction program codes such as CUBA, IRAN, RUSSIA, etc. — these evolve continuously and are not statically catalogued) and `complianceDetails.entityType` (`INDIVIDUAL` | `ENTITY` | `VESSEL` | `AIRCRAFT`).
+
+| `listType` | Official OFAC list | Risk Level |
+| :--- | :--- | :--- |
+| `OFAC_SDN` | Specially Designated Nationals & Blocked Persons | CRITICAL |
+| `OFAC_NON_SDN` | Consolidated Non-SDN List | HIGH |
+| `OFAC_FSE` | Foreign Sanctions Evaders | CRITICAL |
+| `OFAC_NS_ISA` | Non-SDN Iran Sanctions Act List | HIGH |
+| `OFAC_SSI` | Sectoral Sanctions Identifications List | MEDIUM |
+| `OFAC_CAPTA` | Foreign Financial Institutions subject to Correspondent / Payable-Through Account Sanctions | HIGH |
+| `OFAC_NS_PLC` | Non-SDN Palestinian Legislative Council | LOW |
+
+#### 9. CFDI Effect (`effect`)
+
+Fiscal purpose of the invoice as classified by SAT. Each CFDI has exactly one effect.
+
+| `effect` | SAT code | Description |
+| :--- | :--- | :--- |
+| `INCOME` | I (Ingreso) | Sales / revenue invoice. Issuer received payment for goods or services. |
+| `EXPENSE` | E (Egreso) | Refund, credit note, or discount. Reverses or reduces a previous income invoice. |
+| `TRANSPORT` | T (Traslado) | Goods transport waybill (Carta Porte). Does not reflect a sale, only movement of goods. |
+| `PAYROLL` | N (Nómina) | Payroll receipt issued by an employer to an employee. |
+| `PAYMENT` | P (Pago) | Payment receipt complement (REP) for invoices paid in installments (PPD). |
+
+#### 10. CFDI Status (`status`)
+
+Current fiscal status of the CFDI according to SAT's verification service.
+
+| `status` | Description |
+| :--- | :--- |
+| `VALID` | Vigente. The CFDI is current and fiscally valid. |
+| `CANCELED` | Cancelada. The CFDI has been canceled and is no longer fiscally valid. |
+
+#### 11. CFDI Cancellation Status (`cancellationStatus`)
+
+Reflects SAT's 2022 cancellation rules ("cancelación con aceptación"), which require receiver consent in some scenarios. This field shows both pre-cancellation eligibility and post-cancellation outcome.
+
+| `cancellationStatus` | Description |
+| :--- | :--- |
+| `NOT_CANCELABLE` | Cannot be canceled (e.g. payment complements, payroll receipts, or invoices linked to other active CFDIs). |
+| `CANCELABLE_WITHOUT_ACCEPTANCE` | The issuer may cancel unilaterally (small amounts, payroll corrections, etc.). |
+| `CANCELABLE_WITH_ACCEPTANCE` | The issuer can request cancellation, but the receiver must accept it within 72 hours. |
+| `CANCELED_WITHOUT_ACCEPTANCE` | Already canceled; acceptance was not required. |
+| `CANCELED_WITH_ACCEPTANCE` | Already canceled; the receiver approved the cancellation. |

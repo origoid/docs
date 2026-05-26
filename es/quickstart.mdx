@@ -1,0 +1,129 @@
+---
+title: Quickstart
+description: "Tu primer call en menos de 10 minutos."
+---
+
+## 1. Solicita acceso
+
+Mientras el portal self-serve está en desarrollo, escribe a [support@origoid.com](mailto:support@origoid.com) con:
+
+- Razón social y RFC
+- Caso de uso
+- Volumen estimado mensual
+
+Recibirás tu API Key por canal seguro. **Guárdala** — se muestra una sola vez y no se puede recuperar.
+
+## 2. Tu primer call — validar una CURP
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.origoid.com/mex/renapo/v1/curp-validations \
+  -H "x-api-key: YOUR_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{
+    "curp": "PELJ900101HDFRRN09"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch(
+  "https://api.origoid.com/mex/renapo/v1/curp-validations",
+  {
+    method: "POST",
+    headers: {
+      "x-api-key": process.env.ORIGOID_API_KEY,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({ curp: "PELJ900101HDFRRN09" }),
+  },
+);
+const data = await response.json();
+console.log(data);
+```
+
+```python Python
+import os, requests
+
+response = requests.post(
+    "https://api.origoid.com/mex/renapo/v1/curp-validations",
+    headers={
+        "x-api-key": os.environ["ORIGOID_API_KEY"],
+        "content-type": "application/json",
+    },
+    json={"curp": "PELJ900101HDFRRN09"},
+)
+print(response.json())
+```
+
+```go Go
+package main
+
+import (
+  "bytes"
+  "encoding/json"
+  "fmt"
+  "net/http"
+  "os"
+)
+
+func main() {
+  body, _ := json.Marshal(map[string]string{"curp": "PELJ900101HDFRRN09"})
+  req, _ := http.NewRequest("POST",
+    "https://api.origoid.com/mex/renapo/v1/curp-validations",
+    bytes.NewBuffer(body))
+  req.Header.Set("x-api-key", os.Getenv("ORIGOID_API_KEY"))
+  req.Header.Set("content-type", "application/json")
+  resp, _ := http.DefaultClient.Do(req)
+  defer resp.Body.Close()
+  var out map[string]any
+  json.NewDecoder(resp.Body).Decode(&out)
+  fmt.Println(out)
+}
+```
+
+</CodeGroup>
+
+## 3. Respuesta esperada
+
+Todos los endpoints devuelven el mismo [envelope](/es/envelope):
+
+```json
+{
+  "status": "OK",
+  "type": "SUCCESS",
+  "message": "CURP found and validated",
+  "data": {
+    "personalInfo": {
+      "curp": "PELJ900101HDFRRN09",
+      "givenNames": "JUAN",
+      "firstSurname": "PEREZ",
+      "secondSurname": "LOPEZ",
+      "gender": "H",
+      "dateOfBirth": "1990-01-01",
+      "birthState": "DISTRITO FEDERAL"
+    },
+    "documentDetails": { "curpStatus": "AN", "probatoryDocumentCode": 1 }
+  },
+  "transactionId": "550e8400-e29b-41d4-a716-446655440000",
+  "processedAt": "2026-03-15T12:35:00-06:00",
+  "billable": true
+}
+```
+
+## Siguientes pasos
+
+<CardGroup cols={2}>
+  <Card title="Entiende el envelope" icon="cube" href="/es/envelope">
+    Una sola estructura para todos los endpoints.
+  </Card>
+  <Card title="Maneja errores" icon="triangle-exclamation" href="/es/errors">
+    Códigos `type` estables y cómo actuar sobre cada uno.
+  </Card>
+  <Card title="Catálogos de referencia" icon="book" href="/es/catalogs">
+    Códigos CURP, modalidades IMSS, listas SAT y más.
+  </Card>
+  <Card title="Créditos y planes" icon="coins" href="/es/credits">
+    Cómo se cuenta el uso contra tu plan.
+  </Card>
+</CardGroup>

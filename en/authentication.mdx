@@ -1,0 +1,90 @@
+---
+title: Authentication
+description: "Three supported methods. Send ONE per request."
+---
+
+OrigoID accepts three authentication methods. Use whichever fits your stack — all are equally secure.
+
+## API Key
+
+The simplest option. Send your key in a header:
+
+```http
+x-api-key: YOUR_API_KEY
+```
+
+Use it for server-to-server integrations. Never expose the key in front-end code.
+
+## Basic auth
+
+Send credentials encoded in standard HTTP Basic format:
+
+```http
+Authorization: Basic BASE64_OF_USERNAME_AND_PASSWORD
+```
+
+Useful for legacy systems or tools that already speak Basic.
+
+## Bearer (JWT)
+
+Exchange your API Key or Basic credentials for a short-lived token via `POST /auth/token`:
+
+```bash
+curl -X POST https://api.origoid.com/auth/token \
+  -H "x-api-key: YOUR_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{ "grant_type": "client_credentials" }'
+```
+
+Response:
+
+```json
+{
+  "status": "OK",
+  "type": "SUCCESS",
+  "data": {
+    "access_token": "<jwt>",
+    "token_type": "Bearer",
+    "expires_in": 3600
+  }
+}
+```
+
+Then send the token on every subsequent request:
+
+```http
+Authorization: Bearer <jwt>
+```
+
+Useful when you want to delegate access to a downstream client without sharing your API Key.
+
+## Authentication failures
+
+When authentication fails the response is `HTTP 401` with the standard envelope:
+
+```json
+{
+  "status": "ERROR",
+  "type": "UNAUTHORIZED",
+  "message": "Invalid credentials",
+  "data": null,
+  "transactionId": "...",
+  "processedAt": "2026-03-19T10:00:00-06:00",
+  "billable": false
+}
+```
+
+A failure can mean: missing header, invalid credentials, IP not allowed, or endpoint not available for your account. We use the same `type` for all of them to avoid leaking which credential was wrong.
+
+## Good practices
+
+- Store your key in environment variables, never in source code.
+- One key per service or environment — simpler rotation and clearer audit.
+- Configure an IP allow-list if your traffic comes from fixed IPs.
+- If you suspect a leak, email [support@origoid.com](mailto:support@origoid.com) immediately to rotate.
+
+## Browser-based integrations (CORS)
+
+If your application needs to call OrigoID directly from a browser (single-page app, widget), email [support@origoid.com](mailto:support@origoid.com) with the list of domains that should be allowed (`https://app.yourdomain.com`, etc.). We will configure the allowed origins for your account so cross-origin requests succeed.
+
+By default the API does not return CORS headers — server-to-server calls do not need them.

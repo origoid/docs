@@ -1,0 +1,93 @@
+---
+title: Envelope de respuesta
+description: "Una sola estructura para todos los endpoints. Aprende una vez, integra rápido."
+---
+
+Todos los endpoints de OrigoID devuelven el mismo envelope. Esta consistencia es deliberada — tu parser es un helper que funciona para cada operación.
+
+## Estructura
+
+```json
+{
+  "status": "OK | ERROR",
+  "type": "TYPE_CODE",
+  "message": "Resumen humano",
+  "data": { /* payload, o null en errores */ },
+  "errors": [ /* opcional, sólo en INVALID_REQUEST */ ],
+  "transactionId": "550e8400-e29b-41d4-a716-446655440000",
+  "processedAt": "2026-03-15T12:35:00-06:00",
+  "billable": true
+}
+```
+
+## Campos
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `status` | enum | `OK` si el request se procesó; `ERROR` si fue rechazado o falló. |
+| `type` | string | Código estable del resultado. Úsalo para tu lógica, no `message`. |
+| `message` | string | Resumen humano en inglés. Para display únicamente. |
+| `data` | object \| null | Payload específico del endpoint. `null` en errores. |
+| `errors` | array | Presente sólo en `INVALID_REQUEST`. Lista issues por campo. |
+| `transactionId` | uuid | Identificador único del request. Referéncialo al contactar soporte. |
+| `processedAt` | ISO 8601 | Timestamp con offset Ciudad de México (`-06:00`). |
+| `billable` | boolean | Si este call cuenta contra tu plan. |
+
+## Códigos HTTP
+
+OrigoID usa códigos HTTP que reflejan la naturaleza de la respuesta:
+
+| HTTP | Cuándo |
+|---|---|
+| `200` | El request se procesó. El envelope te dice si el resultado de negocio fue éxito o una condición conocida (ej. `CURP_NOT_FOUND`). |
+| `401` | Falló autenticación. Envelope `type` será `UNAUTHORIZED`. |
+| `404` | Path no existe. |
+| `405` | Method incorrecto para un path existente. |
+| `429` | Rate limit excedido. Envelope `type` será `RATE_LIMIT_EXCEEDED`. |
+
+En cada caso donde recibes un body JSON, sigue la estructura del envelope.
+
+## Patrón de parsing (cualquier lenguaje)
+
+```javascript
+const response = await fetch(url, { ... });
+const env = await response.json();
+
+if (env.status === "OK" && env.type === "SUCCESS") {
+  // Caso feliz — usa env.data
+  return env.data;
+}
+
+if (env.type === "INVALID_REQUEST") {
+  // Tu request no pasó validación
+  // env.errors lista issues por campo
+  throw new ValidationError(env.errors);
+}
+
+if (env.type === "UNAUTHORIZED") {
+  // Auth falló — revisa tu API key o IP allow-list
+  throw new AuthError();
+}
+
+if (env.type === "RATE_LIMIT_EXCEEDED") {
+  // Implementa backoff exponencial y reintenta
+  throw new RetryableError();
+}
+
+// De lo contrario es un resultado de negocio (ej. CURP_NOT_FOUND)
+// Maneja según tu lógica de dominio
+return env;
+```
+
+## Códigos `type` comunes
+
+| `type` | Significado |
+|---|---|
+| `SUCCESS` | Operación exitosa. Lee `data`. |
+| `INVALID_REQUEST` | Tu body no pasó validación. Revisa `errors`. |
+| `UNAUTHORIZED` | Autenticación falló. |
+| `RATE_LIMIT_EXCEEDED` | Excediste tu rate limit. |
+| `SERVICE_UNAVAILABLE` | Servicio temporalmente no disponible. Retry con backoff. |
+| `INTERNAL_ERROR` | Error inesperado. Referencia `transactionId` al contactar soporte. |
+
+Cada endpoint también define **códigos específicos** (ej. `CURP_NOT_FOUND`, `CFDI_CANCELED`, `INE_NOT_VALID`). Consulta cada operación en la [referencia API](/es/api-reference) para la lista completa.

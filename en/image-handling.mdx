@@ -1,0 +1,45 @@
+---
+title: Working with images
+description: "How to send images to OrigoID endpoints."
+---
+
+Several endpoints (voter ID OCR, proof of address, face match, liveness, CSF extraction with PDF) accept images. Send them as **base64-encoded strings** in the relevant field.
+
+## Format
+
+```json
+{
+  "front": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAA..."
+}
+```
+
+Send the raw base64 string only. Do not include the `data:image/...;base64,` prefix.
+
+## Limits
+
+| Constraint | Value |
+|---|---|
+| Maximum file size | 20 MB |
+| Supported formats | PNG, JPG, PDF (where applicable) |
+
+Requests that exceed these limits are rejected with `INVALID_REQUEST` before processing.
+
+## Recommendations for best results
+
+These are guidelines, not hard limits. Suboptimal images are still processed; results just become less reliable.
+
+| Recommendation | Why |
+|---|---|
+| File size under 5 MB | Lower latency |
+| Resolution 1024×768 or higher | Better OCR accuracy |
+| Even lighting, minimal glare | Reduces false negatives |
+| Full document in frame (no crops) | Required fields stay readable |
+| JPG quality 85 or higher | Good balance of size and detail |
+
+If extraction fails because the image is unreadable, you receive a clear result code (`IMAGE_UNREADABLE`, `NO_FACE_DETECTED`, `DOCUMENT_NOT_IDENTIFIED`) so you can act on it.
+
+## Privacy
+
+Images you send are processed in memory and **never persisted**. We do not store the images or any personally identifiable information extracted from them. Only operational metadata (timestamp, latency, result code) is kept for audit purposes.
+
+Read our full data handling policy at [origoid.com/legal](https://origoid.com/legal).

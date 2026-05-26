@@ -1,0 +1,90 @@
+---
+title: Autenticación
+description: "Tres métodos soportados. Envía UNO en cada request."
+---
+
+OrigoID acepta tres métodos de autenticación. Usa el que mejor encaje con tu stack — los tres son igualmente seguros.
+
+## API Key
+
+La opción más simple. Envía tu key en un header:
+
+```http
+x-api-key: YOUR_API_KEY
+```
+
+Úsala para integraciones server-to-server. Nunca expongas la key en código front-end.
+
+## Basic auth
+
+Envía credenciales codificadas en formato HTTP Basic estándar:
+
+```http
+Authorization: Basic BASE64_DE_USUARIO_Y_PASSWORD
+```
+
+Útil para sistemas legacy o herramientas que ya hablan Basic.
+
+## Bearer (JWT)
+
+Intercambia tu API Key o credenciales Basic por un token de corta vida vía `POST /auth/token`:
+
+```bash
+curl -X POST https://api.origoid.com/auth/token \
+  -H "x-api-key: YOUR_API_KEY" \
+  -H "content-type: application/json" \
+  -d '{ "grant_type": "client_credentials" }'
+```
+
+Respuesta:
+
+```json
+{
+  "status": "OK",
+  "type": "SUCCESS",
+  "data": {
+    "access_token": "<jwt>",
+    "token_type": "Bearer",
+    "expires_in": 3600
+  }
+}
+```
+
+Después envía el token en cada request:
+
+```http
+Authorization: Bearer <jwt>
+```
+
+Útil cuando quieres delegar acceso a un cliente downstream sin compartir tu API Key principal.
+
+## Fallas de autenticación
+
+Cuando la autenticación falla, la respuesta es `HTTP 401` con el envelope estándar:
+
+```json
+{
+  "status": "ERROR",
+  "type": "UNAUTHORIZED",
+  "message": "Invalid credentials",
+  "data": null,
+  "transactionId": "...",
+  "processedAt": "2026-03-19T10:00:00-06:00",
+  "billable": false
+}
+```
+
+Una falla puede ser: header faltante, credenciales inválidas, IP no permitida, o endpoint no disponible para tu cuenta. Usamos el mismo `type` para todas para evitar filtrar cuál fue el problema.
+
+## Buenas prácticas
+
+- Guarda tu key en variables de entorno, nunca en código.
+- Una key por servicio o ambiente — facilita rotación y auditoría.
+- Configura allow-list de IPs si tu tráfico viene de IPs fijas.
+- Si sospechas filtración, escribe a [support@origoid.com](mailto:support@origoid.com) para rotación inmediata.
+
+## Integraciones desde navegador (CORS)
+
+Si tu aplicación necesita llamar a OrigoID directamente desde el navegador (SPA, widget), escribe a [support@origoid.com](mailto:support@origoid.com) con la lista de dominios que deben permitirse (`https://app.tudominio.com`, etc.). Configuraremos los orígenes permitidos para tu cuenta y las llamadas cross-origin funcionarán.
+
+Por default la API no devuelve headers CORS — las llamadas server-to-server no los necesitan.

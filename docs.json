@@ -1,0 +1,123 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "maple",
+  "name": "OrigoID",
+  "description": "Mexican identity verification API, built for developers.",
+  "colors": {
+    "primary": "#10EFE6",
+    "light": "#ADFE09",
+    "dark": "#10EFE6"
+  },
+  "appearance": {
+    "default": "dark",
+    "strict": true
+  },
+  "background": {
+    "color": {
+      "dark": "#0A0A0A"
+    }
+  },
+  "favicon": "/favicon.svg",
+  "languages": ["en", "es"],
+  "navigation": {
+    "languages": [
+      {
+        "language": "en",
+        "tabs": [
+          {
+            "tab": "Guides",
+            "groups": [
+              {
+                "group": "Get started",
+                "pages": [
+                  "en/index",
+                  "en/quickstart",
+                  "en/authentication",
+                  "en/envelope",
+                  "en/credits"
+                ]
+              },
+              {
+                "group": "Reference",
+                "pages": [
+                  "en/errors",
+                  "en/catalogs",
+                  "en/image-handling"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "API reference",
+            "openapi": {
+              "source": "/openapi.json",
+              "directory": "en/api-reference"
+            }
+          }
+        ]
+      },
+      {
+        "language": "es",
+        "tabs": [
+          {
+            "tab": "Guías",
+            "groups": [
+              {
+                "group": "Empezar",
+                "pages": [
+                  "es/index",
+                  "es/quickstart",
+                  "es/authentication",
+                  "es/envelope",
+                  "es/credits"
+                ]
+              },
+              {
+                "group": "Referencia",
+                "pages": [
+                  "es/errors",
+                  "es/catalogs",
+                  "es/image-handling"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "Referencia API",
+            "openapi": {
+              "source": "/openapi.json",
+              "directory": "es/api-reference"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Status",
+        "href": "https://status.origoid.com"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Get API Key",
+      "href": "https://origoid.com/contacto.html"
+    }
+  },
+  "api": {
+    "playground": {
+      "display": "none"
+    }
+  },
+  "footer": {
+    "socials": {
+      "linkedin": "https://www.linkedin.com/company/origoid"
+    }
+  }
+}

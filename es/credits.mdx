@@ -1,0 +1,48 @@
+---
+title: Créditos y uso
+description: "Cómo cuenta cada call contra tu plan."
+---
+
+OrigoID factura por **créditos consumidos**. Cada plan incluye una cantidad mensual de créditos; cada endpoint consume una cantidad según su complejidad de procesamiento.
+
+<Note>
+Este modelo es **justo**: las operaciones ligeras consumen menos créditos que las que requieren procesamiento más profundo. Gastas en proporción al trabajo realizado.
+</Note>
+
+## Créditos por endpoint
+
+La mayoría de endpoints consumen **1 crédito** por llamada. Un grupo pequeño consume **2 créditos** porque requiere procesamiento adicional.
+
+El consumo exacto de cada endpoint aparece en su página de la [referencia API](/es/api-reference).
+
+Esta tabla evoluciona conforme agregamos nuevos endpoints.
+
+## Cuándo se cobran créditos
+
+Un call consume créditos **sólo cuando el request fue efectivamente procesado**:
+
+| Resultado | Créditos |
+|---|---|
+| `SUCCESS` | Sí |
+| Resultados de negocio (`CURP_NOT_FOUND`, `CFDI_CANCELED`, etc.) | Sí |
+| `INVALID_REQUEST` (body inválido) | No |
+| `UNAUTHORIZED` (falló auth) | No |
+| `RATE_LIMIT_EXCEEDED` | No |
+| `SERVICE_UNAVAILABLE` (upstream caído) | No |
+| `INTERNAL_ERROR` (bug nuestro) | No |
+
+El campo `billable` en cada respuesta te dice si ese call específico cuenta.
+
+## Reset mensual
+
+Los créditos se reinician el día 1 de cada mes calendario (zona horaria CDMX, `-06:00`). Créditos no usados no se acumulan.
+
+## Sobrepasar tu límite
+
+Si excedes tu cuota mensual, tu servicio continúa sin interrupción por default. El uso adicional se factura al precio de overage de tu plan. Recibirás notificación al cruzar 80% y 100% de tu cuota.
+
+Si prefieres un límite duro en lugar de cobro por overage, escribe a [support@origoid.com](mailto:support@origoid.com) y lo configuramos para tu cuenta.
+
+## ¿Necesitas un plan custom?
+
+Si tu volumen o caso de uso no encaja con nuestros planes publicados, escribe a [support@origoid.com](mailto:support@origoid.com).

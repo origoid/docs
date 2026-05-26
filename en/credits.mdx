@@ -1,0 +1,48 @@
+---
+title: Credits and usage
+description: "How each call counts against your plan."
+---
+
+OrigoID bills by **credits consumed**. Each plan includes a monthly credit allowance; each endpoint consumes a number of credits according to its processing complexity.
+
+<Note>
+This model is **fair**: lightweight operations consume fewer credits than operations that require deeper processing. You spend in proportion to the work performed.
+</Note>
+
+## Credits per endpoint
+
+Most endpoints consume **1 credit** per call. A small set consume **2 credits** because they require additional processing.
+
+The exact credit consumption for each endpoint is shown on its page in the [API reference](/en/api-reference).
+
+This table evolves as we add new endpoints.
+
+## When credits are charged
+
+A call consumes credits **only when the request was actually processed**:
+
+| Outcome | Credits |
+|---|---|
+| `SUCCESS` | Yes |
+| Business results (`CURP_NOT_FOUND`, `CFDI_CANCELED`, etc.) | Yes |
+| `INVALID_REQUEST` (bad body) | No |
+| `UNAUTHORIZED` (auth failed) | No |
+| `RATE_LIMIT_EXCEEDED` | No |
+| `SERVICE_UNAVAILABLE` (upstream down) | No |
+| `INTERNAL_ERROR` (our bug) | No |
+
+The `billable` field in every response tells you whether that specific call counts.
+
+## Monthly reset
+
+Credits reset on the first day of each calendar month (Mexico City time, `-06:00`). Unused credits do not roll over.
+
+## Going over your allowance
+
+If you exceed your monthly allowance, your service continues uninterrupted by default. Excess usage is billed at your plan's overage rate. You will receive a notification when you cross 80% and 100% of your allowance.
+
+If you prefer a hard limit instead of overage billing, email [support@origoid.com](mailto:support@origoid.com) and we will configure it for your account.
+
+## Need a custom plan?
+
+If your volume or use case does not fit our published tiers, email [support@origoid.com](mailto:support@origoid.com).

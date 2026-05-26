@@ -1,0 +1,43 @@
+---
+title: Errores
+description: "Tipos comunes de error y cómo manejarlos."
+---
+
+OrigoID nunca devuelve errores opacos. Cada error incluye:
+
+- Un **código `type` estable** que no cambia entre versiones
+- Un **`message` humano** describiendo qué pasó
+- Una ruta accionable hacia la solución
+
+## Tipos comunes de error
+
+| `type` | HTTP | Qué significa | Qué hacer |
+|---|---|---|---|
+| `INVALID_REQUEST` | 200 | Tu body no pasó validación | Inspecciona `errors[]`, corrige los campos listados, reintenta |
+| `UNAUTHORIZED` | 401 | Falló autenticación | Verifica tu API key. Revisa tu IP allow-list. Si sospechas filtración, rota. |
+| `RATE_LIMIT_EXCEEDED` | 429 | Excediste tu rate limit | Implementa backoff exponencial. Considera upgrade de plan. |
+| `SERVICE_UNAVAILABLE` | 200 | Una fuente upstream está temporalmente caída | Retry con backoff. Verifica [status.origoid.com](https://status.origoid.com) |
+| `INTERNAL_ERROR` | 200 | Ocurrió un error inesperado | Guarda el `transactionId` y escribe a [support@origoid.com](mailto:support@origoid.com) |
+
+## Códigos de resultado específicos por endpoint
+
+Cada endpoint puede devolver códigos `type` adicionales que representan resultados de negocio válidos (no errores per se). Por ejemplo:
+
+- Endpoints CURP pueden devolver `CURP_NOT_FOUND`, `CURP_APOCRYPHAL`, `CURP_DECEASED`
+- Endpoints SAT pueden devolver `CFDI_CANCELED`, `TAX_PROFILE_NOT_FOUND`
+- Endpoints Voter ID pueden devolver `INE_NOT_FOUND`, `INE_NOT_VALID`
+- Endpoints biométricos pueden devolver `FACE_MISMATCH`, `MASK_ATTACK`
+
+La lista completa de códigos `type` para cada endpoint está documentada en su página de la [referencia API](/es/api-reference). Maneja los resultados de negocio según tu lógica de dominio.
+
+## Reportar un problema
+
+Si encuentras un error inesperado, escribe a [support@origoid.com](mailto:support@origoid.com) con:
+
+- El `transactionId` de la respuesta
+- Breve descripción de qué intentabas hacer
+- El endpoint que llamaste
+
+<Note>
+No almacenamos request bodies ni response bodies, por lo que no podemos recuperar tu llamada automáticamente. Cuando reportes, incluye el `transactionId` y el path que llamaste, y trabajaremos contigo en los siguientes pasos.
+</Note>

@@ -1,0 +1,43 @@
+---
+title: Errors
+description: "Common error types and how to handle them."
+---
+
+OrigoID never returns opaque errors. Every error includes:
+
+- A **stable `type` code** that does not change between versions
+- A **human `message`** describing what happened
+- An actionable path to resolution
+
+## Common error types
+
+| `type` | HTTP | What it means | What to do |
+|---|---|---|---|
+| `INVALID_REQUEST` | 200 | Your request body did not pass validation | Inspect `errors[]`, fix the listed fields, retry |
+| `UNAUTHORIZED` | 401 | Authentication failed | Verify your API key. Check your IP allow-list. If you suspect a leak, rotate. |
+| `RATE_LIMIT_EXCEEDED` | 429 | You exceeded your rate limit | Implement exponential backoff. Consider upgrading your plan. |
+| `SERVICE_UNAVAILABLE` | 200 | An upstream source is temporarily unavailable | Retry with backoff. Check [status.origoid.com](https://status.origoid.com) |
+| `INTERNAL_ERROR` | 200 | An unexpected error occurred | Save the `transactionId` and email [support@origoid.com](mailto:support@origoid.com) |
+
+## Endpoint-specific result codes
+
+Each endpoint can return additional `type` codes that represent valid business results (not errors per se). For example:
+
+- CURP endpoints can return `CURP_NOT_FOUND`, `CURP_APOCRYPHAL`, `CURP_DECEASED`
+- SAT endpoints can return `CFDI_CANCELED`, `TAX_PROFILE_NOT_FOUND`
+- Voter ID endpoints can return `INE_NOT_FOUND`, `INE_NOT_VALID`
+- Biometric endpoints can return `FACE_MISMATCH`, `MASK_ATTACK`
+
+The complete list of `type` codes for each endpoint is documented in that endpoint's page in the [API reference](/en/api-reference). Treat business results according to your domain logic.
+
+## Reporting an issue
+
+If you hit an unexpected error, email [support@origoid.com](mailto:support@origoid.com) with:
+
+- The `transactionId` from the response
+- A brief description of what you were trying to do
+- The endpoint you called
+
+<Note>
+We do not log request or response bodies, so we cannot retrieve your call automatically. When reporting, please include the `transactionId` and the path you called, and we will work with you on next steps.
+</Note>
