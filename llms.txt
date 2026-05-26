@@ -1,0 +1,66 @@
+# OrigoID
+
+> Identity verification and compliance infrastructure for Mexico. One REST API for RENAPO (CURP), INE, IMSS, SAT (RFC, CSF, CFDI, lists 69/69-B), OFAC, PEPs, biometric matching, and liveness.
+
+Base URL: https://api.origoid.com
+Authentication: API Key (`x-api-key` header), HTTP Basic, or Bearer JWT.
+Response envelope: `{ status, type, message, data, transactionId, processedAt, billable }` — same on every endpoint.
+HTTP codes: 200 (processed), 401 (auth failed), 404 (path not found), 405 (wrong method), 429 (rate limit).
+Privacy: No PII is persisted from successful responses. Operational metadata only.
+
+## Documentation
+
+- [Quickstart (EN)](https://docs.origoid.com/en/quickstart): First call in under 10 minutes
+- [Quickstart (ES)](https://docs.origoid.com/es/quickstart): Primer call en menos de 10 minutos
+- [Authentication (EN)](https://docs.origoid.com/en/authentication): API Key, Basic, Bearer JWT
+- [Response envelope (EN)](https://docs.origoid.com/en/envelope): Shape used across every endpoint
+- [Errors (EN)](https://docs.origoid.com/en/errors): Stable `type` codes and handling
+- [Catalogs (EN)](https://docs.origoid.com/en/catalogs): Stable code tables (CURP status, IMSS modalities, SAT lists, etc.)
+- [Image handling (EN)](https://docs.origoid.com/en/image-handling): Sending images for OCR/biometric endpoints
+- [Credits (EN)](https://docs.origoid.com/en/credits): Per-endpoint usage costs
+
+## OpenAPI specification
+
+- [OpenAPI 3.0 JSON](https://docs.origoid.com/openapi.json): Full machine-readable contract for all endpoints
+
+## Endpoints catalog
+
+### Identity (RENAPO)
+- `POST /mex/renapo/v1/curp-validations` — Validate a CURP and return personal record from RENAPO
+- `POST /mex/renapo/v1/curp-lookups` — Reconstruct CURP from name + date of birth + state
+
+### Voter ID (INE)
+- `POST /mex/id/v1/voter-list-validations` — Validate voter credential against INE roll
+- `POST /mex/id/v1/voter-id-extractions` — OCR of voter ID (front + back) with address geocoding
+- `POST /mex/id/v1/qr-extractions` — Decrypt voter ID QR codes (RSA-signed)
+
+### Social security (IMSS)
+- `POST /mex/imss/v1/nss-lookups` — Get NSS from CURP
+- `POST /mex/imss/v1/employment-status` — Current employment status
+
+### Tax (SAT)
+- `POST /mex/sat/v1/rfc-validations` — Validate RFC structure and status
+- `POST /mex/sat/v1/csf-extractions` — Extract data from Constancia de Situación Fiscal (PDF or RFC+CIF)
+- `POST /mex/sat/v1/cfdi-validations` — Validate CFDI status (active/canceled)
+
+### Compliance
+- `POST /mex/compliance/v1/sat-69-searches` — SAT Article 69 sub-lists
+- `POST /mex/compliance/v1/sat-69b-searches` — SAT Article 69-B (EFOS)
+- `POST /global/compliance/v1/ofac-searches` — OFAC sanctions screening
+- `POST /mex/compliance/v1/peps-searches` — PEP screening (Mexico)
+
+### Biometrics
+- `POST /global/biometrics/v1/face-matches` — 1:1 facial match (selfie vs ID)
+- `POST /global/biometrics/v1/liveness-checks` — Liveness detection (anti-spoof)
+
+### Other
+- `POST /global/email/v1/email-validations` — Email deliverability scoring
+- `POST /mex/documents/v1/proof-of-address-extractions` — OCR of utility bills
+
+### Auth
+- `POST /auth/token` — Exchange API Key or Basic for short-lived Bearer JWT
+
+## Support
+
+- Email: support@origoid.com
+- Status page: https://status.origoid.com
