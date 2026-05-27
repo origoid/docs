@@ -6,9 +6,9 @@ description: "`@origoid/mcp-server` — official Model Context Protocol server. 
 The MCP server is OrigoID's official integration point for AI coding
 assistants and chat clients that speak the
 [Model Context Protocol](https://modelcontextprotocol.io). Install it
-once in your client and the LLM gains 26 tools: 7 for **building** an
+once in your client and the LLM gains 29 tools: 10 for **building** an
 OrigoID integration (free, no API key needed) and 19 for **running**
-real calls (require your API key, billed per call).
+real calls (require your API key).
 
 ## Why it exists
 
@@ -40,6 +40,150 @@ Google (2025). The same server config works in every compliant client:
 - **Gemini CLI / Antigravity**
 - **Zed**
 - any other MCP-capable client
+
+## Install with your AI (shortcut)
+
+Most of the time you can just ask your AI assistant to install it for
+you. Copy one of the prompts below into your client chat — the LLM
+will edit the right config file (and run the right CLI command where
+applicable) for you.
+
+**Heads-up:** desktop clients (Claude Desktop, Cursor, Windsurf) need
+to be restarted after the config is edited; the AI cannot do that for
+you. Quit the app and reopen it.
+
+**Path conventions:** the `~/` shorthand means the user's home
+directory on **macOS and Linux** (`/Users/<you>/...` and
+`/home/<you>/...` respectively). On **Windows**, replace `~/` with
+`%USERPROFILE%\` (CMD) or `$HOME\` (PowerShell). The Claude Desktop
+config uses a Windows-specific `%APPDATA%` path called out below.
+
+### Claude Code (CLI)
+
+```text
+Run this in my terminal:
+claude mcp add origoid --env ORIGOID_API_KEY=<paste_my_key_here> -- npx -y @origoid/mcp-server
+Then verify with: claude mcp list
+```
+
+Works identically on macOS, Linux, and Windows.
+
+### Claude Desktop
+
+<CodeGroup>
+
+```text macOS
+Install the OrigoID MCP server (@origoid/mcp-server) in my Claude
+Desktop. Edit:
+  ~/Library/Application Support/Claude/claude_desktop_config.json
+Add "origoid" to mcpServers with command "npx", args ["-y",
+"@origoid/mcp-server"], and env ORIGOID_API_KEY=<paste_my_key_here>.
+Then remind me to quit and reopen Claude Desktop (Cmd+Q first).
+```
+
+```text Windows
+Install the OrigoID MCP server (@origoid/mcp-server) in my Claude
+Desktop. Edit:
+  %APPDATA%\Claude\claude_desktop_config.json
+Add "origoid" to mcpServers with command "npx", args ["-y",
+"@origoid/mcp-server"], and env ORIGOID_API_KEY=<paste_my_key_here>.
+Then remind me to quit and reopen Claude Desktop.
+```
+
+```text Linux
+Claude Desktop is not officially distributed for Linux today. Use
+Claude Code (CLI) — works identically. See the snippet above.
+```
+
+</CodeGroup>
+
+### Cursor
+
+<CodeGroup>
+
+```text macOS / Linux
+Install the OrigoID MCP server (@origoid/mcp-server) in my Cursor.
+Edit ~/.cursor/mcp.json and add "origoid" to mcpServers with command
+"npx", args ["-y", "@origoid/mcp-server"], env
+ORIGOID_API_KEY=<paste_my_key_here>. Then remind me to reload Cursor.
+```
+
+```text Windows
+Install the OrigoID MCP server (@origoid/mcp-server) in my Cursor.
+Edit %USERPROFILE%\.cursor\mcp.json and add "origoid" to mcpServers
+with command "npx", args ["-y", "@origoid/mcp-server"], env
+ORIGOID_API_KEY=<paste_my_key_here>. Then remind me to reload Cursor.
+```
+
+</CodeGroup>
+
+### Windsurf
+
+<CodeGroup>
+
+```text macOS / Linux
+Install the OrigoID MCP server (@origoid/mcp-server) in my Windsurf.
+Edit ~/.codeium/windsurf/mcp_config.json and add "origoid" to
+mcpServers with command "npx", args ["-y", "@origoid/mcp-server"],
+env ORIGOID_API_KEY=<paste_my_key_here>. Then remind me to reload
+Windsurf.
+```
+
+```text Windows
+Install the OrigoID MCP server (@origoid/mcp-server) in my Windsurf.
+Edit %USERPROFILE%\.codeium\windsurf\mcp_config.json and add
+"origoid" to mcpServers with command "npx", args ["-y",
+"@origoid/mcp-server"], env ORIGOID_API_KEY=<paste_my_key_here>.
+Then remind me to reload Windsurf.
+```
+
+</CodeGroup>
+
+### Codex CLI
+
+<CodeGroup>
+
+```text macOS / Linux
+Add the OrigoID MCP server (@origoid/mcp-server) to my Codex config.
+Edit ~/.codex/config.toml and add:
+
+  [mcp_servers.origoid]
+  command = "npx"
+  args = ["-y", "@origoid/mcp-server"]
+  [mcp_servers.origoid.env]
+  ORIGOID_API_KEY = "<paste_my_key_here>"
+```
+
+```text Windows
+Add the OrigoID MCP server (@origoid/mcp-server) to my Codex config.
+Edit %USERPROFILE%\.codex\config.toml and add the same TOML block as
+the macOS / Linux example.
+```
+
+</CodeGroup>
+
+### Gemini CLI / Antigravity
+
+<CodeGroup>
+
+```text macOS / Linux
+Install the OrigoID MCP server (@origoid/mcp-server) in my Gemini
+config. Edit ~/.gemini/settings.json and add "origoid" to mcpServers
+with command "npx", args ["-y", "@origoid/mcp-server"], env
+ORIGOID_API_KEY=<paste_my_key_here>.
+```
+
+```text Windows
+Install the OrigoID MCP server (@origoid/mcp-server) in my Gemini
+config. Edit %USERPROFILE%\.gemini\settings.json and add "origoid"
+to mcpServers with command "npx", args ["-y", "@origoid/mcp-server"],
+env ORIGOID_API_KEY=<paste_my_key_here>.
+```
+
+</CodeGroup>
+
+If you want to wire it up manually instead, the per-client config
+snippets are below.
 
 ## Install
 
@@ -148,7 +292,7 @@ The server speaks MCP over standard stdio transport.
 ## API key is optional
 
 If you do not set `ORIGOID_API_KEY`, the server boots in **docs-only
-mode**. The 7 documentation tools work as usual; the 19 API tools
+mode**. The 10 documentation tools work as usual; the 19 API tools
 return a clear error if invoked. This is the right mode for the design
 phase — the LLM can describe, scaffold, and write your integration
 without you having an account yet.
@@ -166,6 +310,9 @@ without you having an account yet.
 | `get_api_overview()` | The complete `info.description` from the spec: authentication, envelope contract, rate-limit headers, language conventions, image-processing policy, and all catalogs (CURP status, IMSS modalities, SAT lists, OFAC lists, CFDI effects). |
 | `search_docs({query})` | Free-text search across summaries, descriptions, and examples. |
 | `validate_envelope_shape({envelopeJson})` | Offline checker — does the JSON match the canonical `Envelope` contract? Useful for unit-testing a custom parser. |
+| `get_typescript_types({operationId})` | Self-contained `.ts` file with `Request`, `Type` union, `Data` shape, and `Envelope` interfaces. Paste straight into a project — no SDK import required. |
+| `get_pydantic_model({operationId})` | Self-contained `.py` file with Pydantic v2 classes (`Request`, `Type` Literal, `Data`, `ErrorDetail`, `Envelope`). Only runtime dep is `pydantic>=2`. |
+| `get_full_integration_starter({scenario})` | A complete multi-file project the user (or their AI assistant) drops into a folder and runs. Scenarios: `express-curp` (Node + Express 5), `fastapi-curp` (Python + FastAPI async), `go-cli-curp` (Go CLI). Each handles every documented result type with idiomatic HTTP / exit codes. |
 
 ### API tools (require `ORIGOID_API_KEY`)
 
@@ -199,9 +346,9 @@ Each API tool returns the full envelope as a JSON string so the LLM
 has access to `status`, `type`, `data`, `errors[]`, and the
 `transactionId` (useful for support tickets).
 
-## A typical session
+## Typical sessions
 
-In your IDE or chat, you can simply describe what you need:
+### Snippet-level integration
 
 > Add CURP validation to my Express API. Use the OrigoID MCP to verify
 > the schema and give me a TypeScript handler that covers every result
@@ -217,9 +364,33 @@ The LLM internally calls:
 4. `get_sdk_example({operationId: "validateCurp", language: "typescript"})`
    — pulls a copy-paste snippet
 
-It then writes the full handler. None of that consumed credits. When
-you say "now run it", the LLM calls `validate_curp({curp: "..."})` —
-that single call is billed.
+It then writes the handler. None of that consumed credits. When you
+say "now run it", the LLM calls `validate_curp({curp: "..."})` — that
+single call is billed.
+
+### Whole-project starter (one prompt → runnable repo)
+
+> Scaffold a complete Express + TypeScript project that validates CURPs
+> via OrigoID. Use the integration starter from the MCP.
+
+The LLM calls `get_full_integration_starter({scenario: "express-curp"})`
+once. The tool returns six files (`package.json`, `tsconfig.json`,
+`.env.example`, `.gitignore`, `src/server.ts`, `README.md`), the setup
+commands, and the run command. The LLM writes them to disk; you run
+`npm install && npm run dev` and have a working server in under a
+minute. Same idea works for `fastapi-curp` (Python + FastAPI async) or
+`go-cli-curp` (Go CLI).
+
+### Strict-typed integration without the SDK
+
+> I'd rather call OrigoID with raw fetch but I want the response type
+> safety. Give me the TypeScript types for validateCurp.
+
+The LLM calls `get_typescript_types({operationId: "validateCurp"})`
+and gets a self-contained `.ts` file (`Request`, `Type` union, `Data`,
+`Envelope` interfaces). For Python, the same pattern uses
+`get_pydantic_model({operationId: "validateCurp"})` and returns
+Pydantic v2 classes.
 
 ## Cost behavior
 
