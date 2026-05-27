@@ -30,7 +30,7 @@ If you only need to call one endpoint occasionally from a script,
 
 ## Pick your language
 
-<CardGroup cols={3}>
+<CardGroup cols={2}>
   <Card title="TypeScript / Node" icon="js" href="/en/sdks/node">
     `npm install @origoid/sdk`. Works in Node 18+ and Deno. Ships
     TypeScript definitions out of the box.
@@ -42,6 +42,11 @@ If you only need to call one endpoint occasionally from a script,
   <Card title="Go" icon="golang" href="/en/sdks/go">
     `go get github.com/origoid/sdk-go`. Context-aware, idiomatic Go
     style, generated types for every request and response.
+  </Card>
+  <Card title="MCP server (AI integration)" icon="robot" href="/en/sdks/mcp">
+    `npx @origoid/mcp-server`. Works with Claude, ChatGPT, Gemini,
+    Cursor, Windsurf, and any other MCP-compatible client. Lets the AI
+    scaffold integrations in any language without burning credits.
   </Card>
 </CardGroup>
 

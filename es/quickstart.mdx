@@ -111,6 +111,23 @@ Todos los endpoints devuelven el mismo [envelope](/es/envelope):
 }
 ```
 
+## Construye con AI
+
+¿Usas Claude, ChatGPT, Gemini, Cursor, Windsurf, o cualquier otro
+cliente compatible con MCP? Instala nuestro [servidor MCP](/es/sdks/mcp)
+y tu asistente AI gana 26 tools — 7 para leer nuestro spec (gratis,
+sin API key) y 19 para llamar al API.
+
+```bash
+claude mcp add origoid \
+  --env ORIGOID_API_KEY=tu_api_key \
+  -- npx -y @origoid/mcp-server
+```
+
+Las 7 tools de docs funcionan sin API key, así el asistente puede
+hacer scaffold de una integración completa antes de que tengas
+cuenta. Cuando dices "ahora ejecútalo", el asistente llama al API real.
+
 ## Siguientes pasos
 
 <CardGroup cols={2}>
