@@ -30,6 +30,46 @@ Cada endpoint puede devolver códigos `type` adicionales que representan resulta
 
 La lista completa de códigos `type` para cada endpoint está documentada en su página de la [referencia API](/es/api-reference). Maneja los resultados de negocio según tu lógica de dominio.
 
+## Códigos de validación
+
+Cuando `type` es `INVALID_REQUEST`, el array `errors[]` lista los fallos a nivel campo (ver [ErrorDetail](/es/envelope#errordetail-entradas-de-errors)). Cada entrada tiene un `code` sobre el que puedes branchear.
+
+Estos códigos son **transversales** — pueden aparecer en cualquier endpoint cuando la validación correspondiente falla:
+
+| `code` | Cuándo aparece |
+|---|---|
+| `MALFORMED_JSON` | El body del request no es JSON válido. El `field` es `_root`. |
+| `MISSING_REQUIRED_FIELD` | Falta un campo requerido. |
+| `INVALID_TYPE` | Un campo tiene tipo primitivo equivocado (ej. número donde se espera string). |
+| `INVALID_FORMAT` | Un campo no cumple su pattern o formato (CURP, RFC, NSS, fechas ISO, base64, etc.). |
+| `INVALID_ENUM_VALUE` | El valor del campo no está en el enum permitido. Ver [Catálogos](/es/catalogs). |
+| `INVALID_LENGTH` | Un string es más corto o largo de lo permitido. |
+| `OUT_OF_RANGE` | Un valor numérico está fuera del rango permitido. |
+| `INVALID_ARRAY` | Un array tiene muy pocos/muchos elementos, o duplicados no permitidos. |
+| `UNKNOWN_FIELD` | El body contiene un campo que el endpoint no reconoce. |
+| `SCHEMA_MISMATCH` | El body no satisface una restricción `oneOf` / `anyOf` (ej. debes proveer *uno de* varias alternativas). |
+| `INVALID_VALUE` | Un valor es inválido por razones no cubiertas arriba (fallback típico). |
+
+### Códigos específicos de endpoint
+
+Algunos endpoints agregan códigos adicionales que capturan validación de dominio. Por ejemplo:
+
+- `INVALID_RFC_FORMAT` (`/mex/sat/v1/rfc-validations`, búsquedas SAT 69 / 69-B)
+- `NAME_TOO_SHORT`, `NAME_ONLY_STOPWORDS` (búsquedas SAT 69 / 69-B)
+- `QR_NOT_FOUND` (`/mex/sat/v1/csf-extractions`, `/mex/sat/v1/cfdi-validations`)
+- `IMAGE_UNREADABLE` (endpoints OCR)
+
+Consulta la página de cada operación en la [referencia API](/es/api-reference) para la lista completa.
+
+### Cómo se agregan los errores
+
+Múltiples fallos de validación de campos en un mismo request pueden venir juntos en `errors[]`. El tamaño del array depende del tipo de validación que falló:
+
+- Los fallos de validación de estructura del request (campos requeridos faltantes, tipos incorrectos, patterns malos, mismatches de enum / length / range) se **agregan** — todas las violaciones de este tipo regresan en una sola respuesta.
+- Los fallos detectados por checks de dominio (ej. `INVALID_RFC_FORMAT`, `NAME_TOO_SHORT`, `QR_NOT_FOUND`) pueden devolver sólo el **primer** error encontrado, aunque otros campos también hubieran fallado.
+
+Siempre itera `errors[]` en lugar de asumir una sola entrada. Si tu código recibe un error, lo corrige y reenvía, la siguiente respuesta puede mostrar errores adicionales que estaban latentes.
+
 ## Reportar un problema
 
 Si encuentras un error inesperado, escribe a [support@origoid.com](mailto:support@origoid.com) con:

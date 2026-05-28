@@ -30,6 +30,46 @@ Each endpoint can return additional `type` codes that represent valid business r
 
 The complete list of `type` codes for each endpoint is documented in that endpoint's page in the [API reference](/en/api-reference). Treat business results according to your domain logic.
 
+## Validation error codes
+
+When `type` is `INVALID_REQUEST`, the `errors[]` array lists field-level failures (see [ErrorDetail](/en/envelope#errordetail-entries-in-errors)). Each entry has a `code` you can branch on.
+
+These codes are **cross-cutting** — they may appear on any endpoint when the corresponding validation fails:
+
+| `code` | When it appears |
+|---|---|
+| `MALFORMED_JSON` | The request body is not valid JSON. The `field` is `_root`. |
+| `MISSING_REQUIRED_FIELD` | A required field is absent. |
+| `INVALID_TYPE` | A field has the wrong primitive type (e.g. number where string is expected). |
+| `INVALID_FORMAT` | A field does not match its required pattern or format (CURP, RFC, NSS, ISO dates, base64, etc.). |
+| `INVALID_ENUM_VALUE` | A field's value is not in the allowed enum. See [Catalogs](/en/catalogs). |
+| `INVALID_LENGTH` | A string is shorter or longer than allowed. |
+| `OUT_OF_RANGE` | A numeric value is outside its allowed range. |
+| `INVALID_ARRAY` | An array has too few/many items, or duplicates that are not allowed. |
+| `UNKNOWN_FIELD` | The body contains a field the endpoint does not recognize. |
+| `SCHEMA_MISMATCH` | The body does not satisfy a `oneOf` / `anyOf` constraint (e.g. you must provide *one of* several alternatives). |
+| `INVALID_VALUE` | A value is invalid for reasons not covered above (typical fallback). |
+
+### Endpoint-specific codes
+
+Some endpoints add extra codes that capture domain-specific validation. For example:
+
+- `INVALID_RFC_FORMAT` (`/mex/sat/v1/rfc-validations`, SAT 69 / 69-B searches)
+- `NAME_TOO_SHORT`, `NAME_ONLY_STOPWORDS` (SAT 69 / 69-B searches)
+- `QR_NOT_FOUND` (`/mex/sat/v1/csf-extractions`, `/mex/sat/v1/cfdi-validations`)
+- `IMAGE_UNREADABLE` (OCR endpoints)
+
+See each operation's page in the [API reference](/en/api-reference) for the full list.
+
+### How errors aggregate
+
+Multiple field-level validation failures in the same request may come back together in `errors[]`. The array length depends on which kind of validation failed:
+
+- Failures detected by request-shape validation (missing required fields, wrong types, bad patterns, enum / length / range mismatches) are **aggregated** — all violations of this kind come back in one response.
+- Failures detected by domain-specific checks (e.g. `INVALID_RFC_FORMAT`, `NAME_TOO_SHORT`, `QR_NOT_FOUND`) may return only the **first** error encountered, even if other fields would also have failed.
+
+Always iterate `errors[]` rather than assuming a single entry. If your code receives one error, fixes it, and resubmits, the next response may surface additional errors that were latent.
+
 ## Reporting an issue
 
 If you hit an unexpected error, email [support@origoid.com](mailto:support@origoid.com) with:

@@ -33,6 +33,16 @@ Todos los endpoints de OrigoID devuelven el mismo envelope. Esta consistencia es
 | `processedAt` | ISO 8601 | Timestamp con offset Ciudad de México (`-06:00`). |
 | `billable` | boolean | Si este call cuenta contra tu plan. |
 
+### ErrorDetail (entradas de `errors[]`)
+
+Cuando `type` es `INVALID_REQUEST`, `errors[]` lista los issues por campo. Cada entrada tiene:
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `field` | string | Path en notación de punto al campo problemático (ej. `curp`, `address.street`). `_root` cuando el issue aplica al body completo. |
+| `code` | string | Código estable de máquina. Branchea sobre este, nunca sobre `message`. Lista completa en [Errores → Códigos de validación](/es/errors#codigos-de-validacion). |
+| `message` | string | Explicación humana en inglés. Sólo display. |
+
 ## Códigos HTTP
 
 OrigoID usa códigos HTTP que reflejan la naturaleza de la respuesta:
