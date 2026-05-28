@@ -38,8 +38,10 @@ These codes are **cross-cutting** — they may appear on any endpoint when the c
 
 | `code` | When it appears |
 |---|---|
-| `MALFORMED_JSON` | The request body is not valid JSON. The `field` is `_root`. |
+| `MALFORMED_JSON` | The request body is not valid JSON. The `field` is `body`. |
+| `PAYLOAD_TOO_LARGE` | Either the whole request body exceeds 28 MB (`field: "body"`), or a base64 image/PDF field exceeds 12 MB (`field: "<field name>"`). |
 | `MISSING_REQUIRED_FIELD` | A required field is absent. |
+| `MISSING_DEPENDENT_FIELD` | A field that depends on another required field is missing (e.g. `cif` provided without `rfc`). |
 | `INVALID_TYPE` | A field has the wrong primitive type (e.g. number where string is expected). |
 | `INVALID_FORMAT` | A field does not match its required pattern or format (CURP, RFC, NSS, ISO dates, base64, etc.). |
 | `INVALID_ENUM_VALUE` | A field's value is not in the allowed enum. See [Catalogs](/en/catalogs). |
@@ -47,7 +49,8 @@ These codes are **cross-cutting** — they may appear on any endpoint when the c
 | `OUT_OF_RANGE` | A numeric value is outside its allowed range. |
 | `INVALID_ARRAY` | An array has too few/many items, or duplicates that are not allowed. |
 | `UNKNOWN_FIELD` | The body contains a field the endpoint does not recognize. |
-| `SCHEMA_MISMATCH` | The body does not satisfy a `oneOf` / `anyOf` constraint (e.g. you must provide *one of* several alternatives). |
+| `SCHEMA_MISMATCH` | The body does not satisfy a `oneOf` / `anyOf` constraint — specifically, all alternatives were provided when only one was allowed. When some alternatives are missing, you receive `MISSING_REQUIRED_FIELD` per alternative instead. |
+| `INVALID_SCOPE` | The requested OAuth scope is not granted to the API key. Returned by `/auth/token` when the caller asks for scopes outside its grant. |
 | `INVALID_VALUE` | A value is invalid for reasons not covered above (typical fallback). |
 
 ### Endpoint-specific codes

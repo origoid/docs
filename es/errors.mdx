@@ -38,8 +38,10 @@ Estos códigos son **transversales** — pueden aparecer en cualquier endpoint c
 
 | `code` | Cuándo aparece |
 |---|---|
-| `MALFORMED_JSON` | El body del request no es JSON válido. El `field` es `_root`. |
+| `MALFORMED_JSON` | El body del request no es JSON válido. El `field` es `body`. |
+| `PAYLOAD_TOO_LARGE` | El body completo excede 28 MB (`field: "body"`) o un campo base64 de imagen/PDF excede 12 MB (`field: "<nombre del campo>"`). |
 | `MISSING_REQUIRED_FIELD` | Falta un campo requerido. |
+| `MISSING_DEPENDENT_FIELD` | Falta un campo que depende de otro requerido (ej. `cif` provisto sin `rfc`). |
 | `INVALID_TYPE` | Un campo tiene tipo primitivo equivocado (ej. número donde se espera string). |
 | `INVALID_FORMAT` | Un campo no cumple su pattern o formato (CURP, RFC, NSS, fechas ISO, base64, etc.). |
 | `INVALID_ENUM_VALUE` | El valor del campo no está en el enum permitido. Ver [Catálogos](/es/catalogs). |
@@ -47,7 +49,8 @@ Estos códigos son **transversales** — pueden aparecer en cualquier endpoint c
 | `OUT_OF_RANGE` | Un valor numérico está fuera del rango permitido. |
 | `INVALID_ARRAY` | Un array tiene muy pocos/muchos elementos, o duplicados no permitidos. |
 | `UNKNOWN_FIELD` | El body contiene un campo que el endpoint no reconoce. |
-| `SCHEMA_MISMATCH` | El body no satisface una restricción `oneOf` / `anyOf` (ej. debes proveer *uno de* varias alternativas). |
+| `SCHEMA_MISMATCH` | El body no satisface una restricción `oneOf` / `anyOf` — específicamente, todas las alternativas se proveyeron cuando sólo una era permitida. Cuando algunas alternativas faltan, recibes `MISSING_REQUIRED_FIELD` por alternativa en su lugar. |
+| `INVALID_SCOPE` | El scope OAuth solicitado no está otorgado al API key. Devuelto por `/auth/token` cuando el caller pide scopes fuera de su grant. |
 | `INVALID_VALUE` | Un valor es inválido por razones no cubiertas arriba (fallback típico). |
 
 ### Códigos específicos de endpoint
