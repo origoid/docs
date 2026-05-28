@@ -19,10 +19,13 @@ Send the raw base64 string only. Do not include the `data:image/...;base64,` pre
 
 | Constraint | Value |
 |---|---|
-| Maximum file size | 20 MB |
+| Maximum per image / PDF field | **12 MB** (base64-encoded length) |
+| Maximum total request body | **28 MB** |
 | Supported formats | PNG, JPG, PDF (where applicable) |
 
-Requests that exceed these limits are rejected with `INVALID_REQUEST` before processing.
+Requests that exceed these limits are rejected with `INVALID_REQUEST` and `errors[].code = "PAYLOAD_TOO_LARGE"`. The `field` points either to the specific image field that exceeds 12 MB, or to `body` when the whole request exceeds 28 MB.
+
+Multi-image endpoints (e.g. voter ID OCR with `front` + `back`, face match with `face` + `front`) share the 28 MB body cap — each image still has its own 12 MB cap.
 
 ## Recommendations for best results
 
@@ -30,11 +33,12 @@ These are guidelines, not hard limits. Suboptimal images are still processed; re
 
 | Recommendation | Why |
 |---|---|
-| File size under 5 MB | Lower latency |
+| File size under 3 MB | Lower latency, room to spare under the 12 MB cap |
 | Resolution 1024×768 or higher | Better OCR accuracy |
 | Even lighting, minimal glare | Reduces false negatives |
 | Full document in frame (no crops) | Required fields stay readable |
 | JPG quality 85 or higher | Good balance of size and detail |
+| Compress before base64-encoding | Base64 inflates payload by ~33% over the binary size |
 
 If extraction fails because the image is unreadable, you receive a clear result code (`IMAGE_UNREADABLE`, `NO_FACE_DETECTED`, `DOCUMENT_NOT_IDENTIFIED`) so you can act on it.
 
