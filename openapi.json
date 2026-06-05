@@ -4350,7 +4350,7 @@
           "Biometrics"
         ],
         "summary": "Global Biometric Face Match",
-        "description": "**Credits:** 1 per call.\n\nCompares two facial images and returns a similarity score (0–100) plus a binary match/no-match decision. Typical use is 1:1 verification between a live selfie and the photograph on an ID document.\n\nUse this endpoint to confirm that the person presenting an ID is the same person depicted on it. Combine with `checkLiveness` to also defend against presentation attacks (photo of a photo, printed mask).",
+        "description": "**Credits:** 1 per call.\n\nCompares two facial images and returns a similarity score (0–100) plus a binary match/no-match decision. Typical use is 1:1 verification between a live selfie and the photograph on an ID document.\n\nUse this endpoint to confirm that the person presenting an ID is the same person depicted on it.",
         "requestBody": {
           "required": true,
           "content": {
@@ -4374,8 +4374,8 @@
                     "type": "integer",
                     "minimum": 1,
                     "maximum": 100,
-                    "default": 80,
-                    "description": "Acceptance threshold (1-100). Default: 80."
+                    "default": 90,
+                    "description": "Acceptance threshold (1-100). Default: **90** (KYC-grade). Lower (e.g. 80) is more permissive; higher is stricter. Overridable per request."
                   },
                   "documentType": {
                     "type": "string",
@@ -4387,7 +4387,7 @@
                       "MEX_PROFESSIONAL_ID",
                       "ANY"
                     ],
-                    "description": "Optional. Use a specific type (e.g., 'INE', 'MEX_PASSPORT') for strict validation against that exact document type. Use 'ANY' to require the image be SOME recognized ID (auto-detected) — returns NO_DOCUMENT_DETECTED if not. Omit entirely for permissive mode (face match only, no document validation — intended for non-KYC use cases)."
+                    "description": "Optional. Use a specific type (e.g. `INE`, `MEX_PASSPORT`) for strict validation against that exact document type. Use `ANY` to require the image be some recognized ID (auto-detected) — returns `NO_DOCUMENT_DETECTED` if not. Omit it to skip document validation."
                   }
                 }
               }
@@ -4400,88 +4400,234 @@
             "content": {
               "application/json": {
                 "examples": {
-                  "Match Local": {
-                    "summary": "Success: Local Face Match (INE)",
+                  "Match INE": {
                     "value": {
                       "status": "OK",
                       "type": "SUCCESS",
-                      "message": "Face matches the provided ID",
+                      "message": "Faces match",
                       "data": {
-                        "faceMatchScore": 96,
+                        "faceMatchScore": 96.4,
                         "isMatch": true,
-                        "thresholdApplied": 85,
-                        "detectedDocumentType": "INE"
+                        "thresholdApplied": 90,
+                        "detectedDocumentType": "INE",
+                        "selfieAnalysis": {
+                          "imageQuality": "excellent",
+                          "detectionConfidence": "high",
+                          "orientation": "front",
+                          "eyesOpen": true,
+                          "mouthOpen": false,
+                          "wearingGlasses": false,
+                          "wearingSunglasses": false,
+                          "faceCovered": false,
+                          "issues": []
+                        }
                       },
                       "transactionId": "5c9e1f2a-3b4c-4d5e-6f7a-8b9c0d1e2f3a",
-                      "processedAt": "2026-03-15T18:23:00-06:00",
+                      "processedAt": "2026-06-05T11:20:33.482-06:00",
                       "billable": true
                     }
                   },
-                  "Match Foreign": {
-                    "summary": "Success: Foreign/Unmapped ID Match",
+                  "Match Other Document": {
                     "value": {
                       "status": "OK",
                       "type": "SUCCESS",
-                      "message": "Face matches the provided ID",
+                      "message": "Faces match",
                       "data": {
-                        "faceMatchScore": 89,
+                        "faceMatchScore": 91.5,
                         "isMatch": true,
-                        "thresholdApplied": 80,
-                        "detectedDocumentType": "OTHER"
+                        "thresholdApplied": 90,
+                        "detectedDocumentType": "OTHER",
+                        "selfieAnalysis": {
+                          "imageQuality": "excellent",
+                          "detectionConfidence": "high",
+                          "orientation": "front",
+                          "eyesOpen": true,
+                          "mouthOpen": false,
+                          "wearingGlasses": false,
+                          "wearingSunglasses": false,
+                          "faceCovered": false,
+                          "issues": []
+                        }
                       },
-                      "transactionId": "d1e2f3a4-b5c6-7d8e-9f0a-1b2c3d4e5f6a",
-                      "processedAt": "2026-03-15T18:24:00-06:00",
+                      "transactionId": "5c9e1f2a-3b4c-4d5e-6f7a-8b9c0d1e2f3a",
+                      "processedAt": "2026-06-05T11:20:33.482-06:00",
                       "billable": true
                     }
                   },
-                  "Mismatch": {
-                    "summary": "Success: Face Mismatch",
+                  "Match With Glasses": {
+                    "value": {
+                      "status": "OK",
+                      "type": "SUCCESS",
+                      "message": "Faces match",
+                      "data": {
+                        "faceMatchScore": 92.5,
+                        "isMatch": true,
+                        "thresholdApplied": 90,
+                        "detectedDocumentType": "INE",
+                        "selfieAnalysis": {
+                          "imageQuality": "excellent",
+                          "detectionConfidence": "high",
+                          "orientation": "front",
+                          "eyesOpen": true,
+                          "mouthOpen": false,
+                          "wearingGlasses": true,
+                          "wearingSunglasses": false,
+                          "faceCovered": false,
+                          "issues": [
+                            "wearing_glasses"
+                          ]
+                        }
+                      },
+                      "transactionId": "5c9e1f2a-3b4c-4d5e-6f7a-8b9c0d1e2f3a",
+                      "processedAt": "2026-06-05T11:20:33.482-06:00",
+                      "billable": true
+                    }
+                  },
+                  "Match Face Covered": {
+                    "value": {
+                      "status": "OK",
+                      "type": "SUCCESS",
+                      "message": "Faces match",
+                      "data": {
+                        "faceMatchScore": 90.8,
+                        "isMatch": true,
+                        "thresholdApplied": 90,
+                        "detectedDocumentType": "INE",
+                        "selfieAnalysis": {
+                          "imageQuality": "good",
+                          "detectionConfidence": "high",
+                          "orientation": "front",
+                          "eyesOpen": true,
+                          "mouthOpen": false,
+                          "wearingGlasses": false,
+                          "wearingSunglasses": false,
+                          "faceCovered": true,
+                          "issues": [
+                            "face_covered"
+                          ]
+                        }
+                      },
+                      "transactionId": "5c9e1f2a-3b4c-4d5e-6f7a-8b9c0d1e2f3a",
+                      "processedAt": "2026-06-05T11:20:33.482-06:00",
+                      "billable": true
+                    }
+                  },
+                  "Face Mismatch": {
                     "value": {
                       "status": "OK",
                       "type": "FACE_MISMATCH",
-                      "message": "Face does not match the provided ID",
+                      "message": "Faces do not match",
                       "data": {
-                        "faceMatchScore": 42,
+                        "faceMatchScore": 41.7,
                         "isMatch": false,
-                        "thresholdApplied": 85,
-                        "detectedDocumentType": "MEX_PASSPORT"
+                        "thresholdApplied": 90,
+                        "detectedDocumentType": "INE",
+                        "selfieAnalysis": {
+                          "imageQuality": "excellent",
+                          "detectionConfidence": "high",
+                          "orientation": "front",
+                          "eyesOpen": true,
+                          "mouthOpen": false,
+                          "wearingGlasses": false,
+                          "wearingSunglasses": false,
+                          "faceCovered": false,
+                          "issues": []
+                        }
                       },
-                      "transactionId": "a1b2c3d4-e5f6-4789-abcd-1234567890ab",
-                      "processedAt": "2026-03-15T18:25:00-06:00",
+                      "transactionId": "5c9e1f2a-3b4c-4d5e-6f7a-8b9c0d1e2f3a",
+                      "processedAt": "2026-06-05T11:20:33.482-06:00",
                       "billable": true
                     }
                   },
-                  "No Face": {
-                    "summary": "Error: No Face Detected",
+                  "No Face In Selfie": {
                     "value": {
                       "status": "OK",
                       "type": "NO_FACE_DETECTED",
-                      "message": "No face detected in one or both images",
+                      "message": "No face detected in the selfie image",
                       "data": {
                         "faceMatchScore": null,
                         "isMatch": false,
-                        "thresholdApplied": 80,
-                        "detectedDocumentType": null
+                        "thresholdApplied": null,
+                        "detectedDocumentType": "INE",
+                        "selfieAnalysis": null
                       },
-                      "transactionId": "3eb33303-3466-4071-872e-067584149666",
-                      "processedAt": "2026-03-15T18:26:00-06:00",
+                      "transactionId": "5c9e1f2a-3b4c-4d5e-6f7a-8b9c0d1e2f3a",
+                      "processedAt": "2026-06-05T11:20:33.482-06:00",
+                      "billable": true
+                    }
+                  },
+                  "No Face In Document": {
+                    "value": {
+                      "status": "OK",
+                      "type": "NO_FACE_DETECTED",
+                      "message": "No face detected in the document image",
+                      "data": {
+                        "faceMatchScore": null,
+                        "isMatch": false,
+                        "thresholdApplied": null,
+                        "detectedDocumentType": null,
+                        "selfieAnalysis": {
+                          "imageQuality": "excellent",
+                          "detectionConfidence": "high",
+                          "orientation": "front",
+                          "eyesOpen": true,
+                          "mouthOpen": false,
+                          "wearingGlasses": false,
+                          "wearingSunglasses": false,
+                          "faceCovered": false,
+                          "issues": []
+                        }
+                      },
+                      "transactionId": "5c9e1f2a-3b4c-4d5e-6f7a-8b9c0d1e2f3a",
+                      "processedAt": "2026-06-05T11:20:33.482-06:00",
+                      "billable": true
+                    }
+                  },
+                  "Multiple Faces": {
+                    "value": {
+                      "status": "OK",
+                      "type": "MULTIPLE_FACES_DETECTED",
+                      "message": "Multiple faces detected in selfie",
+                      "data": {
+                        "faceMatchScore": null,
+                        "isMatch": false,
+                        "thresholdApplied": null,
+                        "detectedDocumentType": "INE",
+                        "selfieAnalysis": null
+                      },
+                      "transactionId": "5c9e1f2a-3b4c-4d5e-6f7a-8b9c0d1e2f3a",
+                      "processedAt": "2026-06-05T11:20:33.482-06:00",
                       "billable": true
                     }
                   },
                   "No Document Detected": {
-                    "summary": "No document detected (ANY mode)",
                     "value": {
                       "status": "OK",
                       "type": "NO_DOCUMENT_DETECTED",
                       "message": "The provided image is not a recognized identity document",
-                      "data": null,
-                      "transactionId": "d8977c1d-7d31-4719-8eaf-e2977767e94e",
-                      "processedAt": "2026-04-27T17:00:00-06:00",
+                      "data": {
+                        "faceMatchScore": null,
+                        "isMatch": false,
+                        "thresholdApplied": null,
+                        "detectedDocumentType": null,
+                        "selfieAnalysis": {
+                          "imageQuality": "excellent",
+                          "detectionConfidence": "high",
+                          "orientation": "front",
+                          "eyesOpen": true,
+                          "mouthOpen": false,
+                          "wearingGlasses": false,
+                          "wearingSunglasses": false,
+                          "faceCovered": false,
+                          "issues": []
+                        }
+                      },
+                      "transactionId": "5c9e1f2a-3b4c-4d5e-6f7a-8b9c0d1e2f3a",
+                      "processedAt": "2026-06-05T11:20:33.482-06:00",
                       "billable": true
                     }
                   },
-                  "Doc Mismatch": {
-                    "summary": "Error: Strict Document Mismatch",
+                  "Document Mismatch": {
                     "value": {
                       "status": "OK",
                       "type": "DOCUMENT_MISMATCH",
@@ -4489,70 +4635,124 @@
                       "data": {
                         "faceMatchScore": null,
                         "isMatch": false,
-                        "thresholdApplied": 80,
-                        "detectedDocumentType": "INE"
+                        "thresholdApplied": null,
+                        "detectedDocumentType": "INE",
+                        "selfieAnalysis": {
+                          "imageQuality": "excellent",
+                          "detectionConfidence": "high",
+                          "orientation": "front",
+                          "eyesOpen": true,
+                          "mouthOpen": false,
+                          "wearingGlasses": false,
+                          "wearingSunglasses": false,
+                          "faceCovered": false,
+                          "issues": []
+                        }
                       },
-                      "transactionId": "6f7a8b9c-0d1e-2f3a-4b5c-6d7e8f9a0b1c",
-                      "processedAt": "2026-03-15T18:27:00-06:00",
+                      "transactionId": "5c9e1f2a-3b4c-4d5e-6f7a-8b9c0d1e2f3a",
+                      "processedAt": "2026-06-05T11:20:33.482-06:00",
                       "billable": true
                     }
                   },
                   "Validation Error": {
-                    "summary": "Validation Error",
                     "value": {
                       "status": "ERROR",
                       "type": "INVALID_REQUEST",
-                      "message": "Validation failed",
+                      "message": "Request validation failed. This sample shows ALL possible validation codes; in production only those applicable to your request will be returned.",
                       "data": null,
+                      "transactionId": "5c9e1f2a-3b4c-4d5e-6f7a-8b9c0d1e2f3a",
+                      "processedAt": "2026-06-05T11:20:33.482-06:00",
+                      "billable": false,
                       "errors": [
                         {
                           "field": "face",
                           "code": "MISSING_REQUIRED_FIELD",
-                          "message": "The 'face' parameter is required"
+                          "message": "must have required property 'face'"
                         },
                         {
                           "field": "front",
-                          "code": "INVALID_IMAGE_FORMAT",
-                          "message": "The 'front' parameter must be a valid base64 encoded string"
+                          "code": "MISSING_REQUIRED_FIELD",
+                          "message": "must have required property 'front'"
+                        },
+                        {
+                          "field": "threshold",
+                          "code": "OUT_OF_RANGE",
+                          "message": "must be <= 100"
                         },
                         {
                           "field": "documentType",
                           "code": "INVALID_ENUM_VALUE",
-                          "message": "The 'documentType' must be one of: IFE, INE, MEX_PASSPORT, MEX_RESIDENCE_CARD, MEX_PROFESSIONAL_ID"
+                          "message": "must be equal to one of the allowed values"
+                        },
+                        {
+                          "field": "face",
+                          "code": "INVALID_TYPE",
+                          "message": "must be string"
+                        },
+                        {
+                          "field": "front",
+                          "code": "INVALID_TYPE",
+                          "message": "must be string"
+                        },
+                        {
+                          "field": "threshold",
+                          "code": "INVALID_TYPE",
+                          "message": "must be integer"
+                        },
+                        {
+                          "field": "threshold",
+                          "code": "OUT_OF_RANGE",
+                          "message": "must be >= 1"
+                        },
+                        {
+                          "field": "face",
+                          "code": "INVALID_FORMAT",
+                          "message": "The 'face' parameter must be a JPG or PNG image"
+                        },
+                        {
+                          "field": "front",
+                          "code": "INVALID_FORMAT",
+                          "message": "The 'front' parameter must be a JPG or PNG image"
+                        },
+                        {
+                          "field": "body",
+                          "code": "MALFORMED_JSON",
+                          "message": "Malformed JSON body"
+                        },
+                        {
+                          "field": "body",
+                          "code": "PAYLOAD_TOO_LARGE",
+                          "message": "Request body exceeds 28 MB"
                         }
-                      ],
-                      "transactionId": "9d8c7b6a-5e4d-3c2b-1a0f-9e8d7c6b5a4b",
-                      "processedAt": "2026-03-15T18:28:00-06:00",
-                      "billable": false
+                      ]
                     }
                   },
                   "Internal Error": {
-                    "summary": "Internal Error",
                     "value": {
                       "status": "ERROR",
                       "type": "INTERNAL_ERROR",
                       "message": "Unexpected internal error",
                       "data": null,
-                      "transactionId": "c3d4e5f6-a7b8-9c0d-1e2f-123456789015",
-                      "processedAt": "2026-03-15T18:29:00-06:00",
-                      "billable": false
-                    }
-                  },
-                  "Service Unavailable": {
-                    "summary": "Service Unavailable",
-                    "value": {
-                      "status": "ERROR",
-                      "type": "SERVICE_UNAVAILABLE",
-                      "message": "The biometric matching service is currently unavailable",
-                      "data": null,
-                      "transactionId": "8c194140-d2d9-495c-8ee1-15de1741c0d9",
-                      "processedAt": "2026-05-21T10:00:00-06:00",
+                      "transactionId": "5c9e1f2a-3b4c-4d5e-6f7a-8b9c0d1e2f3a",
+                      "processedAt": "2026-06-05T11:20:33.482-06:00",
                       "billable": false
                     }
                   }
                 },
                 "schema": {
-                  "$ref": "#/components/schemas/Envelope"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Envelope"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/FaceMatchData"
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -9136,7 +9336,7 @@
           },
           "type": {
             "type": "string",
-            "description": "Stable result type code. Catalog includes generic (`SUCCESS`, `INVALID_REQUEST`, `UNAUTHORIZED`, `SERVICE_UNAVAILABLE`, `INTERNAL_ERROR`, `RATE_LIMIT_EXCEEDED`) plus endpoint-specific codes (`CURP_NOT_FOUND`, `CFDI_CANCELED`, etc.)."
+            "description": "Stable result type code. Includes generic codes (`SUCCESS`, `INVALID_REQUEST`, `UNAUTHORIZED`, `SERVICE_UNAVAILABLE`, `INTERNAL_ERROR`, `RATE_LIMIT_EXCEEDED`) plus endpoint-specific result codes — see this endpoint's response examples."
           },
           "message": {
             "type": "string",
@@ -9954,6 +10154,110 @@
                     "example": 1582
                   }
                 }
+              }
+            }
+          }
+        }
+      },
+      "FaceMatchData": {
+        "type": "object",
+        "nullable": true,
+        "description": "Face-match result. Null for `INVALID_REQUEST` and `INTERNAL_ERROR`.",
+        "properties": {
+          "faceMatchScore": {
+            "type": "number",
+            "nullable": true,
+            "description": "Similarity 0-100. Null when the score was not the basis of the result (DOCUMENT_MISMATCH, NO_DOCUMENT_DETECTED, NO_FACE_DETECTED, MULTIPLE_FACES_DETECTED) — anti-leak of signal.",
+            "example": 96.4
+          },
+          "isMatch": {
+            "type": "boolean",
+            "example": true
+          },
+          "thresholdApplied": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Threshold used for the decision. Null when not applied (non-match outcomes).",
+            "example": 90
+          },
+          "detectedDocumentType": {
+            "type": "string",
+            "nullable": true,
+            "description": "Document type classified from the front image (e.g. `INE`, `MEX_PASSPORT`, `OTHER`). Null in some non-match cases.",
+            "example": "INE"
+          },
+          "selfieAnalysis": {
+            "type": "object",
+            "nullable": true,
+            "description": "Quality/attribute labels of the selfie face (DX-friendly, no raw scores). Null when there is no single selfie face (NO_FACE_DETECTED on selfie, MULTIPLE_FACES_DETECTED).",
+            "properties": {
+              "imageQuality": {
+                "type": "string",
+                "enum": [
+                  "excellent",
+                  "good",
+                  "poor"
+                ],
+                "example": "excellent"
+              },
+              "detectionConfidence": {
+                "type": "string",
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ],
+                "example": "high"
+              },
+              "orientation": {
+                "type": "string",
+                "enum": [
+                  "front",
+                  "looking_left",
+                  "looking_right",
+                  "looking_up",
+                  "looking_down",
+                  "tilted",
+                  "sideways"
+                ],
+                "example": "front"
+              },
+              "eyesOpen": {
+                "type": "boolean",
+                "example": true
+              },
+              "mouthOpen": {
+                "type": "boolean",
+                "example": false
+              },
+              "wearingGlasses": {
+                "type": "boolean",
+                "example": false
+              },
+              "wearingSunglasses": {
+                "type": "boolean",
+                "example": false
+              },
+              "faceCovered": {
+                "type": "boolean",
+                "example": false
+              },
+              "issues": {
+                "type": "array",
+                "description": "Actionable retry hints. Subset of the catalog.",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "wearing_glasses",
+                    "wearing_sunglasses",
+                    "face_covered",
+                    "eyes_closed",
+                    "poor_image_quality",
+                    "not_facing_camera",
+                    "low_detection_confidence"
+                  ]
+                },
+                "example": []
               }
             }
           }
