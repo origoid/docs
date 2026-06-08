@@ -2367,18 +2367,18 @@
                             "agency": "SALUD DE TLAXCALA",
                             "payrollOffice": "SALUD DE TLAXCALA",
                             "startDate": "2008-01-01",
-                            "baseSalary": 9611.42,
+                            "baseSalary": "9611.42",
                             "positionType": "BASE",
-                            "totalCompensation": 14937.0,
+                            "totalCompensation": "14937.00",
                             "coverage": "TODOS LOS SEGUROS, PRESTACIONES Y SERVICIOS"
                           },
                           {
                             "agency": "SERVICIOS DE SALUD DEL IMSS PARA EL BIENESTAR",
                             "payrollOffice": "IMSS BIENESTAR TLAXCALA",
                             "startDate": "2024-03-01",
-                            "baseSalary": 10452.54,
+                            "baseSalary": "10452.54",
                             "positionType": "BASE",
-                            "totalCompensation": 29390.2,
+                            "totalCompensation": "29390.20",
                             "coverage": "TODOS LOS SEGUROS, PRESTACIONES Y SERVICIOS"
                           }
                         ],
@@ -2390,7 +2390,7 @@
                             "periodType": "NORMAL",
                             "startDate": "2008-01-01",
                             "endDate": "2010-12-31",
-                            "baseSalary": 4450.0
+                            "baseSalary": "4450.00"
                           },
                           {
                             "agency": "SALUD DE TLAXCALA",
@@ -2398,7 +2398,7 @@
                             "periodType": "NORMAL",
                             "startDate": "2011-01-01",
                             "endDate": "2012-04-30",
-                            "baseSalary": 5570.0
+                            "baseSalary": "5570.00"
                           }
                         ],
                         "fovissteHistory": [
@@ -2408,7 +2408,7 @@
                             "periodType": "NORMAL",
                             "startDate": "2008-01-01",
                             "endDate": "2010-12-31",
-                            "baseSalary": 4450.0
+                            "baseSalary": "4450.00"
                           },
                           {
                             "agency": "SALUD DE TLAXCALA",
@@ -2416,7 +2416,7 @@
                             "periodType": "NORMAL",
                             "startDate": "2011-01-01",
                             "endDate": "2012-04-30",
-                            "baseSalary": 5570.0
+                            "baseSalary": "5570.00"
                           }
                         ],
                         "family": [
@@ -2511,7 +2511,7 @@
                             "periodType": "NORMAL",
                             "startDate": "2021-03-01",
                             "endDate": "2023-01-15",
-                            "baseSalary": 4448.5
+                            "baseSalary": "4448.50"
                           },
                           {
                             "agency": "INST. DE SEG. Y SERVS. SOCLS. DE LOS TRABJS. DEL EDO. (ISSST",
@@ -2519,7 +2519,7 @@
                             "periodType": "CERTIFICADO DyE",
                             "startDate": "2023-01-16",
                             "endDate": "2023-10-15",
-                            "baseSalary": 9077.0
+                            "baseSalary": "9077.00"
                           }
                         ],
                         "fovissteHistory": [
@@ -2529,7 +2529,7 @@
                             "periodType": "NORMAL",
                             "startDate": "2021-03-01",
                             "endDate": "2023-01-15",
-                            "baseSalary": 4448.5
+                            "baseSalary": "4448.50"
                           },
                           {
                             "agency": "INST. DE SEG. Y SERVS. SOCLS. DE LOS TRABJS. DEL EDO. (ISSST",
@@ -2537,7 +2537,7 @@
                             "periodType": "CERTIFICADO DyE",
                             "startDate": "2023-01-16",
                             "endDate": "2023-10-15",
-                            "baseSalary": 9077.0
+                            "baseSalary": "9077.00"
                           }
                         ],
                         "family": [],
@@ -2621,7 +2621,7 @@
                             "periodType": "PENSIONES",
                             "startDate": "1987-11-16",
                             "endDate": "1987-12-15",
-                            "baseSalary": 168.75
+                            "baseSalary": "168.75"
                           },
                           {
                             "agency": "SECRETARIA DE EDUCACION EN GUANAJUATO-UNIDAD PUENTECILLAS",
@@ -2629,7 +2629,7 @@
                             "periodType": "PENSIONES",
                             "startDate": "1987-12-16",
                             "endDate": "1987-12-31",
-                            "baseSalary": 194.1
+                            "baseSalary": "194.10"
                           }
                         ],
                         "fovissteHistory": [
@@ -2639,7 +2639,7 @@
                             "periodType": "PENSIONES",
                             "startDate": "1987-11-16",
                             "endDate": "1987-12-15",
-                            "baseSalary": 168.75
+                            "baseSalary": "168.75"
                           },
                           {
                             "agency": "SECRETARIA DE EDUCACION EN GUANAJUATO-UNIDAD PUENTECILLAS",
@@ -2647,7 +2647,7 @@
                             "periodType": "PENSIONES",
                             "startDate": "1987-12-16",
                             "endDate": "1987-12-31",
-                            "baseSalary": 194.1
+                            "baseSalary": "194.10"
                           }
                         ],
                         "family": [
@@ -2742,7 +2742,7 @@
                             "periodType": "PENSIONES",
                             "startDate": "1993-06-16",
                             "endDate": "1994-09-30",
-                            "baseSalary": 1575.15
+                            "baseSalary": "1575.15"
                           },
                           {
                             "agency": "SECRETARIA DE EDUCACION Y CULTURA DEL ESTADO DE VERACRUZ",
@@ -2750,7 +2750,7 @@
                             "periodType": "PENSIONES",
                             "startDate": "1979-10-01",
                             "endDate": "1979-12-31",
-                            "baseSalary": 4.14
+                            "baseSalary": "4.14"
                           }
                         ],
                         "fovissteHistory": [
@@ -2760,7 +2760,7 @@
                             "periodType": "PENSIONES",
                             "startDate": "1993-06-16",
                             "endDate": "1994-09-30",
-                            "baseSalary": 1575.15
+                            "baseSalary": "1575.15"
                           },
                           {
                             "agency": "SECRETARIA DE EDUCACION Y CULTURA DEL ESTADO DE VERACRUZ",
@@ -2768,7 +2768,7 @@
                             "periodType": "PENSIONES",
                             "startDate": "1979-10-01",
                             "endDate": "1979-12-31",
-                            "baseSalary": 4.14
+                            "baseSalary": "4.14"
                           }
                         ],
                         "family": [
@@ -2859,18 +2859,18 @@
                             "agency": "SECRETARIA DE CIENCIA, HUMANIDADES, TECNOLOGIA E INNOVACION",
                             "payrollOffice": "SECRETARIA DE CIENCIA, HUMANIDADES, TECNOLOGIA E INOVACION (BECARIOS)",
                             "startDate": "2025-12-01",
-                            "baseSalary": 21397.32,
+                            "baseSalary": "21397.32",
                             "positionType": "BECARIO",
-                            "totalCompensation": 21397.32,
+                            "totalCompensation": "21397.32",
                             "coverage": "SEGURO DE SALUD (SOLO SERVICIO MEDICO)"
                           },
                           {
                             "agency": "SECRETARIA DE EDUCACION PUBLICA (SEP)",
                             "payrollOffice": "TECNOLOGICO NACIONAL DE MEXICO",
                             "startDate": "2026-02-16",
-                            "baseSalary": 9451.2,
+                            "baseSalary": "9451.20",
                             "positionType": "BASE",
-                            "totalCompensation": 10400.52,
+                            "totalCompensation": "10400.52",
                             "coverage": "TODOS LOS SEGUROS, PRESTACIONES Y SERVICIOS"
                           }
                         ],
@@ -2882,7 +2882,7 @@
                             "periodType": "CERTIFICADO DyE",
                             "startDate": "2025-04-01",
                             "endDate": "2025-12-31",
-                            "baseSalary": 8364.0
+                            "baseSalary": "8364.00"
                           },
                           {
                             "agency": "SECRETARIA DE CIENCIA, HUMANIDADES, TECNOLOGIA E INNOVACION",
@@ -2890,7 +2890,7 @@
                             "periodType": "CERTIFICADO DyE",
                             "startDate": "2025-12-01",
                             "endDate": null,
-                            "baseSalary": 21397.32
+                            "baseSalary": "21397.32"
                           }
                         ],
                         "fovissteHistory": [
@@ -2900,7 +2900,7 @@
                             "periodType": "CERTIFICADO DyE",
                             "startDate": "2025-04-01",
                             "endDate": "2025-12-31",
-                            "baseSalary": 8364.0
+                            "baseSalary": "8364.00"
                           },
                           {
                             "agency": "SECRETARIA DE CIENCIA, HUMANIDADES, TECNOLOGIA E INNOVACION",
@@ -2908,7 +2908,7 @@
                             "periodType": "CERTIFICADO DyE",
                             "startDate": "2025-12-01",
                             "endDate": null,
-                            "baseSalary": 21397.32
+                            "baseSalary": "21397.32"
                           }
                         ],
                         "family": [],
@@ -9545,9 +9545,9 @@
                   "example": "2018-07-01"
                 },
                 "baseSalary": {
-                  "type": "number",
-                  "description": "Salario base de cotización (MXN). Normalized from source string.",
-                  "example": 9451.2
+                  "type": "string",
+                  "description": "Salario base de cotización (MXN).",
+                  "example": "9451.20"
                 },
                 "positionType": {
                   "type": "string",
@@ -9555,9 +9555,9 @@
                   "example": "CONFIANZA"
                 },
                 "totalCompensation": {
-                  "type": "number",
+                  "type": "string",
                   "description": "Remuneración total (MXN).",
-                  "example": 22590.16
+                  "example": "22590.16"
                 },
                 "coverage": {
                   "type": "string",
@@ -9645,9 +9645,9 @@
                   "example": "2016-05-17"
                 },
                 "baseSalary": {
-                  "type": "number",
+                  "type": "string",
                   "description": "Sueldo básico (MXN).",
-                  "example": 5906.45
+                  "example": "5906.45"
                 }
               }
             }
@@ -9682,9 +9682,9 @@
                   "example": "2016-05-17"
                 },
                 "baseSalary": {
-                  "type": "number",
+                  "type": "string",
                   "description": "Sueldo básico (MXN).",
-                  "example": 5906.45
+                  "example": "5906.45"
                 }
               }
             }
