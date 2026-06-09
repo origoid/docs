@@ -1332,13 +1332,14 @@
                           "year": "1990",
                           "foreignNumber": ""
                         },
-                        "document": {
-                          "format": "PDF",
-                          "encoding": "base64",
-                          "content": "JVBERi0xLjQKJeLjz9MKMyAwIG9iago8PC9...TRUNCATED_BASE64...",
-                          "sizeBytes": 48213,
-                          "issuedAt": "2026-06-01T09:58:00-06:00"
-                        }
+                        "files": [
+                          {
+                            "kind": "document",
+                            "contentType": "application/pdf",
+                            "sizeBytes": 48213,
+                            "content": "JVBERi0xLjQKJeLjz9MKMyAwIG9iago8PC9...TRUNCATED_BASE64..."
+                          }
+                        ]
                       },
                       "transactionId": "a1b2c3d4-e5f6-7a8b-9c0d-111111111111",
                       "processedAt": "2026-06-01T10:00:00-06:00",
@@ -1375,13 +1376,14 @@
                           "year": "1990",
                           "foreignNumber": ""
                         },
-                        "document": {
-                          "format": "PDF",
-                          "encoding": "base64",
-                          "content": "JVBERi0xLjQKJeLjz9MKMyAwIG9iago8PC9...TRUNCATED_BASE64...",
-                          "sizeBytes": 48213,
-                          "issuedAt": "2026-06-01T09:58:00-06:00"
-                        }
+                        "files": [
+                          {
+                            "kind": "document",
+                            "contentType": "application/pdf",
+                            "sizeBytes": 48213,
+                            "content": "JVBERi0xLjQKJeLjz9MKMyAwIG9iago8PC9...TRUNCATED_BASE64..."
+                          }
+                        ]
                       },
                       "transactionId": "a1b2c3d4-e5f6-7a8b-9c0d-222222222222",
                       "processedAt": "2026-06-01T10:00:00-06:00",
@@ -1418,13 +1420,14 @@
                           "year": "1990",
                           "foreignNumber": ""
                         },
-                        "document": {
-                          "format": "PDF",
-                          "encoding": "base64",
-                          "content": "JVBERi0xLjQKJeLjz9MKMyAwIG9iago8PC9...TRUNCATED_BASE64...",
-                          "sizeBytes": 48213,
-                          "issuedAt": "2026-06-01T09:58:00-06:00"
-                        }
+                        "files": [
+                          {
+                            "kind": "document",
+                            "contentType": "application/pdf",
+                            "sizeBytes": 48213,
+                            "content": "JVBERi0xLjQKJeLjz9MKMyAwIG9iago8PC9...TRUNCATED_BASE64..."
+                          }
+                        ]
                       },
                       "transactionId": "a1b2c3d4-e5f6-7a8b-9c0d-333333333333",
                       "processedAt": "2026-06-01T10:00:00-06:00",
@@ -1461,13 +1464,14 @@
                           "year": "1990",
                           "foreignNumber": ""
                         },
-                        "document": {
-                          "format": "PDF",
-                          "encoding": "base64",
-                          "content": "JVBERi0xLjQKJeLjz9MKMyAwIG9iago8PC9...TRUNCATED_BASE64...",
-                          "sizeBytes": 48213,
-                          "issuedAt": "2026-06-01T09:58:00-06:00"
-                        }
+                        "files": [
+                          {
+                            "kind": "document",
+                            "contentType": "application/pdf",
+                            "sizeBytes": 48213,
+                            "content": "JVBERi0xLjQKJeLjz9MKMyAwIG9iago8PC9...TRUNCATED_BASE64..."
+                          }
+                        ]
                       },
                       "transactionId": "a1b2c3d4-e5f6-7a8b-9c0d-444444444444",
                       "processedAt": "2026-06-01T10:00:00-06:00",
@@ -1504,13 +1508,14 @@
                           "year": "1990",
                           "foreignNumber": ""
                         },
-                        "document": {
-                          "format": "PDF",
-                          "encoding": "base64",
-                          "content": "JVBERi0xLjQKJeLjz9MKMyAwIG9iago8PC9...TRUNCATED_BASE64...",
-                          "sizeBytes": 48213,
-                          "issuedAt": "2026-06-01T09:58:00-06:00"
-                        }
+                        "files": [
+                          {
+                            "kind": "document",
+                            "contentType": "application/pdf",
+                            "sizeBytes": 48213,
+                            "content": "JVBERi0xLjQKJeLjz9MKMyAwIG9iago8PC9...TRUNCATED_BASE64..."
+                          }
+                        ]
                       },
                       "transactionId": "a1b2c3d4-e5f6-7a8b-9c0d-555555555555",
                       "processedAt": "2026-06-01T10:00:00-06:00",
@@ -1547,13 +1552,14 @@
                           "year": "1990",
                           "foreignNumber": ""
                         },
-                        "document": {
-                          "format": "PDF",
-                          "encoding": "base64",
-                          "content": "JVBERi0xLjQKJeLjz9MKMyAwIG9iago8PC9...TRUNCATED_BASE64...",
-                          "sizeBytes": 48213,
-                          "issuedAt": "2026-06-01T09:58:00-06:00"
-                        }
+                        "files": [
+                          {
+                            "kind": "document",
+                            "contentType": "application/pdf",
+                            "sizeBytes": 48213,
+                            "content": "JVBERi0xLjQKJeLjz9MKMyAwIG9iago8PC9...TRUNCATED_BASE64..."
+                          }
+                        ]
                       },
                       "transactionId": "a1b2c3d4-e5f6-7a8b-9c0d-666666666666",
                       "processedAt": "2026-06-01T10:00:00-06:00",
@@ -2861,9 +2867,14 @@
                           "ocr": true,
                           "citizenIdentifier": true
                         },
-                        "extractedImages": {
-                          "face": null
-                        }
+                        "files": [
+                          {
+                            "kind": "face",
+                            "contentType": "image/jpeg",
+                            "sizeBytes": 8421,
+                            "content": "/9j/4AAQSkZJRgABAQEAYABgAAD...TRUNCATED_BASE64.../9k="
+                          }
+                        ]
                       },
                       "billable": true,
                       "transactionId": "550e8400-e29b-41d4-a716-446655440000",
@@ -2923,9 +2934,14 @@
                           "name": true
                         },
                         "qrValidation": null,
-                        "extractedImages": {
-                          "face": null
-                        }
+                        "files": [
+                          {
+                            "kind": "face",
+                            "contentType": "image/jpeg",
+                            "sizeBytes": 8421,
+                            "content": "/9j/4AAQSkZJRgABAQEAYABgAAD...TRUNCATED_BASE64.../9k="
+                          }
+                        ]
                       },
                       "billable": true,
                       "transactionId": "550e8400-e29b-41d4-a716-446655440000",
@@ -2989,9 +3005,14 @@
                           "ocr": true,
                           "citizenIdentifier": true
                         },
-                        "extractedImages": {
-                          "face": null
-                        }
+                        "files": [
+                          {
+                            "kind": "face",
+                            "contentType": "image/jpeg",
+                            "sizeBytes": 8421,
+                            "content": "/9j/4AAQSkZJRgABAQEAYABgAAD...TRUNCATED_BASE64.../9k="
+                          }
+                        ]
                       },
                       "billable": true,
                       "transactionId": "550e8400-e29b-41d4-a716-446655440000",
@@ -3258,9 +3279,14 @@
                           "cic": "312456789",
                           "ocr": "1832054321987"
                         },
-                        "extractedImages": {
-                          "face": "iVBORw0KGgoAAAANSUhEUgAAAGAAAACACAIAAAB7vvvt..."
-                        }
+                        "files": [
+                          {
+                            "kind": "face",
+                            "contentType": "image/png",
+                            "sizeBytes": 20496,
+                            "content": "iVBORw0KGgoAAAANSUhEUgAAAGAAAACACAIAAAB7vvvt..."
+                          }
+                        ]
                       },
                       "transactionId": "e8cbd7dc-a528-499e-b868-5fa956f30ca9",
                       "processedAt": "2026-04-26T10:00:00-06:00",
@@ -3301,9 +3327,14 @@
                           "cic": "123456789",
                           "ocr": "1234567890123"
                         },
-                        "extractedImages": {
-                          "face": "<base64-image>"
-                        }
+                        "files": [
+                          {
+                            "kind": "face",
+                            "contentType": "image/png",
+                            "sizeBytes": 20496,
+                            "content": "<base64-image>"
+                          }
+                        ]
                       },
                       "billable": true,
                       "transactionId": "550e8400-e29b-41d4-a716-446655440000",
@@ -7956,15 +7987,14 @@
                           "signature": "MIIEpAIBAAKCAQEA9Wn...TRUNCATED_BASE64...fQjtFfiQ==",
                           "cdaChain": "||01|01062026|01062026|142305|40012|SANT...TRUNCATED_BASE64...fQjtFfiQ=="
                         },
-                        "documents": {
-                          "pdf": null,
-                          "xml": {
-                            "format": "XML",
-                            "encoding": "base64",
-                            "content": "PD94bWwgdmVyc2lvbj0iMS4wI...TRUNCATED_BASE64...JjZXJvPg==",
-                            "sizeBytes": 1582
+                        "files": [
+                          {
+                            "kind": "document",
+                            "contentType": "application/xml",
+                            "sizeBytes": 1582,
+                            "content": "PD94bWwgdmVyc2lvbj0iMS4wI...TRUNCATED_BASE64...JjZXJvPg=="
                           }
-                        }
+                        ]
                       },
                       "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-cepsuccess001",
                       "processedAt": "2026-06-01T14:23:06-06:00",
@@ -8016,20 +8046,20 @@
                           "signature": "MIIEpAIBAAKCAQEA9Wn...TRUNCATED_BASE64...fQjtFfiQ==",
                           "cdaChain": "||01|01062026|01062026|142305|40012|SANT...TRUNCATED_BASE64...fQjtFfiQ=="
                         },
-                        "documents": {
-                          "pdf": {
-                            "format": "PDF",
-                            "encoding": "base64",
-                            "content": "JVBERi0xLjQKJ...TRUNCATED_BASE64...JUVPRg==",
-                            "sizeBytes": 48213
+                        "files": [
+                          {
+                            "kind": "document",
+                            "contentType": "application/xml",
+                            "sizeBytes": 1582,
+                            "content": "PD94bWwgdmVyc2lvbj0iMS4wI...TRUNCATED_BASE64...JjZXJvPg=="
                           },
-                          "xml": {
-                            "format": "XML",
-                            "encoding": "base64",
-                            "content": "PD94bWwgdmVyc2lvbj0iMS4wI...TRUNCATED_BASE64...JjZXJvPg==",
-                            "sizeBytes": 1582
+                          {
+                            "kind": "document",
+                            "contentType": "application/pdf",
+                            "sizeBytes": 48213,
+                            "content": "JVBERi0xLjQKJ...TRUNCATED_BASE64...JUVPRg=="
                           }
-                        }
+                        ]
                       },
                       "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-cepsuccess002",
                       "processedAt": "2026-06-01T14:23:06-06:00",
@@ -8081,7 +8111,7 @@
                           "signature": "MIIEpAIBAAKCAQEA9Wn...TRUNCATED_BASE64...fQjtFfiQ==",
                           "cdaChain": "||01|01062026|01062026|142305|40012|SANT...TRUNCATED_BASE64...fQjtFfiQ=="
                         },
-                        "documents": null
+                        "files": []
                       },
                       "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-cepsettled001",
                       "processedAt": "2026-06-01T14:23:06-06:00",
@@ -8133,7 +8163,7 @@
                           "signature": "MIIEpAIBAAKCAQEA9Wn...TRUNCATED_BASE64...fQjtFfiQ==",
                           "cdaChain": "||01|01062026|01062026|142305|40012|SANT...TRUNCATED_BASE64...fQjtFfiQ=="
                         },
-                        "documents": null
+                        "files": []
                       },
                       "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-cepreturned01",
                       "processedAt": "2026-06-01T14:23:06-06:00",
@@ -8185,7 +8215,7 @@
                           "signature": "MIIEpAIBAAKCAQEA9Wn...TRUNCATED_BASE64...fQjtFfiQ==",
                           "cdaChain": "||01|01062026|01062026|142305|40012|SANT...TRUNCATED_BASE64...fQjtFfiQ=="
                         },
-                        "documents": null
+                        "files": []
                       },
                       "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-cepcancel0001",
                       "processedAt": "2026-06-01T14:23:06-06:00",
@@ -8237,7 +8267,7 @@
                           "signature": "MIIEpAIBAAKCAQEA9Wn...TRUNCATED_BASE64...fQjtFfiQ==",
                           "cdaChain": "||01|01062026|01062026|142305|40012|SANT...TRUNCATED_BASE64...fQjtFfiQ=="
                         },
-                        "documents": null
+                        "files": []
                       },
                       "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-ceppayfound01",
                       "processedAt": "2026-06-01T14:23:06-06:00",
@@ -9630,71 +9660,11 @@
               }
             }
           },
-          "documents": {
-            "type": "object",
-            "nullable": true,
-            "description": "CEP documents. Null for non-settled results. When present, `xml` is always populated; `pdf` only when `includePdf` is true.",
-            "properties": {
-              "pdf": {
-                "type": "object",
-                "nullable": true,
-                "description": "CEP PDF document, base64-encoded. Present only when `includePdf` is true; otherwise null.",
-                "properties": {
-                  "format": {
-                    "type": "string",
-                    "enum": [
-                      "PDF"
-                    ],
-                    "example": "PDF"
-                  },
-                  "encoding": {
-                    "type": "string",
-                    "enum": [
-                      "base64"
-                    ],
-                    "example": "base64"
-                  },
-                  "content": {
-                    "type": "string",
-                    "description": "Base64-encoded PDF bytes.",
-                    "example": "...TRUNCATED_BASE64..."
-                  },
-                  "sizeBytes": {
-                    "type": "integer",
-                    "example": 48213
-                  }
-                }
-              },
-              "xml": {
-                "type": "object",
-                "nullable": false,
-                "description": "CEP XML document, base64-encoded. Always present on a CEP.",
-                "properties": {
-                  "format": {
-                    "type": "string",
-                    "enum": [
-                      "XML"
-                    ],
-                    "example": "XML"
-                  },
-                  "encoding": {
-                    "type": "string",
-                    "enum": [
-                      "base64"
-                    ],
-                    "example": "base64"
-                  },
-                  "content": {
-                    "type": "string",
-                    "description": "Base64-encoded XML bytes.",
-                    "example": "...TRUNCATED_BASE64..."
-                  },
-                  "sizeBytes": {
-                    "type": "integer",
-                    "example": 1582
-                  }
-                }
-              }
+          "files": {
+            "type": "array",
+            "description": "CEP documents as inline base64 assets. The XML (`application/xml`) is present for settled payments; the PDF (`application/pdf`) is included only when `includePdf` is true. Empty for non-settled results.",
+            "items": {
+              "$ref": "#/components/schemas/Asset"
             }
           }
         }
