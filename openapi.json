@@ -2298,7 +2298,7 @@
           "Social Security"
         ],
         "summary": "ISSSTE Expediente",
-        "description": "**Credits:** 1 per call.\n\nRetrieves a government worker's full ISSSTE expediente by CURP — personal data, affiliation, pension regime, positions, contribution history, address, assigned clinic, and the official PDF (always included as base64 in `data.document`).\n\nA retrieved expediente returns `type: SUCCESS` for an active worker. `PENSIONER`, `SCHOLAR`, `INACTIVE`, and `DECEASED` flag KYC-material standings; when more than one applies, precedence is `DECEASED` > `PENSIONER`/`SCHOLAR` > `INACTIVE`. The raw affiliation status and beneficiary type are always in `data.affiliation`, so new statuses ISSSTE may report never break the contract. `CURP_NOT_FOUND` when the CURP has no ISSSTE expediente. Dates are ISO `YYYY-MM-DD`; monetary amounts are numbers (MXN).\n\n**Field presence:** every field is always present (stable contract) — absent values are `null` (objects/scalars, including empty source strings normalized to `null`) or `[]` (arrays), never omitted. Examples: `pensions` and `family` are `[]` when the worker has none; `terminationDate` and a history row's `endDate` are `null` while ongoing; `extractedImages.face` is `null` when no photo is registered. Unmigrated placeholder values from ISSSTE (e.g. address `POR ACTUALIZAR`, clinic `FAVOR DE ATENDER A ESTE TRABAJADOR` / clave `0409999`, state `ENTIDAD DESCONOCIDA`) are normalized to `null` (data not yet migrated). ISSSTE only exposes records for titulares (TRABAJADOR/PENSIONISTA/BECARIO); a CURP that is only a dependant (not a titular) returns `CURP_NOT_FOUND`. To retrieve a dependant, query the titular CURP and match `data.family[]` by the dependant CURP. `beneficiaryType` is derived authoritatively from the expediente (a DIRECT pension means PENSIONISTA even if the document labels them TRABAJADOR); each pension carries a derived `category` (DIRECT/SURVIVOR/INSURANCE/DISABILITY).",
+        "description": "**Credits:** 1 per call.\n\nRetrieves a government worker's full ISSSTE expediente by CURP — personal data, affiliation, pension regime, positions, contribution history, address, assigned clinic, and the official PDF (always included as base64 in `data.files[]` (kind `expediente`)).\n\nA retrieved expediente returns `type: SUCCESS` for an active worker. `PENSIONER`, `SCHOLAR`, `INACTIVE`, and `DECEASED` flag KYC-material standings; when more than one applies, precedence is `DECEASED` > `PENSIONER`/`SCHOLAR` > `INACTIVE`. The raw affiliation status and beneficiary type are always in `data.affiliation`, so new statuses ISSSTE may report never break the contract. `CURP_NOT_FOUND` when the CURP has no ISSSTE expediente. Dates are ISO `YYYY-MM-DD`; monetary amounts are strings (MXN).\n\n**Field presence:** every field is always present (stable contract) — absent values are `null` (objects/scalars, including empty source strings normalized to `null`) or `[]` (arrays), never omitted. Examples: `pensions` and `family` are `[]` when the worker has none; `terminationDate` and a history row's `endDate` are `null` while ongoing; binary assets in `data.files[]` follow array semantics — only assets actually produced are listed (absent ones omitted, not `null`). Unmigrated placeholder values from ISSSTE (e.g. address `POR ACTUALIZAR`, clinic `FAVOR DE ATENDER A ESTE TRABAJADOR` / clave `0409999`, state `ENTIDAD DESCONOCIDA`) are normalized to `null` (data not yet migrated). ISSSTE only exposes records for titulares (TRABAJADOR/PENSIONISTA/BECARIO); a CURP that is only a dependant (not a titular) returns `CURP_NOT_FOUND`. To retrieve a dependant, query the titular CURP and match `data.family[]` by the dependant CURP. `beneficiaryType` is derived authoritatively from the expediente (a DIRECT pension means PENSIONISTA even if the document labels them TRABAJADOR); each pension carries a derived `category` (DIRECT/SURVIVOR/INSURANCE/DISABILITY).",
         "requestBody": {
           "required": true,
           "content": {
@@ -2458,15 +2458,20 @@
                           "issteDelegation": "DELEGACION ESTATAL EN PUEBLA",
                           "phone": "2222456950"
                         },
-                        "extractedImages": {
-                          "face": null
-                        },
-                        "document": {
-                          "format": "PDF",
-                          "encoding": "base64",
-                          "content": "JVBERi0xLjYKJdP0...TRUNCATED_BASE64...",
-                          "sizeBytes": 207341
-                        }
+                        "files": [
+                          {
+                            "kind": "expediente",
+                            "contentType": "application/pdf",
+                            "sizeBytes": 207341,
+                            "content": "JVBERi0xLjYKJdP0...TRUNCATED_BASE64..."
+                          },
+                          {
+                            "kind": "face",
+                            "contentType": "image/jpeg",
+                            "sizeBytes": 8421,
+                            "content": "/9j/4AAQSkZJRgABAQEAYABgAAD...TRUNCATED_BASE64.../9k="
+                          }
+                        ]
                       },
                       "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-success00000",
                       "processedAt": "2026-06-02T10:00:00-06:00",
@@ -2558,15 +2563,20 @@
                           "issteDelegation": "DELEGACION ESTATAL EN BAJA CALIFORNIA",
                           "phone": null
                         },
-                        "extractedImages": {
-                          "face": null
-                        },
-                        "document": {
-                          "format": "PDF",
-                          "encoding": "base64",
-                          "content": "JVBERi0xLjYKJdP0...TRUNCATED_BASE64...",
-                          "sizeBytes": 207341
-                        }
+                        "files": [
+                          {
+                            "kind": "expediente",
+                            "contentType": "application/pdf",
+                            "sizeBytes": 207341,
+                            "content": "JVBERi0xLjYKJdP0...TRUNCATED_BASE64..."
+                          },
+                          {
+                            "kind": "face",
+                            "contentType": "image/jpeg",
+                            "sizeBytes": 8421,
+                            "content": "/9j/4AAQSkZJRgABAQEAYABgAAD...TRUNCATED_BASE64.../9k="
+                          }
+                        ]
                       },
                       "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-inactive0000",
                       "processedAt": "2026-06-02T10:00:00-06:00",
@@ -2679,15 +2689,20 @@
                           "issteDelegation": "DELEGACION ESTATAL EN GUANAJUATO",
                           "phone": "4616141390"
                         },
-                        "extractedImages": {
-                          "face": null
-                        },
-                        "document": {
-                          "format": "PDF",
-                          "encoding": "base64",
-                          "content": "JVBERi0xLjYKJdP0...TRUNCATED_BASE64...",
-                          "sizeBytes": 209880
-                        }
+                        "files": [
+                          {
+                            "kind": "expediente",
+                            "contentType": "application/pdf",
+                            "sizeBytes": 209880,
+                            "content": "JVBERi0xLjYKJdP0...TRUNCATED_BASE64..."
+                          },
+                          {
+                            "kind": "face",
+                            "contentType": "image/jpeg",
+                            "sizeBytes": 8421,
+                            "content": "/9j/4AAQSkZJRgABAQEAYABgAAD...TRUNCATED_BASE64.../9k="
+                          }
+                        ]
                       },
                       "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-deceased000",
                       "processedAt": "2026-06-02T10:00:00-06:00",
@@ -2810,15 +2825,20 @@
                           "issteDelegation": "DELEGACION ESTATAL EN VERACRUZ",
                           "phone": "273 100 8334"
                         },
-                        "extractedImages": {
-                          "face": null
-                        },
-                        "document": {
-                          "format": "PDF",
-                          "encoding": "base64",
-                          "content": "JVBERi0xLjYKJdP0...TRUNCATED_BASE64...",
-                          "sizeBytes": 209880
-                        }
+                        "files": [
+                          {
+                            "kind": "expediente",
+                            "contentType": "application/pdf",
+                            "sizeBytes": 209880,
+                            "content": "JVBERi0xLjYKJdP0...TRUNCATED_BASE64..."
+                          },
+                          {
+                            "kind": "face",
+                            "contentType": "image/jpeg",
+                            "sizeBytes": 8421,
+                            "content": "/9j/4AAQSkZJRgABAQEAYABgAAD...TRUNCATED_BASE64.../9k="
+                          }
+                        ]
                       },
                       "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-pensioner00",
                       "processedAt": "2026-06-02T10:00:00-06:00",
@@ -2929,15 +2949,20 @@
                           "issteDelegation": "DELEGACION ESTATAL EN YUCATAN",
                           "phone": "9999421470"
                         },
-                        "extractedImages": {
-                          "face": null
-                        },
-                        "document": {
-                          "format": "PDF",
-                          "encoding": "base64",
-                          "content": "JVBERi0xLjYKJdP0...TRUNCATED_BASE64...",
-                          "sizeBytes": 207341
-                        }
+                        "files": [
+                          {
+                            "kind": "expediente",
+                            "contentType": "application/pdf",
+                            "sizeBytes": 207341,
+                            "content": "JVBERi0xLjYKJdP0...TRUNCATED_BASE64..."
+                          },
+                          {
+                            "kind": "face",
+                            "contentType": "image/jpeg",
+                            "sizeBytes": 8421,
+                            "content": "/9j/4AAQSkZJRgABAQEAYABgAAD...TRUNCATED_BASE64.../9k="
+                          }
+                        ]
                       },
                       "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-scholar00000",
                       "processedAt": "2026-06-02T10:00:00-06:00",
@@ -9834,45 +9859,11 @@
               }
             }
           },
-          "extractedImages": {
-            "type": "object",
-            "description": "Best-effort images extracted from the expediente PDF. Present only when ISSSTE has them registered (a photo appears in roughly 1 in 5 expedientes).",
-            "properties": {
-              "face": {
-                "type": "string",
-                "nullable": true,
-                "description": "Base64 JPEG of the worker ID photo (~120x160 px), extracted best-effort from the PDF. Appears almost exclusively for ACTIVE workers with a registered photo (~23% of active, ~18% overall); `null` for inactive/deceased workers and active workers without a photo. Low resolution — a face-match signal, not a high-assurance source.",
-                "example": "/9j/4AAQSkZJRgABAQ...TRUNCATED_BASE64..."
-              }
-            }
-          },
-          "document": {
-            "type": "object",
-            "description": "Official expediente PDF — always present in the response.",
-            "properties": {
-              "format": {
-                "type": "string",
-                "enum": [
-                  "PDF"
-                ],
-                "example": "PDF"
-              },
-              "encoding": {
-                "type": "string",
-                "enum": [
-                  "base64"
-                ],
-                "example": "base64"
-              },
-              "content": {
-                "type": "string",
-                "description": "Base64-encoded PDF bytes.",
-                "example": "JVBERi0xLjYKJdP0...TRUNCATED_BASE64..."
-              },
-              "sizeBytes": {
-                "type": "integer",
-                "example": 221534
-              }
+          "files": {
+            "type": "array",
+            "description": "Binary assets (inline base64). The expediente PDF is always present. face is included only when the PDF contains a usable face; it is omitted when no face is present or its quality is too low.",
+            "items": {
+              "$ref": "#/components/schemas/Asset"
             }
           }
         }
@@ -10260,6 +10251,34 @@
                 "example": []
               }
             }
+          }
+        }
+      },
+      "Asset": {
+        "type": "object",
+        "description": "Binary asset (image or document) returned inline as base64. The `files` array contains ONLY assets actually produced; an expected-but-unavailable asset is omitted (never null inside the array).",
+        "required": [
+          "kind",
+          "contentType",
+          "sizeBytes",
+          "content"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "description": "Semantic asset name (e.g. face, signature, expediente, csf, cfdi, constancia, cep, comprobante)."
+          },
+          "contentType": {
+            "type": "string",
+            "description": "MIME type (e.g. application/pdf, image/jpeg, application/xml)."
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "description": "Decoded size in bytes."
+          },
+          "content": {
+            "type": "string",
+            "description": "Base64-encoded bytes."
           }
         }
       }
