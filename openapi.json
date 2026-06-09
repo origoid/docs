@@ -2292,875 +2292,6 @@
         ]
       }
     },
-    "/mex/social-security/v1/issste-expediente": {
-      "post": {
-        "tags": [
-          "Social Security"
-        ],
-        "summary": "ISSSTE Expediente",
-        "description": "**Credits:** 1 per call.\n\nRetrieves a government worker's full ISSSTE expediente by CURP — personal data, affiliation, pension regime, positions, contribution history, address, assigned clinic, and the official PDF (always included as base64 in `data.files[]` (kind `expediente`)).\n\nA retrieved expediente returns `type: SUCCESS` for an active worker. `PENSIONER`, `SCHOLAR`, `INACTIVE`, and `DECEASED` flag KYC-material standings; when more than one applies, precedence is `DECEASED` > `PENSIONER`/`SCHOLAR` > `INACTIVE`. The raw affiliation status and beneficiary type are always in `data.affiliation`, so new statuses ISSSTE may report never break the contract. `CURP_NOT_FOUND` when the CURP has no ISSSTE expediente. Dates are ISO `YYYY-MM-DD`; monetary amounts are strings (MXN).\n\n**Field presence:** every field is always present (stable contract) — absent values are `null` (objects/scalars, including empty source strings normalized to `null`) or `[]` (arrays), never omitted. Examples: `pensions` and `family` are `[]` when the worker has none; `terminationDate` and a history row's `endDate` are `null` while ongoing; binary assets in `data.files[]` follow array semantics — only assets actually produced are listed (absent ones omitted, not `null`). Unmigrated placeholder values from ISSSTE (e.g. address `POR ACTUALIZAR`, clinic `FAVOR DE ATENDER A ESTE TRABAJADOR` / clave `0409999`, state `ENTIDAD DESCONOCIDA`) are normalized to `null` (data not yet migrated). ISSSTE only exposes records for titulares (TRABAJADOR/PENSIONISTA/BECARIO); a CURP that is only a dependant (not a titular) returns `CURP_NOT_FOUND`. To retrieve a dependant, query the titular CURP and match `data.family[]` by the dependant CURP. `beneficiaryType` is derived authoritatively from the expediente (a DIRECT pension means PENSIONISTA even if the document labels them TRABAJADOR); each pension carries a derived `category` (DIRECT/SURVIVOR/INSURANCE/DISABILITY).",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "curp"
-                ],
-                "properties": {
-                  "curp": {
-                    "type": "string",
-                    "description": "CURP of the government worker whose ISSSTE expediente is requested.",
-                    "example": "GOTM850312MDFMRX05"
-                  }
-                }
-              },
-              "examples": {
-                "By CURP": {
-                  "summary": "By CURP",
-                  "value": {
-                    "curp": "GOTM850312MDFMRX05"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "ISSSTE expediente result (Strict Envelope Pattern).",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "Success": {
-                    "summary": "SUCCESS — active worker (2 positions, 5 family members)",
-                    "value": {
-                      "status": "OK",
-                      "type": "SUCCESS",
-                      "message": "Active worker found",
-                      "data": {
-                        "personalInfo": {
-                          "curp": "GOTM850312MDFMRX05",
-                          "givenNames": "MARIA FERNANDA",
-                          "firstSurname": "GOMEZ",
-                          "secondSurname": "TORRES",
-                          "rfc": "GOTM850312AB1",
-                          "gender": "M",
-                          "dateOfBirth": "1985-03-12",
-                          "maritalStatus": "CASADO",
-                          "nss": "10567890123"
-                        },
-                        "affiliation": {
-                          "beneficiaryType": "TRABAJADOR",
-                          "affiliationStatus": "ACTIVO",
-                          "governmentEntryDate": "2008-01-01",
-                          "currentPositionStartDate": "2008-01-01",
-                          "terminationDate": null
-                        },
-                        "pensionRegime": {
-                          "seniorityYears": 19,
-                          "scheme": "CUENTAS INDIVIDUALES"
-                        },
-                        "employment": [
-                          {
-                            "agency": "SALUD DE TLAXCALA",
-                            "payrollOffice": "SALUD DE TLAXCALA",
-                            "startDate": "2008-01-01",
-                            "baseSalary": "9611.42",
-                            "positionType": "BASE",
-                            "totalCompensation": "14937.00",
-                            "coverage": "TODOS LOS SEGUROS, PRESTACIONES Y SERVICIOS"
-                          },
-                          {
-                            "agency": "SERVICIOS DE SALUD DEL IMSS PARA EL BIENESTAR",
-                            "payrollOffice": "IMSS BIENESTAR TLAXCALA",
-                            "startDate": "2024-03-01",
-                            "baseSalary": "10452.54",
-                            "positionType": "BASE",
-                            "totalCompensation": "29390.20",
-                            "coverage": "TODOS LOS SEGUROS, PRESTACIONES Y SERVICIOS"
-                          }
-                        ],
-                        "pensions": [],
-                        "contributionHistory": [
-                          {
-                            "agency": "SALUD DE TLAXCALA",
-                            "payrollOffice": "SALUD DE TLAXCALA",
-                            "periodType": "NORMAL",
-                            "startDate": "2008-01-01",
-                            "endDate": "2010-12-31",
-                            "baseSalary": "4450.00"
-                          },
-                          {
-                            "agency": "SALUD DE TLAXCALA",
-                            "payrollOffice": "SALUD DE TLAXCALA",
-                            "periodType": "NORMAL",
-                            "startDate": "2011-01-01",
-                            "endDate": "2012-04-30",
-                            "baseSalary": "5570.00"
-                          }
-                        ],
-                        "fovissteHistory": [
-                          {
-                            "agency": "SALUD DE TLAXCALA",
-                            "payrollOffice": "SALUD DE TLAXCALA",
-                            "periodType": "NORMAL",
-                            "startDate": "2008-01-01",
-                            "endDate": "2010-12-31",
-                            "baseSalary": "4450.00"
-                          },
-                          {
-                            "agency": "SALUD DE TLAXCALA",
-                            "payrollOffice": "SALUD DE TLAXCALA",
-                            "periodType": "NORMAL",
-                            "startDate": "2011-01-01",
-                            "endDate": "2012-04-30",
-                            "baseSalary": "5570.00"
-                          }
-                        ],
-                        "family": [
-                          {
-                            "curp": "GOTL120418HDFMRS00",
-                            "firstSurname": "GOMEZ",
-                            "secondSurname": "TORRES",
-                            "givenNames": "LUIS",
-                            "relationship": "HIJO",
-                            "status": "ACTIVO",
-                            "dateOfBirth": "2012-04-18",
-                            "registrationDate": "2012-05-01"
-                          },
-                          {
-                            "curp": "RASP840912HDFMLD05",
-                            "firstSurname": "RAMIREZ",
-                            "secondSurname": "SOLIS",
-                            "givenNames": "PEDRO",
-                            "relationship": "ESPOSO",
-                            "status": "ACTIVO",
-                            "dateOfBirth": "1984-09-12",
-                            "registrationDate": "2010-02-01"
-                          }
-                        ],
-                        "address": {
-                          "street": "AVENIDA EJEMPLO",
-                          "exteriorNumber": "100",
-                          "interiorNumber": null,
-                          "neighborhood": "CENTRO",
-                          "municipality": "PUEBLA",
-                          "state": "PUEBLA",
-                          "postalCode": "00000"
-                        },
-                        "clinic": {
-                          "code": "3620300",
-                          "type": "HAE",
-                          "name": "PUEBLA, PUE.",
-                          "address": "JARDINES DE SAN MANUEL, JARDINES DE SAN MANUEL",
-                          "issteDelegation": "DELEGACION ESTATAL EN PUEBLA",
-                          "phone": "2222456950"
-                        },
-                        "files": [
-                          {
-                            "kind": "expediente",
-                            "contentType": "application/pdf",
-                            "sizeBytes": 207341,
-                            "content": "JVBERi0xLjYKJdP0...TRUNCATED_BASE64..."
-                          },
-                          {
-                            "kind": "face",
-                            "contentType": "image/jpeg",
-                            "sizeBytes": 8421,
-                            "content": "/9j/4AAQSkZJRgABAQEAYABgAAD...TRUNCATED_BASE64.../9k="
-                          }
-                        ]
-                      },
-                      "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-success00000",
-                      "processedAt": "2026-06-02T10:00:00-06:00",
-                      "billable": true
-                    }
-                  },
-                  "Inactive": {
-                    "summary": "INACTIVE — inactive worker (terminationDate set)",
-                    "value": {
-                      "status": "OK",
-                      "type": "INACTIVE",
-                      "message": "Inactive worker found",
-                      "data": {
-                        "personalInfo": {
-                          "curp": "DIMR600724MDFZRS03",
-                          "givenNames": "ROSA ELENA",
-                          "firstSurname": "DIAZ",
-                          "secondSurname": "MORALES",
-                          "rfc": "DIMR600724XY2",
-                          "gender": "M",
-                          "dateOfBirth": "1960-07-24",
-                          "maritalStatus": "SOLTERO",
-                          "nss": "20987654321"
-                        },
-                        "affiliation": {
-                          "beneficiaryType": "TRABAJADOR",
-                          "affiliationStatus": "INACTIVO",
-                          "governmentEntryDate": "1982-10-01",
-                          "currentPositionStartDate": "2016-07-31",
-                          "terminationDate": "2026-06-02"
-                        },
-                        "pensionRegime": {
-                          "seniorityYears": 43,
-                          "scheme": "CUENTAS INDIVIDUALES"
-                        },
-                        "employment": [],
-                        "pensions": [],
-                        "contributionHistory": [
-                          {
-                            "agency": "INST. DE SEG. Y SERVS. SOCLS. DE LOS TRABJS. DEL EDO. (ISSST",
-                            "payrollOffice": "ISSSTE. DIRECCION DE ADMINISTRACION",
-                            "periodType": "NORMAL",
-                            "startDate": "2021-03-01",
-                            "endDate": "2023-01-15",
-                            "baseSalary": "4448.50"
-                          },
-                          {
-                            "agency": "INST. DE SEG. Y SERVS. SOCLS. DE LOS TRABJS. DEL EDO. (ISSST",
-                            "payrollOffice": "ISSSTE. DIRECCION DE ADMINISTRACION",
-                            "periodType": "CERTIFICADO DyE",
-                            "startDate": "2023-01-16",
-                            "endDate": "2023-10-15",
-                            "baseSalary": "9077.00"
-                          }
-                        ],
-                        "fovissteHistory": [
-                          {
-                            "agency": "INST. DE SEG. Y SERVS. SOCLS. DE LOS TRABJS. DEL EDO. (ISSST",
-                            "payrollOffice": "ISSSTE. DIRECCION DE ADMINISTRACION",
-                            "periodType": "NORMAL",
-                            "startDate": "2021-03-01",
-                            "endDate": "2023-01-15",
-                            "baseSalary": "4448.50"
-                          },
-                          {
-                            "agency": "INST. DE SEG. Y SERVS. SOCLS. DE LOS TRABJS. DEL EDO. (ISSST",
-                            "payrollOffice": "ISSSTE. DIRECCION DE ADMINISTRACION",
-                            "periodType": "CERTIFICADO DyE",
-                            "startDate": "2023-01-16",
-                            "endDate": "2023-10-15",
-                            "baseSalary": "9077.00"
-                          }
-                        ],
-                        "family": [],
-                        "address": {
-                          "street": "AVENIDA EJEMPLO",
-                          "exteriorNumber": "100",
-                          "interiorNumber": null,
-                          "neighborhood": "CENTRO",
-                          "municipality": "TIJUANA",
-                          "state": "BAJA CALIFORNIA",
-                          "postalCode": "00000"
-                        },
-                        "clinic": {
-                          "code": "0220800",
-                          "type": "CMF",
-                          "name": "MESA DE OTAY",
-                          "address": null,
-                          "issteDelegation": "DELEGACION ESTATAL EN BAJA CALIFORNIA",
-                          "phone": null
-                        },
-                        "files": [
-                          {
-                            "kind": "expediente",
-                            "contentType": "application/pdf",
-                            "sizeBytes": 207341,
-                            "content": "JVBERi0xLjYKJdP0...TRUNCATED_BASE64..."
-                          },
-                          {
-                            "kind": "face",
-                            "contentType": "image/jpeg",
-                            "sizeBytes": 8421,
-                            "content": "/9j/4AAQSkZJRgABAQEAYABgAAD...TRUNCATED_BASE64.../9k="
-                          }
-                        ]
-                      },
-                      "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-inactive0000",
-                      "processedAt": "2026-06-02T10:00:00-06:00",
-                      "billable": true
-                    }
-                  },
-                  "Deceased": {
-                    "summary": "DECEASED — deceased worker (survivor pension + family)",
-                    "value": {
-                      "status": "OK",
-                      "type": "DECEASED",
-                      "message": "Deceased worker found",
-                      "data": {
-                        "personalInfo": {
-                          "curp": "RUVC550415MDFZGR07",
-                          "givenNames": "CARMEN",
-                          "firstSurname": "RUIZ",
-                          "secondSurname": "VEGA",
-                          "rfc": "RUVC550415PQ3",
-                          "gender": "M",
-                          "dateOfBirth": "1955-04-15",
-                          "maritalStatus": "SOLTERO",
-                          "nss": "30135792468"
-                        },
-                        "affiliation": {
-                          "beneficiaryType": "TRABAJADOR",
-                          "affiliationStatus": "FINADO",
-                          "governmentEntryDate": "1987-11-16",
-                          "currentPositionStartDate": "2022-08-24",
-                          "terminationDate": null
-                        },
-                        "pensionRegime": {
-                          "seniorityYears": 0,
-                          "scheme": "DÉCIMO TRANSITORIO"
-                        },
-                        "employment": [],
-                        "pensions": [
-                          {
-                            "category": "SURVIVOR",
-                            "agency": "PENSIONISTAS Y JUBILADOS CON CARGO AL I.S.S.S.T.E.",
-                            "payrollOffice": "I.S.S.S.T.E. PENSIONISTAS DEUDOS GUANAJUATO",
-                            "startDate": "2022-08-24",
-                            "pensionNumber": "9000000",
-                            "pensionType": "316",
-                            "pensionAmount": 25731.3
-                          }
-                        ],
-                        "contributionHistory": [
-                          {
-                            "agency": "SECRETARIA DE EDUCACION EN GUANAJUATO-UNIDAD PUENTECILLAS",
-                            "payrollOffice": "SECRETARIA DE EDUCACION EN GUANAJUATO-UNIDAD PUENTECILLAS",
-                            "periodType": "PENSIONES",
-                            "startDate": "1987-11-16",
-                            "endDate": "1987-12-15",
-                            "baseSalary": "168.75"
-                          },
-                          {
-                            "agency": "SECRETARIA DE EDUCACION EN GUANAJUATO-UNIDAD PUENTECILLAS",
-                            "payrollOffice": "SECRETARIA DE EDUCACION EN GUANAJUATO-UNIDAD PUENTECILLAS",
-                            "periodType": "PENSIONES",
-                            "startDate": "1987-12-16",
-                            "endDate": "1987-12-31",
-                            "baseSalary": "194.10"
-                          }
-                        ],
-                        "fovissteHistory": [
-                          {
-                            "agency": "SECRETARIA DE EDUCACION EN GUANAJUATO-UNIDAD PUENTECILLAS",
-                            "payrollOffice": "SECRETARIA DE EDUCACION EN GUANAJUATO-UNIDAD PUENTECILLAS",
-                            "periodType": "PENSIONES",
-                            "startDate": "1987-11-16",
-                            "endDate": "1987-12-15",
-                            "baseSalary": "168.75"
-                          },
-                          {
-                            "agency": "SECRETARIA DE EDUCACION EN GUANAJUATO-UNIDAD PUENTECILLAS",
-                            "payrollOffice": "SECRETARIA DE EDUCACION EN GUANAJUATO-UNIDAD PUENTECILLAS",
-                            "periodType": "PENSIONES",
-                            "startDate": "1987-12-16",
-                            "endDate": "1987-12-31",
-                            "baseSalary": "194.10"
-                          }
-                        ],
-                        "family": [
-                          {
-                            "curp": "GOTA140722MDFMRN06",
-                            "firstSurname": "GOMEZ",
-                            "secondSurname": "TORRES",
-                            "givenNames": "ANA",
-                            "relationship": "HIJA",
-                            "status": "POSIBLE DEUDO",
-                            "dateOfBirth": "2014-07-22",
-                            "registrationDate": "2014-08-01"
-                          }
-                        ],
-                        "address": {
-                          "street": "AVENIDA EJEMPLO",
-                          "exteriorNumber": "100",
-                          "interiorNumber": null,
-                          "neighborhood": "CENTRO",
-                          "municipality": "CELAYA",
-                          "state": "GUANAJUATO",
-                          "postalCode": "00000"
-                        },
-                        "clinic": {
-                          "code": "1120700",
-                          "type": "CH",
-                          "name": "CELAYA",
-                          "address": "AV. EL SAUZ ESQ. ESMERALDA, SANJUANICO",
-                          "issteDelegation": "DELEGACION ESTATAL EN GUANAJUATO",
-                          "phone": "4616141390"
-                        },
-                        "files": [
-                          {
-                            "kind": "expediente",
-                            "contentType": "application/pdf",
-                            "sizeBytes": 209880,
-                            "content": "JVBERi0xLjYKJdP0...TRUNCATED_BASE64..."
-                          },
-                          {
-                            "kind": "face",
-                            "contentType": "image/jpeg",
-                            "sizeBytes": 8421,
-                            "content": "/9j/4AAQSkZJRgABAQEAYABgAAD...TRUNCATED_BASE64.../9k="
-                          }
-                        ]
-                      },
-                      "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-deceased000",
-                      "processedAt": "2026-06-02T10:00:00-06:00",
-                      "billable": true
-                    }
-                  },
-                  "Pensioner": {
-                    "summary": "PENSIONER — real direct pensioner (own retirement pension; web miscategorized as TRABAJADOR, corrected to PENSIONISTA)",
-                    "value": {
-                      "status": "OK",
-                      "type": "PENSIONER",
-                      "message": "Pensioner found",
-                      "data": {
-                        "personalInfo": {
-                          "curp": "SOLE600705MVZTRL01",
-                          "givenNames": "ELENA",
-                          "firstSurname": "SOTO",
-                          "secondSurname": "LARA",
-                          "rfc": "SOLE600705RS4",
-                          "gender": "M",
-                          "dateOfBirth": "1960-07-05",
-                          "maritalStatus": "CASADO",
-                          "nss": "40246813579"
-                        },
-                        "affiliation": {
-                          "beneficiaryType": "PENSIONISTA",
-                          "affiliationStatus": "ACTIVO",
-                          "governmentEntryDate": "1979-10-01",
-                          "currentPositionStartDate": "2010-01-01",
-                          "terminationDate": null
-                        },
-                        "pensionRegime": {
-                          "seniorityYears": 0,
-                          "scheme": "DÉCIMO TRANSITORIO"
-                        },
-                        "employment": [],
-                        "pensions": [
-                          {
-                            "category": "DIRECT",
-                            "agency": "PENSIONISTAS Y JUBILADOS CON CARGO AL I.S.S.S.T.E.",
-                            "payrollOffice": "I.S.S.S.T.E. PENSIONISTAS DIRECTOS VERACRUZ",
-                            "startDate": "2010-01-01",
-                            "pensionNumber": "9000000",
-                            "pensionType": "101",
-                            "pensionAmount": 9720.9
-                          }
-                        ],
-                        "contributionHistory": [
-                          {
-                            "agency": "SECRETARIA DE EDUCACION PUBLICA (SEP)",
-                            "payrollOffice": "GOBIERNO DEL ESTADO DE VERACRUZ, SISTEMA EDUCATIVO ESTATAL.",
-                            "periodType": "PENSIONES",
-                            "startDate": "1993-06-16",
-                            "endDate": "1994-09-30",
-                            "baseSalary": "1575.15"
-                          },
-                          {
-                            "agency": "SECRETARIA DE EDUCACION Y CULTURA DEL ESTADO DE VERACRUZ",
-                            "payrollOffice": "SECRETARIA DE EDUCACION Y CULTURA DEL ESTADO DE VERACRUZ",
-                            "periodType": "PENSIONES",
-                            "startDate": "1979-10-01",
-                            "endDate": "1979-12-31",
-                            "baseSalary": "4.14"
-                          }
-                        ],
-                        "fovissteHistory": [
-                          {
-                            "agency": "SECRETARIA DE EDUCACION PUBLICA (SEP)",
-                            "payrollOffice": "GOBIERNO DEL ESTADO DE VERACRUZ, SISTEMA EDUCATIVO ESTATAL.",
-                            "periodType": "PENSIONES",
-                            "startDate": "1993-06-16",
-                            "endDate": "1994-09-30",
-                            "baseSalary": "1575.15"
-                          },
-                          {
-                            "agency": "SECRETARIA DE EDUCACION Y CULTURA DEL ESTADO DE VERACRUZ",
-                            "payrollOffice": "SECRETARIA DE EDUCACION Y CULTURA DEL ESTADO DE VERACRUZ",
-                            "periodType": "PENSIONES",
-                            "startDate": "1979-10-01",
-                            "endDate": "1979-12-31",
-                            "baseSalary": "4.14"
-                          }
-                        ],
-                        "family": [
-                          {
-                            "curp": "TOVR550130MDFRGS02",
-                            "firstSurname": "TORRES",
-                            "secondSurname": "VEGA",
-                            "givenNames": "ROSA",
-                            "relationship": "MADRE",
-                            "status": "ACTIVO",
-                            "dateOfBirth": "1955-01-30",
-                            "registrationDate": "2009-03-10"
-                          },
-                          {
-                            "curp": "GOLJ521105HDFMRS07",
-                            "firstSurname": "GOMEZ",
-                            "secondSurname": "LARA",
-                            "givenNames": "JOSE",
-                            "relationship": "PADRE",
-                            "status": "ACTIVO",
-                            "dateOfBirth": "1952-11-05",
-                            "registrationDate": "2009-03-10"
-                          }
-                        ],
-                        "address": {
-                          "street": "AVENIDA EJEMPLO",
-                          "exteriorNumber": "100",
-                          "interiorNumber": null,
-                          "neighborhood": "CENTRO",
-                          "municipality": "HUATUSCO",
-                          "state": "VERACRUZ",
-                          "postalCode": "00000"
-                        },
-                        "clinic": {
-                          "code": "3020601",
-                          "type": "UMF",
-                          "name": "HUATUSCO DE CHICUELLAR",
-                          "address": "CALLE 2, CENTRO",
-                          "issteDelegation": "DELEGACION ESTATAL EN VERACRUZ",
-                          "phone": "273 100 8334"
-                        },
-                        "files": [
-                          {
-                            "kind": "expediente",
-                            "contentType": "application/pdf",
-                            "sizeBytes": 209880,
-                            "content": "JVBERi0xLjYKJdP0...TRUNCATED_BASE64..."
-                          },
-                          {
-                            "kind": "face",
-                            "contentType": "image/jpeg",
-                            "sizeBytes": 8421,
-                            "content": "/9j/4AAQSkZJRgABAQEAYABgAAD...TRUNCATED_BASE64.../9k="
-                          }
-                        ]
-                      },
-                      "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-pensioner00",
-                      "processedAt": "2026-06-02T10:00:00-06:00",
-                      "billable": true
-                    }
-                  },
-                  "Scholar": {
-                    "summary": "SCHOLAR — CONAHCYT/SECIHTI grant holder",
-                    "value": {
-                      "status": "OK",
-                      "type": "SCHOLAR",
-                      "message": "Scholarship holder found",
-                      "data": {
-                        "personalInfo": {
-                          "curp": "MERC900821HDFNSR06",
-                          "givenNames": "CARLOS",
-                          "firstSurname": "MENDEZ",
-                          "secondSurname": "RIOS",
-                          "rfc": "MERC900821TU5",
-                          "gender": "H",
-                          "dateOfBirth": "1990-08-21",
-                          "maritalStatus": "SOLTERO",
-                          "nss": "50369258147"
-                        },
-                        "affiliation": {
-                          "beneficiaryType": "BECARIO",
-                          "affiliationStatus": "ACTIVO",
-                          "governmentEntryDate": "2024-02-01",
-                          "currentPositionStartDate": "2026-02-16",
-                          "terminationDate": null
-                        },
-                        "pensionRegime": {
-                          "seniorityYears": 1,
-                          "scheme": "CUENTAS INDIVIDUALES"
-                        },
-                        "employment": [
-                          {
-                            "agency": "SECRETARIA DE CIENCIA, HUMANIDADES, TECNOLOGIA E INNOVACION",
-                            "payrollOffice": "SECRETARIA DE CIENCIA, HUMANIDADES, TECNOLOGIA E INOVACION (BECARIOS)",
-                            "startDate": "2025-12-01",
-                            "baseSalary": "21397.32",
-                            "positionType": "BECARIO",
-                            "totalCompensation": "21397.32",
-                            "coverage": "SEGURO DE SALUD (SOLO SERVICIO MEDICO)"
-                          },
-                          {
-                            "agency": "SECRETARIA DE EDUCACION PUBLICA (SEP)",
-                            "payrollOffice": "TECNOLOGICO NACIONAL DE MEXICO",
-                            "startDate": "2026-02-16",
-                            "baseSalary": "9451.20",
-                            "positionType": "BASE",
-                            "totalCompensation": "10400.52",
-                            "coverage": "TODOS LOS SEGUROS, PRESTACIONES Y SERVICIOS"
-                          }
-                        ],
-                        "pensions": [],
-                        "contributionHistory": [
-                          {
-                            "agency": "CONSEJO NACIONAL DE HUMANIDADES, CIENCIAS Y TECNOLOGIAS",
-                            "payrollOffice": "CONSEJO NACIONAL DE HUMANIDADES, CIENCIAS Y TECNOLOGIAS (BECARIOS)",
-                            "periodType": "CERTIFICADO DyE",
-                            "startDate": "2025-04-01",
-                            "endDate": "2025-12-31",
-                            "baseSalary": "8364.00"
-                          },
-                          {
-                            "agency": "SECRETARIA DE CIENCIA, HUMANIDADES, TECNOLOGIA E INNOVACION",
-                            "payrollOffice": "SECRETARIA DE CIENCIA, HUMANIDADES, TECNOLOGIA E INOVACION (BECARIOS)",
-                            "periodType": "CERTIFICADO DyE",
-                            "startDate": "2025-12-01",
-                            "endDate": null,
-                            "baseSalary": "21397.32"
-                          }
-                        ],
-                        "fovissteHistory": [
-                          {
-                            "agency": "CONSEJO NACIONAL DE HUMANIDADES, CIENCIAS Y TECNOLOGIAS",
-                            "payrollOffice": "CONSEJO NACIONAL DE HUMANIDADES, CIENCIAS Y TECNOLOGIAS (BECARIOS)",
-                            "periodType": "CERTIFICADO DyE",
-                            "startDate": "2025-04-01",
-                            "endDate": "2025-12-31",
-                            "baseSalary": "8364.00"
-                          },
-                          {
-                            "agency": "SECRETARIA DE CIENCIA, HUMANIDADES, TECNOLOGIA E INNOVACION",
-                            "payrollOffice": "SECRETARIA DE CIENCIA, HUMANIDADES, TECNOLOGIA E INOVACION (BECARIOS)",
-                            "periodType": "CERTIFICADO DyE",
-                            "startDate": "2025-12-01",
-                            "endDate": null,
-                            "baseSalary": "21397.32"
-                          }
-                        ],
-                        "family": [],
-                        "address": {
-                          "street": "AVENIDA EJEMPLO",
-                          "exteriorNumber": "100",
-                          "interiorNumber": null,
-                          "neighborhood": "CENTRO",
-                          "municipality": "MERIDA",
-                          "state": "YUCATAN",
-                          "postalCode": "00000"
-                        },
-                        "clinic": {
-                          "code": "3120100",
-                          "type": "CMFE",
-                          "name": "MERIDA (COL. LINDAVISTA)",
-                          "address": "19B POR 44 Y 44A, PEDREGALES DE LINDAVISTA",
-                          "issteDelegation": "DELEGACION ESTATAL EN YUCATAN",
-                          "phone": "9999421470"
-                        },
-                        "files": [
-                          {
-                            "kind": "expediente",
-                            "contentType": "application/pdf",
-                            "sizeBytes": 207341,
-                            "content": "JVBERi0xLjYKJdP0...TRUNCATED_BASE64..."
-                          },
-                          {
-                            "kind": "face",
-                            "contentType": "image/jpeg",
-                            "sizeBytes": 8421,
-                            "content": "/9j/4AAQSkZJRgABAQEAYABgAAD...TRUNCATED_BASE64.../9k="
-                          }
-                        ]
-                      },
-                      "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-scholar00000",
-                      "processedAt": "2026-06-02T10:00:00-06:00",
-                      "billable": true
-                    }
-                  },
-                  "CURP Not Found": {
-                    "summary": "CURP valid but not registered in ISSSTE (billable)",
-                    "value": {
-                      "status": "OK",
-                      "type": "CURP_NOT_FOUND",
-                      "message": "CURP not found in ISSSTE",
-                      "data": null,
-                      "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-222222222222",
-                      "processedAt": "2026-06-01T11:00:00-06:00",
-                      "billable": true
-                    }
-                  },
-                  "Validation Error": {
-                    "summary": "Validation Error",
-                    "value": {
-                      "status": "ERROR",
-                      "type": "INVALID_REQUEST",
-                      "message": "Validation failed",
-                      "data": null,
-                      "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-444444444444",
-                      "processedAt": "2026-06-01T11:00:00-06:00",
-                      "billable": false,
-                      "errors": [
-                        {
-                          "field": "curp",
-                          "code": "MISSING_REQUIRED_FIELD",
-                          "message": "must have required property 'curp'"
-                        },
-                        {
-                          "field": "curp",
-                          "code": "INVALID_FORMAT",
-                          "message": "curp must be a valid 18-character CURP"
-                        },
-                        {
-                          "field": "body",
-                          "code": "PAYLOAD_TOO_LARGE",
-                          "message": "body exceeds the maximum allowed size"
-                        }
-                      ]
-                    }
-                  },
-                  "Service Unavailable": {
-                    "summary": "ISSSTE portal unavailable or blocked",
-                    "value": {
-                      "status": "ERROR",
-                      "type": "SERVICE_UNAVAILABLE",
-                      "message": "ISSSTE service is currently unavailable",
-                      "data": null,
-                      "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-555555555555",
-                      "processedAt": "2026-06-01T11:00:00-06:00",
-                      "billable": false
-                    }
-                  },
-                  "Internal Error": {
-                    "summary": "Internal Error",
-                    "value": {
-                      "status": "ERROR",
-                      "type": "INTERNAL_ERROR",
-                      "message": "Unexpected internal error",
-                      "data": null,
-                      "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-666666666666",
-                      "processedAt": "2026-06-01T11:00:00-06:00",
-                      "billable": false
-                    }
-                  }
-                },
-                "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/Envelope"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "data": {
-                          "$ref": "#/components/schemas/IssteExpedienteData"
-                        }
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "Unauthorized": {
-                    "summary": "Unauthorized",
-                    "value": {
-                      "status": "ERROR",
-                      "type": "UNAUTHORIZED",
-                      "message": "Invalid credentials",
-                      "data": null,
-                      "transactionId": "71d64fd8-8a54-4792-a844-7e2466eb01f7",
-                      "processedAt": "2026-05-21T10:00:00-06:00",
-                      "billable": false
-                    }
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/Envelope"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Too Many Requests — endpoint rate limit exceeded.",
-            "headers": {
-              "Retry-After": {
-                "schema": {
-                  "type": "integer"
-                },
-                "description": "Seconds to wait before retrying."
-              },
-              "X-RateLimit-Limit": {
-                "schema": {
-                  "type": "integer"
-                },
-                "description": "Total requests allowed in the current window (per minute, per endpoint, per user/plan)."
-              },
-              "X-RateLimit-Remaining": {
-                "schema": {
-                  "type": "integer"
-                },
-                "description": "Requests remaining in the current window."
-              },
-              "X-RateLimit-Reset": {
-                "schema": {
-                  "type": "integer"
-                },
-                "description": "Unix timestamp (seconds) when the rate limit window resets."
-              }
-            },
-            "content": {
-              "application/json": {
-                "examples": {
-                  "Rate Limit": {
-                    "summary": "Rate Limit Exceeded",
-                    "value": {
-                      "status": "ERROR",
-                      "type": "RATE_LIMIT_EXCEEDED",
-                      "message": "API rate limit exceeded for this endpoint. Retry after the duration specified in the Retry-After header.",
-                      "data": null,
-                      "transactionId": "fb9c33a5-ee2f-42b2-8467-ff6807e14beb",
-                      "processedAt": "2026-04-26T10:00:00-06:00",
-                      "billable": false
-                    }
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/Envelope"
-                }
-              }
-            }
-          }
-        },
-        "operationId": "getIssteExpediente",
-        "x-codeSamples": [
-          {
-            "lang": "cURL",
-            "source": "curl -X POST https://api.origoid.com/mex/social-security/v1/issste-expediente \\\n  -H \"x-api-key: YOUR_API_KEY\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"curp\": \"TEST900101HDFRRN09\"}'"
-          },
-          {
-            "lang": "JavaScript",
-            "source": "const response = await fetch(\"https://api.origoid.com/mex/social-security/v1/issste-expediente\", {\n  method: \"POST\",\n  headers: {\n    \"x-api-key\": process.env.ORIGOID_API_KEY,\n    \"content-type\": \"application/json\",\n  },\n  body: JSON.stringify({\n      \"curp\": \"TEST900101HDFRRN09\"\n  }),\n});\n\nif (!response.ok) {\n  throw new Error(`HTTP ${response.status}`);\n}\n\nconst result = await response.json();\nconsole.log(result);"
-          },
-          {
-            "lang": "Python",
-            "source": "import os\nimport requests\n\nresponse = requests.post(\n    \"https://api.origoid.com/mex/social-security/v1/issste-expediente\",\n    headers={\n        \"x-api-key\": os.environ[\"ORIGOID_API_KEY\"],\n        \"content-type\": \"application/json\",\n    },\n    json={\n            \"curp\": \"TEST900101HDFRRN09\"\n    },\n    timeout=30,\n)\nresponse.raise_for_status()\nresult = response.json()\nprint(result)"
-          },
-          {
-            "lang": "Java",
-            "source": "import java.net.URI;\nimport java.net.http.HttpClient;\nimport java.net.http.HttpRequest;\nimport java.net.http.HttpResponse;\nimport java.time.Duration;\n\npublic class Example {\n    public static void main(String[] args) throws Exception {\n        String payload = \"{\\\"curp\\\": \\\"TEST900101HDFRRN09\\\"}\";\n\n        HttpClient client = HttpClient.newBuilder()\n            .connectTimeout(Duration.ofSeconds(10))\n            .build();\n\n        HttpRequest request = HttpRequest.newBuilder()\n            .uri(URI.create(\"https://api.origoid.com/mex/social-security/v1/issste-expediente\"))\n            .header(\"x-api-key\", System.getenv(\"ORIGOID_API_KEY\"))\n            .header(\"content-type\", \"application/json\")\n            .timeout(Duration.ofSeconds(30))\n            .POST(HttpRequest.BodyPublishers.ofString(payload))\n            .build();\n\n        HttpResponse<String> response = client.send(\n            request, HttpResponse.BodyHandlers.ofString()\n        );\n\n        System.out.println(response.statusCode());\n        System.out.println(response.body());\n    }\n}"
-          },
-          {
-            "lang": "PHP",
-            "source": "<?php\n$payload = '{\"curp\": \"TEST900101HDFRRN09\"}';\n\n$ch = curl_init('https://api.origoid.com/mex/social-security/v1/issste-expediente');\ncurl_setopt_array($ch, [\n    CURLOPT_POST => true,\n    CURLOPT_POSTFIELDS => $payload,\n    CURLOPT_RETURNTRANSFER => true,\n    CURLOPT_TIMEOUT => 30,\n    CURLOPT_HTTPHEADER => [\n        'x-api-key: ' . getenv('ORIGOID_API_KEY'),\n        'content-type: application/json',\n    ],\n]);\n\n$response = curl_exec($ch);\n$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);\ncurl_close($ch);\n\nif ($status >= 400) {\n    throw new Exception(\"HTTP $status\");\n}\n\n$result = json_decode($response, true);\nprint_r($result);"
-          },
-          {
-            "lang": "Go",
-            "source": "package main\n\nimport (\n\t\"bytes\"\n\t\"encoding/json\"\n\t\"fmt\"\n\t\"log\"\n\t\"net/http\"\n\t\"os\"\n\t\"time\"\n)\n\nfunc main() {\n\tpayload := []byte(`{\"curp\": \"TEST900101HDFRRN09\"}`)\n\treq, err := http.NewRequest(\"POST\", \"https://api.origoid.com/mex/social-security/v1/issste-expediente\", bytes.NewBuffer(payload))\n\tif err != nil { log.Fatal(err) }\n\treq.Header.Set(\"x-api-key\", os.Getenv(\"ORIGOID_API_KEY\"))\n\treq.Header.Set(\"content-type\", \"application/json\")\n\n\tclient := &http.Client{Timeout: 30 * time.Second}\n\tresp, err := client.Do(req)\n\tif err != nil { log.Fatal(err) }\n\tdefer resp.Body.Close()\n\n\tvar result map[string]any\n\tif err := json.NewDecoder(resp.Body).Decode(&result); err != nil {\n\t\tlog.Fatal(err)\n\t}\n\tfmt.Println(result)\n}"
-          },
-          {
-            "lang": "C#",
-            "source": "using System;\nusing System.Net.Http;\nusing System.Text;\nusing System.Threading.Tasks;\n\nclass Program\n{\n    static async Task Main()\n    {\n        using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };\n        client.DefaultRequestHeaders.Add(\"x-api-key\",\n            Environment.GetEnvironmentVariable(\"ORIGOID_API_KEY\"));\n\n        var payload = \"{\\\"curp\\\": \\\"TEST900101HDFRRN09\\\"}\";\n        var content = new StringContent(payload, Encoding.UTF8, \"application/json\");\n\n        var response = await client.PostAsync(\"https://api.origoid.com/mex/social-security/v1/issste-expediente\", content);\n        response.EnsureSuccessStatusCode();\n\n        var body = await response.Content.ReadAsStringAsync();\n        Console.WriteLine(body);\n    }\n}"
-          }
-        ]
-      }
-    },
     "/mex/id/v1/voter-list-validations": {
       "post": {
         "tags": [
@@ -9320,6 +8451,875 @@
           }
         ]
       }
+    },
+    "/mex/social-security/v1/issste-records": {
+      "post": {
+        "tags": [
+          "Social Security"
+        ],
+        "summary": "ISSSTE Record",
+        "description": "**Credits:** 1 per call.\n\nRetrieves a government worker's full ISSSTE record by CURP — personal data, affiliation, pension regime, positions, contribution history, address, assigned clinic, and the official PDF (always included as base64 in `data.files[]` (kind `document`)).\n\nA retrieved record returns `type: SUCCESS` for an active worker. `PENSIONER`, `SCHOLAR`, `INACTIVE`, and `DECEASED` flag KYC-material standings; when more than one applies, precedence is `DECEASED` > `PENSIONER`/`SCHOLAR` > `INACTIVE`. The raw affiliation status and beneficiary type are always in `data.affiliation`, so new statuses ISSSTE may report never break the contract. `CURP_NOT_FOUND` when the CURP has no ISSSTE record. Dates are ISO `YYYY-MM-DD`; monetary amounts are strings (MXN).\n\n**Field presence:** every field is always present (stable contract) — absent values are `null` (objects/scalars, including empty source strings normalized to `null`) or `[]` (arrays), never omitted. Examples: `pensions` and `family` are `[]` when the worker has none; `terminationDate` and a history row's `endDate` are `null` while ongoing; binary assets in `data.files[]` follow array semantics — only assets actually produced are listed (absent ones omitted, not `null`). Unmigrated placeholder values from ISSSTE (e.g. address `POR ACTUALIZAR`, clinic `FAVOR DE ATENDER A ESTE TRABAJADOR` / clave `0409999`, state `ENTIDAD DESCONOCIDA`) are normalized to `null` (data not yet migrated). ISSSTE only exposes records for titulares (TRABAJADOR/PENSIONISTA/BECARIO); a CURP that is only a dependant (not a titular) returns `CURP_NOT_FOUND`. To retrieve a dependant, query the titular CURP and match `data.family[]` by the dependant CURP. `beneficiaryType` is derived authoritatively from the record (a DIRECT pension means PENSIONISTA even if the document labels them TRABAJADOR); each pension carries a derived `category` (DIRECT/SURVIVOR/INSURANCE/DISABILITY).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "curp"
+                ],
+                "properties": {
+                  "curp": {
+                    "type": "string",
+                    "description": "CURP of the government worker whose ISSSTE record is requested.",
+                    "example": "GOTM850312MDFMRX05"
+                  }
+                }
+              },
+              "examples": {
+                "By CURP": {
+                  "summary": "By CURP",
+                  "value": {
+                    "curp": "GOTM850312MDFMRX05"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ISSSTE record result (Strict Envelope Pattern).",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Success": {
+                    "summary": "SUCCESS — active worker (2 positions, 5 family members)",
+                    "value": {
+                      "status": "OK",
+                      "type": "SUCCESS",
+                      "message": "Active worker found",
+                      "data": {
+                        "personalInfo": {
+                          "curp": "GOTM850312MDFMRX05",
+                          "givenNames": "MARIA FERNANDA",
+                          "firstSurname": "GOMEZ",
+                          "secondSurname": "TORRES",
+                          "rfc": "GOTM850312AB1",
+                          "gender": "M",
+                          "dateOfBirth": "1985-03-12",
+                          "maritalStatus": "CASADO",
+                          "nss": "10567890123"
+                        },
+                        "affiliation": {
+                          "beneficiaryType": "TRABAJADOR",
+                          "affiliationStatus": "ACTIVO",
+                          "governmentEntryDate": "2008-01-01",
+                          "currentPositionStartDate": "2008-01-01",
+                          "terminationDate": null
+                        },
+                        "pensionRegime": {
+                          "seniorityYears": 19,
+                          "scheme": "CUENTAS INDIVIDUALES"
+                        },
+                        "employment": [
+                          {
+                            "agency": "SALUD DE TLAXCALA",
+                            "payrollOffice": "SALUD DE TLAXCALA",
+                            "startDate": "2008-01-01",
+                            "baseSalary": "9611.42",
+                            "positionType": "BASE",
+                            "totalCompensation": "14937.00",
+                            "coverage": "TODOS LOS SEGUROS, PRESTACIONES Y SERVICIOS"
+                          },
+                          {
+                            "agency": "SERVICIOS DE SALUD DEL IMSS PARA EL BIENESTAR",
+                            "payrollOffice": "IMSS BIENESTAR TLAXCALA",
+                            "startDate": "2024-03-01",
+                            "baseSalary": "10452.54",
+                            "positionType": "BASE",
+                            "totalCompensation": "29390.20",
+                            "coverage": "TODOS LOS SEGUROS, PRESTACIONES Y SERVICIOS"
+                          }
+                        ],
+                        "pensions": [],
+                        "contributionHistory": [
+                          {
+                            "agency": "SALUD DE TLAXCALA",
+                            "payrollOffice": "SALUD DE TLAXCALA",
+                            "periodType": "NORMAL",
+                            "startDate": "2008-01-01",
+                            "endDate": "2010-12-31",
+                            "baseSalary": "4450.00"
+                          },
+                          {
+                            "agency": "SALUD DE TLAXCALA",
+                            "payrollOffice": "SALUD DE TLAXCALA",
+                            "periodType": "NORMAL",
+                            "startDate": "2011-01-01",
+                            "endDate": "2012-04-30",
+                            "baseSalary": "5570.00"
+                          }
+                        ],
+                        "fovissteHistory": [
+                          {
+                            "agency": "SALUD DE TLAXCALA",
+                            "payrollOffice": "SALUD DE TLAXCALA",
+                            "periodType": "NORMAL",
+                            "startDate": "2008-01-01",
+                            "endDate": "2010-12-31",
+                            "baseSalary": "4450.00"
+                          },
+                          {
+                            "agency": "SALUD DE TLAXCALA",
+                            "payrollOffice": "SALUD DE TLAXCALA",
+                            "periodType": "NORMAL",
+                            "startDate": "2011-01-01",
+                            "endDate": "2012-04-30",
+                            "baseSalary": "5570.00"
+                          }
+                        ],
+                        "family": [
+                          {
+                            "curp": "GOTL120418HDFMRS00",
+                            "firstSurname": "GOMEZ",
+                            "secondSurname": "TORRES",
+                            "givenNames": "LUIS",
+                            "relationship": "HIJO",
+                            "status": "ACTIVO",
+                            "dateOfBirth": "2012-04-18",
+                            "registrationDate": "2012-05-01"
+                          },
+                          {
+                            "curp": "RASP840912HDFMLD05",
+                            "firstSurname": "RAMIREZ",
+                            "secondSurname": "SOLIS",
+                            "givenNames": "PEDRO",
+                            "relationship": "ESPOSO",
+                            "status": "ACTIVO",
+                            "dateOfBirth": "1984-09-12",
+                            "registrationDate": "2010-02-01"
+                          }
+                        ],
+                        "address": {
+                          "street": "AVENIDA EJEMPLO",
+                          "exteriorNumber": "100",
+                          "interiorNumber": null,
+                          "neighborhood": "CENTRO",
+                          "municipality": "PUEBLA",
+                          "state": "PUEBLA",
+                          "postalCode": "00000"
+                        },
+                        "clinic": {
+                          "code": "3620300",
+                          "type": "HAE",
+                          "name": "PUEBLA, PUE.",
+                          "address": "JARDINES DE SAN MANUEL, JARDINES DE SAN MANUEL",
+                          "issteDelegation": "DELEGACION ESTATAL EN PUEBLA",
+                          "phone": "2222456950"
+                        },
+                        "files": [
+                          {
+                            "kind": "document",
+                            "contentType": "application/pdf",
+                            "sizeBytes": 207341,
+                            "content": "JVBERi0xLjYKJdP0...TRUNCATED_BASE64..."
+                          },
+                          {
+                            "kind": "face",
+                            "contentType": "image/jpeg",
+                            "sizeBytes": 8421,
+                            "content": "/9j/4AAQSkZJRgABAQEAYABgAAD...TRUNCATED_BASE64.../9k="
+                          }
+                        ]
+                      },
+                      "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-success00000",
+                      "processedAt": "2026-06-02T10:00:00-06:00",
+                      "billable": true
+                    }
+                  },
+                  "Inactive": {
+                    "summary": "INACTIVE — inactive worker (terminationDate set)",
+                    "value": {
+                      "status": "OK",
+                      "type": "INACTIVE",
+                      "message": "Inactive worker found",
+                      "data": {
+                        "personalInfo": {
+                          "curp": "DIMR600724MDFZRS03",
+                          "givenNames": "ROSA ELENA",
+                          "firstSurname": "DIAZ",
+                          "secondSurname": "MORALES",
+                          "rfc": "DIMR600724XY2",
+                          "gender": "M",
+                          "dateOfBirth": "1960-07-24",
+                          "maritalStatus": "SOLTERO",
+                          "nss": "20987654321"
+                        },
+                        "affiliation": {
+                          "beneficiaryType": "TRABAJADOR",
+                          "affiliationStatus": "INACTIVO",
+                          "governmentEntryDate": "1982-10-01",
+                          "currentPositionStartDate": "2016-07-31",
+                          "terminationDate": "2026-06-02"
+                        },
+                        "pensionRegime": {
+                          "seniorityYears": 43,
+                          "scheme": "CUENTAS INDIVIDUALES"
+                        },
+                        "employment": [],
+                        "pensions": [],
+                        "contributionHistory": [
+                          {
+                            "agency": "INST. DE SEG. Y SERVS. SOCLS. DE LOS TRABJS. DEL EDO. (ISSST",
+                            "payrollOffice": "ISSSTE. DIRECCION DE ADMINISTRACION",
+                            "periodType": "NORMAL",
+                            "startDate": "2021-03-01",
+                            "endDate": "2023-01-15",
+                            "baseSalary": "4448.50"
+                          },
+                          {
+                            "agency": "INST. DE SEG. Y SERVS. SOCLS. DE LOS TRABJS. DEL EDO. (ISSST",
+                            "payrollOffice": "ISSSTE. DIRECCION DE ADMINISTRACION",
+                            "periodType": "CERTIFICADO DyE",
+                            "startDate": "2023-01-16",
+                            "endDate": "2023-10-15",
+                            "baseSalary": "9077.00"
+                          }
+                        ],
+                        "fovissteHistory": [
+                          {
+                            "agency": "INST. DE SEG. Y SERVS. SOCLS. DE LOS TRABJS. DEL EDO. (ISSST",
+                            "payrollOffice": "ISSSTE. DIRECCION DE ADMINISTRACION",
+                            "periodType": "NORMAL",
+                            "startDate": "2021-03-01",
+                            "endDate": "2023-01-15",
+                            "baseSalary": "4448.50"
+                          },
+                          {
+                            "agency": "INST. DE SEG. Y SERVS. SOCLS. DE LOS TRABJS. DEL EDO. (ISSST",
+                            "payrollOffice": "ISSSTE. DIRECCION DE ADMINISTRACION",
+                            "periodType": "CERTIFICADO DyE",
+                            "startDate": "2023-01-16",
+                            "endDate": "2023-10-15",
+                            "baseSalary": "9077.00"
+                          }
+                        ],
+                        "family": [],
+                        "address": {
+                          "street": "AVENIDA EJEMPLO",
+                          "exteriorNumber": "100",
+                          "interiorNumber": null,
+                          "neighborhood": "CENTRO",
+                          "municipality": "TIJUANA",
+                          "state": "BAJA CALIFORNIA",
+                          "postalCode": "00000"
+                        },
+                        "clinic": {
+                          "code": "0220800",
+                          "type": "CMF",
+                          "name": "MESA DE OTAY",
+                          "address": null,
+                          "issteDelegation": "DELEGACION ESTATAL EN BAJA CALIFORNIA",
+                          "phone": null
+                        },
+                        "files": [
+                          {
+                            "kind": "document",
+                            "contentType": "application/pdf",
+                            "sizeBytes": 207341,
+                            "content": "JVBERi0xLjYKJdP0...TRUNCATED_BASE64..."
+                          },
+                          {
+                            "kind": "face",
+                            "contentType": "image/jpeg",
+                            "sizeBytes": 8421,
+                            "content": "/9j/4AAQSkZJRgABAQEAYABgAAD...TRUNCATED_BASE64.../9k="
+                          }
+                        ]
+                      },
+                      "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-inactive0000",
+                      "processedAt": "2026-06-02T10:00:00-06:00",
+                      "billable": true
+                    }
+                  },
+                  "Deceased": {
+                    "summary": "DECEASED — deceased worker (survivor pension + family)",
+                    "value": {
+                      "status": "OK",
+                      "type": "DECEASED",
+                      "message": "Deceased worker found",
+                      "data": {
+                        "personalInfo": {
+                          "curp": "RUVC550415MDFZGR07",
+                          "givenNames": "CARMEN",
+                          "firstSurname": "RUIZ",
+                          "secondSurname": "VEGA",
+                          "rfc": "RUVC550415PQ3",
+                          "gender": "M",
+                          "dateOfBirth": "1955-04-15",
+                          "maritalStatus": "SOLTERO",
+                          "nss": "30135792468"
+                        },
+                        "affiliation": {
+                          "beneficiaryType": "TRABAJADOR",
+                          "affiliationStatus": "FINADO",
+                          "governmentEntryDate": "1987-11-16",
+                          "currentPositionStartDate": "2022-08-24",
+                          "terminationDate": null
+                        },
+                        "pensionRegime": {
+                          "seniorityYears": 0,
+                          "scheme": "DÉCIMO TRANSITORIO"
+                        },
+                        "employment": [],
+                        "pensions": [
+                          {
+                            "category": "SURVIVOR",
+                            "agency": "PENSIONISTAS Y JUBILADOS CON CARGO AL I.S.S.S.T.E.",
+                            "payrollOffice": "I.S.S.S.T.E. PENSIONISTAS DEUDOS GUANAJUATO",
+                            "startDate": "2022-08-24",
+                            "pensionNumber": "9000000",
+                            "pensionType": "316",
+                            "pensionAmount": 25731.3
+                          }
+                        ],
+                        "contributionHistory": [
+                          {
+                            "agency": "SECRETARIA DE EDUCACION EN GUANAJUATO-UNIDAD PUENTECILLAS",
+                            "payrollOffice": "SECRETARIA DE EDUCACION EN GUANAJUATO-UNIDAD PUENTECILLAS",
+                            "periodType": "PENSIONES",
+                            "startDate": "1987-11-16",
+                            "endDate": "1987-12-15",
+                            "baseSalary": "168.75"
+                          },
+                          {
+                            "agency": "SECRETARIA DE EDUCACION EN GUANAJUATO-UNIDAD PUENTECILLAS",
+                            "payrollOffice": "SECRETARIA DE EDUCACION EN GUANAJUATO-UNIDAD PUENTECILLAS",
+                            "periodType": "PENSIONES",
+                            "startDate": "1987-12-16",
+                            "endDate": "1987-12-31",
+                            "baseSalary": "194.10"
+                          }
+                        ],
+                        "fovissteHistory": [
+                          {
+                            "agency": "SECRETARIA DE EDUCACION EN GUANAJUATO-UNIDAD PUENTECILLAS",
+                            "payrollOffice": "SECRETARIA DE EDUCACION EN GUANAJUATO-UNIDAD PUENTECILLAS",
+                            "periodType": "PENSIONES",
+                            "startDate": "1987-11-16",
+                            "endDate": "1987-12-15",
+                            "baseSalary": "168.75"
+                          },
+                          {
+                            "agency": "SECRETARIA DE EDUCACION EN GUANAJUATO-UNIDAD PUENTECILLAS",
+                            "payrollOffice": "SECRETARIA DE EDUCACION EN GUANAJUATO-UNIDAD PUENTECILLAS",
+                            "periodType": "PENSIONES",
+                            "startDate": "1987-12-16",
+                            "endDate": "1987-12-31",
+                            "baseSalary": "194.10"
+                          }
+                        ],
+                        "family": [
+                          {
+                            "curp": "GOTA140722MDFMRN06",
+                            "firstSurname": "GOMEZ",
+                            "secondSurname": "TORRES",
+                            "givenNames": "ANA",
+                            "relationship": "HIJA",
+                            "status": "POSIBLE DEUDO",
+                            "dateOfBirth": "2014-07-22",
+                            "registrationDate": "2014-08-01"
+                          }
+                        ],
+                        "address": {
+                          "street": "AVENIDA EJEMPLO",
+                          "exteriorNumber": "100",
+                          "interiorNumber": null,
+                          "neighborhood": "CENTRO",
+                          "municipality": "CELAYA",
+                          "state": "GUANAJUATO",
+                          "postalCode": "00000"
+                        },
+                        "clinic": {
+                          "code": "1120700",
+                          "type": "CH",
+                          "name": "CELAYA",
+                          "address": "AV. EL SAUZ ESQ. ESMERALDA, SANJUANICO",
+                          "issteDelegation": "DELEGACION ESTATAL EN GUANAJUATO",
+                          "phone": "4616141390"
+                        },
+                        "files": [
+                          {
+                            "kind": "document",
+                            "contentType": "application/pdf",
+                            "sizeBytes": 209880,
+                            "content": "JVBERi0xLjYKJdP0...TRUNCATED_BASE64..."
+                          },
+                          {
+                            "kind": "face",
+                            "contentType": "image/jpeg",
+                            "sizeBytes": 8421,
+                            "content": "/9j/4AAQSkZJRgABAQEAYABgAAD...TRUNCATED_BASE64.../9k="
+                          }
+                        ]
+                      },
+                      "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-deceased000",
+                      "processedAt": "2026-06-02T10:00:00-06:00",
+                      "billable": true
+                    }
+                  },
+                  "Pensioner": {
+                    "summary": "PENSIONER — real direct pensioner (own retirement pension; web miscategorized as TRABAJADOR, corrected to PENSIONISTA)",
+                    "value": {
+                      "status": "OK",
+                      "type": "PENSIONER",
+                      "message": "Pensioner found",
+                      "data": {
+                        "personalInfo": {
+                          "curp": "SOLE600705MVZTRL01",
+                          "givenNames": "ELENA",
+                          "firstSurname": "SOTO",
+                          "secondSurname": "LARA",
+                          "rfc": "SOLE600705RS4",
+                          "gender": "M",
+                          "dateOfBirth": "1960-07-05",
+                          "maritalStatus": "CASADO",
+                          "nss": "40246813579"
+                        },
+                        "affiliation": {
+                          "beneficiaryType": "PENSIONISTA",
+                          "affiliationStatus": "ACTIVO",
+                          "governmentEntryDate": "1979-10-01",
+                          "currentPositionStartDate": "2010-01-01",
+                          "terminationDate": null
+                        },
+                        "pensionRegime": {
+                          "seniorityYears": 0,
+                          "scheme": "DÉCIMO TRANSITORIO"
+                        },
+                        "employment": [],
+                        "pensions": [
+                          {
+                            "category": "DIRECT",
+                            "agency": "PENSIONISTAS Y JUBILADOS CON CARGO AL I.S.S.S.T.E.",
+                            "payrollOffice": "I.S.S.S.T.E. PENSIONISTAS DIRECTOS VERACRUZ",
+                            "startDate": "2010-01-01",
+                            "pensionNumber": "9000000",
+                            "pensionType": "101",
+                            "pensionAmount": 9720.9
+                          }
+                        ],
+                        "contributionHistory": [
+                          {
+                            "agency": "SECRETARIA DE EDUCACION PUBLICA (SEP)",
+                            "payrollOffice": "GOBIERNO DEL ESTADO DE VERACRUZ, SISTEMA EDUCATIVO ESTATAL.",
+                            "periodType": "PENSIONES",
+                            "startDate": "1993-06-16",
+                            "endDate": "1994-09-30",
+                            "baseSalary": "1575.15"
+                          },
+                          {
+                            "agency": "SECRETARIA DE EDUCACION Y CULTURA DEL ESTADO DE VERACRUZ",
+                            "payrollOffice": "SECRETARIA DE EDUCACION Y CULTURA DEL ESTADO DE VERACRUZ",
+                            "periodType": "PENSIONES",
+                            "startDate": "1979-10-01",
+                            "endDate": "1979-12-31",
+                            "baseSalary": "4.14"
+                          }
+                        ],
+                        "fovissteHistory": [
+                          {
+                            "agency": "SECRETARIA DE EDUCACION PUBLICA (SEP)",
+                            "payrollOffice": "GOBIERNO DEL ESTADO DE VERACRUZ, SISTEMA EDUCATIVO ESTATAL.",
+                            "periodType": "PENSIONES",
+                            "startDate": "1993-06-16",
+                            "endDate": "1994-09-30",
+                            "baseSalary": "1575.15"
+                          },
+                          {
+                            "agency": "SECRETARIA DE EDUCACION Y CULTURA DEL ESTADO DE VERACRUZ",
+                            "payrollOffice": "SECRETARIA DE EDUCACION Y CULTURA DEL ESTADO DE VERACRUZ",
+                            "periodType": "PENSIONES",
+                            "startDate": "1979-10-01",
+                            "endDate": "1979-12-31",
+                            "baseSalary": "4.14"
+                          }
+                        ],
+                        "family": [
+                          {
+                            "curp": "TOVR550130MDFRGS02",
+                            "firstSurname": "TORRES",
+                            "secondSurname": "VEGA",
+                            "givenNames": "ROSA",
+                            "relationship": "MADRE",
+                            "status": "ACTIVO",
+                            "dateOfBirth": "1955-01-30",
+                            "registrationDate": "2009-03-10"
+                          },
+                          {
+                            "curp": "GOLJ521105HDFMRS07",
+                            "firstSurname": "GOMEZ",
+                            "secondSurname": "LARA",
+                            "givenNames": "JOSE",
+                            "relationship": "PADRE",
+                            "status": "ACTIVO",
+                            "dateOfBirth": "1952-11-05",
+                            "registrationDate": "2009-03-10"
+                          }
+                        ],
+                        "address": {
+                          "street": "AVENIDA EJEMPLO",
+                          "exteriorNumber": "100",
+                          "interiorNumber": null,
+                          "neighborhood": "CENTRO",
+                          "municipality": "HUATUSCO",
+                          "state": "VERACRUZ",
+                          "postalCode": "00000"
+                        },
+                        "clinic": {
+                          "code": "3020601",
+                          "type": "UMF",
+                          "name": "HUATUSCO DE CHICUELLAR",
+                          "address": "CALLE 2, CENTRO",
+                          "issteDelegation": "DELEGACION ESTATAL EN VERACRUZ",
+                          "phone": "273 100 8334"
+                        },
+                        "files": [
+                          {
+                            "kind": "document",
+                            "contentType": "application/pdf",
+                            "sizeBytes": 209880,
+                            "content": "JVBERi0xLjYKJdP0...TRUNCATED_BASE64..."
+                          },
+                          {
+                            "kind": "face",
+                            "contentType": "image/jpeg",
+                            "sizeBytes": 8421,
+                            "content": "/9j/4AAQSkZJRgABAQEAYABgAAD...TRUNCATED_BASE64.../9k="
+                          }
+                        ]
+                      },
+                      "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-pensioner00",
+                      "processedAt": "2026-06-02T10:00:00-06:00",
+                      "billable": true
+                    }
+                  },
+                  "Scholar": {
+                    "summary": "SCHOLAR — CONAHCYT/SECIHTI grant holder",
+                    "value": {
+                      "status": "OK",
+                      "type": "SCHOLAR",
+                      "message": "Scholarship holder found",
+                      "data": {
+                        "personalInfo": {
+                          "curp": "MERC900821HDFNSR06",
+                          "givenNames": "CARLOS",
+                          "firstSurname": "MENDEZ",
+                          "secondSurname": "RIOS",
+                          "rfc": "MERC900821TU5",
+                          "gender": "H",
+                          "dateOfBirth": "1990-08-21",
+                          "maritalStatus": "SOLTERO",
+                          "nss": "50369258147"
+                        },
+                        "affiliation": {
+                          "beneficiaryType": "BECARIO",
+                          "affiliationStatus": "ACTIVO",
+                          "governmentEntryDate": "2024-02-01",
+                          "currentPositionStartDate": "2026-02-16",
+                          "terminationDate": null
+                        },
+                        "pensionRegime": {
+                          "seniorityYears": 1,
+                          "scheme": "CUENTAS INDIVIDUALES"
+                        },
+                        "employment": [
+                          {
+                            "agency": "SECRETARIA DE CIENCIA, HUMANIDADES, TECNOLOGIA E INNOVACION",
+                            "payrollOffice": "SECRETARIA DE CIENCIA, HUMANIDADES, TECNOLOGIA E INOVACION (BECARIOS)",
+                            "startDate": "2025-12-01",
+                            "baseSalary": "21397.32",
+                            "positionType": "BECARIO",
+                            "totalCompensation": "21397.32",
+                            "coverage": "SEGURO DE SALUD (SOLO SERVICIO MEDICO)"
+                          },
+                          {
+                            "agency": "SECRETARIA DE EDUCACION PUBLICA (SEP)",
+                            "payrollOffice": "TECNOLOGICO NACIONAL DE MEXICO",
+                            "startDate": "2026-02-16",
+                            "baseSalary": "9451.20",
+                            "positionType": "BASE",
+                            "totalCompensation": "10400.52",
+                            "coverage": "TODOS LOS SEGUROS, PRESTACIONES Y SERVICIOS"
+                          }
+                        ],
+                        "pensions": [],
+                        "contributionHistory": [
+                          {
+                            "agency": "CONSEJO NACIONAL DE HUMANIDADES, CIENCIAS Y TECNOLOGIAS",
+                            "payrollOffice": "CONSEJO NACIONAL DE HUMANIDADES, CIENCIAS Y TECNOLOGIAS (BECARIOS)",
+                            "periodType": "CERTIFICADO DyE",
+                            "startDate": "2025-04-01",
+                            "endDate": "2025-12-31",
+                            "baseSalary": "8364.00"
+                          },
+                          {
+                            "agency": "SECRETARIA DE CIENCIA, HUMANIDADES, TECNOLOGIA E INNOVACION",
+                            "payrollOffice": "SECRETARIA DE CIENCIA, HUMANIDADES, TECNOLOGIA E INOVACION (BECARIOS)",
+                            "periodType": "CERTIFICADO DyE",
+                            "startDate": "2025-12-01",
+                            "endDate": null,
+                            "baseSalary": "21397.32"
+                          }
+                        ],
+                        "fovissteHistory": [
+                          {
+                            "agency": "CONSEJO NACIONAL DE HUMANIDADES, CIENCIAS Y TECNOLOGIAS",
+                            "payrollOffice": "CONSEJO NACIONAL DE HUMANIDADES, CIENCIAS Y TECNOLOGIAS (BECARIOS)",
+                            "periodType": "CERTIFICADO DyE",
+                            "startDate": "2025-04-01",
+                            "endDate": "2025-12-31",
+                            "baseSalary": "8364.00"
+                          },
+                          {
+                            "agency": "SECRETARIA DE CIENCIA, HUMANIDADES, TECNOLOGIA E INNOVACION",
+                            "payrollOffice": "SECRETARIA DE CIENCIA, HUMANIDADES, TECNOLOGIA E INOVACION (BECARIOS)",
+                            "periodType": "CERTIFICADO DyE",
+                            "startDate": "2025-12-01",
+                            "endDate": null,
+                            "baseSalary": "21397.32"
+                          }
+                        ],
+                        "family": [],
+                        "address": {
+                          "street": "AVENIDA EJEMPLO",
+                          "exteriorNumber": "100",
+                          "interiorNumber": null,
+                          "neighborhood": "CENTRO",
+                          "municipality": "MERIDA",
+                          "state": "YUCATAN",
+                          "postalCode": "00000"
+                        },
+                        "clinic": {
+                          "code": "3120100",
+                          "type": "CMFE",
+                          "name": "MERIDA (COL. LINDAVISTA)",
+                          "address": "19B POR 44 Y 44A, PEDREGALES DE LINDAVISTA",
+                          "issteDelegation": "DELEGACION ESTATAL EN YUCATAN",
+                          "phone": "9999421470"
+                        },
+                        "files": [
+                          {
+                            "kind": "document",
+                            "contentType": "application/pdf",
+                            "sizeBytes": 207341,
+                            "content": "JVBERi0xLjYKJdP0...TRUNCATED_BASE64..."
+                          },
+                          {
+                            "kind": "face",
+                            "contentType": "image/jpeg",
+                            "sizeBytes": 8421,
+                            "content": "/9j/4AAQSkZJRgABAQEAYABgAAD...TRUNCATED_BASE64.../9k="
+                          }
+                        ]
+                      },
+                      "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-scholar00000",
+                      "processedAt": "2026-06-02T10:00:00-06:00",
+                      "billable": true
+                    }
+                  },
+                  "CURP Not Found": {
+                    "summary": "CURP valid but not registered in ISSSTE (billable)",
+                    "value": {
+                      "status": "OK",
+                      "type": "CURP_NOT_FOUND",
+                      "message": "CURP not found in ISSSTE",
+                      "data": null,
+                      "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-222222222222",
+                      "processedAt": "2026-06-01T11:00:00-06:00",
+                      "billable": true
+                    }
+                  },
+                  "Validation Error": {
+                    "summary": "Validation Error",
+                    "value": {
+                      "status": "ERROR",
+                      "type": "INVALID_REQUEST",
+                      "message": "Validation failed",
+                      "data": null,
+                      "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-444444444444",
+                      "processedAt": "2026-06-01T11:00:00-06:00",
+                      "billable": false,
+                      "errors": [
+                        {
+                          "field": "curp",
+                          "code": "MISSING_REQUIRED_FIELD",
+                          "message": "must have required property 'curp'"
+                        },
+                        {
+                          "field": "curp",
+                          "code": "INVALID_FORMAT",
+                          "message": "curp must be a valid 18-character CURP"
+                        },
+                        {
+                          "field": "body",
+                          "code": "PAYLOAD_TOO_LARGE",
+                          "message": "body exceeds the maximum allowed size"
+                        }
+                      ]
+                    }
+                  },
+                  "Service Unavailable": {
+                    "summary": "ISSSTE portal unavailable or blocked",
+                    "value": {
+                      "status": "ERROR",
+                      "type": "SERVICE_UNAVAILABLE",
+                      "message": "ISSSTE service is currently unavailable",
+                      "data": null,
+                      "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-555555555555",
+                      "processedAt": "2026-06-01T11:00:00-06:00",
+                      "billable": false
+                    }
+                  },
+                  "Internal Error": {
+                    "summary": "Internal Error",
+                    "value": {
+                      "status": "ERROR",
+                      "type": "INTERNAL_ERROR",
+                      "message": "Unexpected internal error",
+                      "data": null,
+                      "transactionId": "c1d2e3f4-a5b6-7c8d-9e0f-666666666666",
+                      "processedAt": "2026-06-01T11:00:00-06:00",
+                      "billable": false
+                    }
+                  }
+                },
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Envelope"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/IssteRecordData"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Unauthorized": {
+                    "summary": "Unauthorized",
+                    "value": {
+                      "status": "ERROR",
+                      "type": "UNAUTHORIZED",
+                      "message": "Invalid credentials",
+                      "data": null,
+                      "transactionId": "71d64fd8-8a54-4792-a844-7e2466eb01f7",
+                      "processedAt": "2026-05-21T10:00:00-06:00",
+                      "billable": false
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests — endpoint rate limit exceeded.",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer"
+                },
+                "description": "Seconds to wait before retrying."
+              },
+              "X-RateLimit-Limit": {
+                "schema": {
+                  "type": "integer"
+                },
+                "description": "Total requests allowed in the current window (per minute, per endpoint, per user/plan)."
+              },
+              "X-RateLimit-Remaining": {
+                "schema": {
+                  "type": "integer"
+                },
+                "description": "Requests remaining in the current window."
+              },
+              "X-RateLimit-Reset": {
+                "schema": {
+                  "type": "integer"
+                },
+                "description": "Unix timestamp (seconds) when the rate limit window resets."
+              }
+            },
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Rate Limit": {
+                    "summary": "Rate Limit Exceeded",
+                    "value": {
+                      "status": "ERROR",
+                      "type": "RATE_LIMIT_EXCEEDED",
+                      "message": "API rate limit exceeded for this endpoint. Retry after the duration specified in the Retry-After header.",
+                      "data": null,
+                      "transactionId": "fb9c33a5-ee2f-42b2-8467-ff6807e14beb",
+                      "processedAt": "2026-04-26T10:00:00-06:00",
+                      "billable": false
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "getIssteRecord",
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST https://api.origoid.com/mex/social-security/v1/issste-records \\\n  -H \"x-api-key: YOUR_API_KEY\" \\\n  -H \"content-type: application/json\" \\\n  -d '{\"curp\": \"TEST900101HDFRRN09\"}'"
+          },
+          {
+            "lang": "JavaScript",
+            "source": "const response = await fetch(\"https://api.origoid.com/mex/social-security/v1/issste-records\", {\n  method: \"POST\",\n  headers: {\n    \"x-api-key\": process.env.ORIGOID_API_KEY,\n    \"content-type\": \"application/json\",\n  },\n  body: JSON.stringify({\n      \"curp\": \"TEST900101HDFRRN09\"\n  }),\n});\n\nif (!response.ok) {\n  throw new Error(`HTTP ${response.status}`);\n}\n\nconst result = await response.json();\nconsole.log(result);"
+          },
+          {
+            "lang": "Python",
+            "source": "import os\nimport requests\n\nresponse = requests.post(\n    \"https://api.origoid.com/mex/social-security/v1/issste-records\",\n    headers={\n        \"x-api-key\": os.environ[\"ORIGOID_API_KEY\"],\n        \"content-type\": \"application/json\",\n    },\n    json={\n            \"curp\": \"TEST900101HDFRRN09\"\n    },\n    timeout=30,\n)\nresponse.raise_for_status()\nresult = response.json()\nprint(result)"
+          },
+          {
+            "lang": "Java",
+            "source": "import java.net.URI;\nimport java.net.http.HttpClient;\nimport java.net.http.HttpRequest;\nimport java.net.http.HttpResponse;\nimport java.time.Duration;\n\npublic class Example {\n    public static void main(String[] args) throws Exception {\n        String payload = \"{\\\"curp\\\": \\\"TEST900101HDFRRN09\\\"}\";\n\n        HttpClient client = HttpClient.newBuilder()\n            .connectTimeout(Duration.ofSeconds(10))\n            .build();\n\n        HttpRequest request = HttpRequest.newBuilder()\n            .uri(URI.create(\"https://api.origoid.com/mex/social-security/v1/issste-records\"))\n            .header(\"x-api-key\", System.getenv(\"ORIGOID_API_KEY\"))\n            .header(\"content-type\", \"application/json\")\n            .timeout(Duration.ofSeconds(30))\n            .POST(HttpRequest.BodyPublishers.ofString(payload))\n            .build();\n\n        HttpResponse<String> response = client.send(\n            request, HttpResponse.BodyHandlers.ofString()\n        );\n\n        System.out.println(response.statusCode());\n        System.out.println(response.body());\n    }\n}"
+          },
+          {
+            "lang": "PHP",
+            "source": "<?php\n$payload = '{\"curp\": \"TEST900101HDFRRN09\"}';\n\n$ch = curl_init('https://api.origoid.com/mex/social-security/v1/issste-records');\ncurl_setopt_array($ch, [\n    CURLOPT_POST => true,\n    CURLOPT_POSTFIELDS => $payload,\n    CURLOPT_RETURNTRANSFER => true,\n    CURLOPT_TIMEOUT => 30,\n    CURLOPT_HTTPHEADER => [\n        'x-api-key: ' . getenv('ORIGOID_API_KEY'),\n        'content-type: application/json',\n    ],\n]);\n\n$response = curl_exec($ch);\n$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);\ncurl_close($ch);\n\nif ($status >= 400) {\n    throw new Exception(\"HTTP $status\");\n}\n\n$result = json_decode($response, true);\nprint_r($result);"
+          },
+          {
+            "lang": "Go",
+            "source": "package main\n\nimport (\n\t\"bytes\"\n\t\"encoding/json\"\n\t\"fmt\"\n\t\"log\"\n\t\"net/http\"\n\t\"os\"\n\t\"time\"\n)\n\nfunc main() {\n\tpayload := []byte(`{\"curp\": \"TEST900101HDFRRN09\"}`)\n\treq, err := http.NewRequest(\"POST\", \"https://api.origoid.com/mex/social-security/v1/issste-records\", bytes.NewBuffer(payload))\n\tif err != nil { log.Fatal(err) }\n\treq.Header.Set(\"x-api-key\", os.Getenv(\"ORIGOID_API_KEY\"))\n\treq.Header.Set(\"content-type\", \"application/json\")\n\n\tclient := &http.Client{Timeout: 30 * time.Second}\n\tresp, err := client.Do(req)\n\tif err != nil { log.Fatal(err) }\n\tdefer resp.Body.Close()\n\n\tvar result map[string]any\n\tif err := json.NewDecoder(resp.Body).Decode(&result); err != nil {\n\t\tlog.Fatal(err)\n\t}\n\tfmt.Println(result)\n}"
+          },
+          {
+            "lang": "C#",
+            "source": "using System;\nusing System.Net.Http;\nusing System.Text;\nusing System.Threading.Tasks;\n\nclass Program\n{\n    static async Task Main()\n    {\n        using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };\n        client.DefaultRequestHeaders.Add(\"x-api-key\",\n            Environment.GetEnvironmentVariable(\"ORIGOID_API_KEY\"));\n\n        var payload = \"{\\\"curp\\\": \\\"TEST900101HDFRRN09\\\"}\";\n        var content = new StringContent(payload, Encoding.UTF8, \"application/json\");\n\n        var response = await client.PostAsync(\"https://api.origoid.com/mex/social-security/v1/issste-records\", content);\n        response.EnsureSuccessStatusCode();\n\n        var body = await response.Content.ReadAsStringAsync();\n        Console.WriteLine(body);\n    }\n}"
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -9414,457 +9414,6 @@
           "message": {
             "type": "string",
             "description": "Human-readable description of the field-level error."
-          }
-        }
-      },
-      "IssteExpedienteData": {
-        "type": "object",
-        "description": "Full ISSSTE expediente for a government worker. Present only when `type` is `SUCCESS`.",
-        "properties": {
-          "personalInfo": {
-            "type": "object",
-            "properties": {
-              "curp": {
-                "type": "string",
-                "example": "GOTM850312MDFMRX05"
-              },
-              "givenNames": {
-                "type": "string",
-                "example": "MARIA FERNANDA"
-              },
-              "firstSurname": {
-                "type": "string",
-                "example": "GOMEZ"
-              },
-              "secondSurname": {
-                "type": "string",
-                "example": "TORRES"
-              },
-              "rfc": {
-                "type": "string",
-                "description": "RFC as printed in the expediente. May be incomplete (10-char base without homoclave) or empty when the source PDF omits it.",
-                "example": "GOTM850312AB1"
-              },
-              "gender": {
-                "type": "string",
-                "enum": [
-                  "H",
-                  "M"
-                ],
-                "description": "Normalized from source HOMBRE/MUJER.",
-                "example": "M"
-              },
-              "dateOfBirth": {
-                "type": "string",
-                "format": "date",
-                "description": "ISO `YYYY-MM-DD` (normalized from source DD/MM/YYYY).",
-                "example": "1985-03-12"
-              },
-              "maritalStatus": {
-                "type": "string",
-                "nullable": true,
-                "enum": [
-                  "SOLTERO",
-                  "CASADO",
-                  "DIVORCIADO",
-                  "VIUDO",
-                  "UNION_LIBRE"
-                ],
-                "description": "Civil status, normalized (source prints a gender-neutral '(A)' suffix, removed here). `null` when ISSSTE does not report it. Only SOLTERO/CASADO seen in the current corpus.",
-                "example": "SOLTERO"
-              },
-              "nss": {
-                "type": "string",
-                "description": "Social security number (NSS).",
-                "example": "10567890123"
-              }
-            }
-          },
-          "affiliation": {
-            "type": "object",
-            "properties": {
-              "beneficiaryType": {
-                "type": "string",
-                "enum": [
-                  "TRABAJADOR",
-                  "PENSIONISTA",
-                  "BECARIO"
-                ],
-                "description": "Authoritative standing, derived from the expediente: a holder of a DIRECT pension is reported as PENSIONISTA even when the source document labels them TRABAJADOR. ISSSTE only exposes titulares.",
-                "example": "TRABAJADOR"
-              },
-              "affiliationStatus": {
-                "type": "string",
-                "enum": [
-                  "ACTIVO",
-                  "INACTIVO",
-                  "FINADO",
-                  ""
-                ],
-                "description": "Raw official value. Empty string when not reported.",
-                "example": "ACTIVO"
-              },
-              "governmentEntryDate": {
-                "type": "string",
-                "format": "date",
-                "nullable": true,
-                "description": "Date the worker entered federal government employment (ISO).",
-                "example": "2014-09-01"
-              },
-              "currentPositionStartDate": {
-                "type": "string",
-                "format": "date",
-                "nullable": true,
-                "example": "2018-07-01"
-              },
-              "terminationDate": {
-                "type": "string",
-                "format": "date",
-                "nullable": true,
-                "description": "`null` while `ACTIVO`; set for `INACTIVO`/`FINADO`.",
-                "example": null
-              }
-            }
-          },
-          "pensionRegime": {
-            "type": "object",
-            "properties": {
-              "seniorityYears": {
-                "type": "integer",
-                "nullable": true,
-                "description": "Years of seniority (parsed from the source `N año(s)`). `null` when not reported.",
-                "example": 10
-              },
-              "scheme": {
-                "type": "string",
-                "enum": [
-                  "CUENTAS INDIVIDUALES",
-                  "DÉCIMO TRANSITORIO",
-                  "SIN RÉGIMEN",
-                  ""
-                ],
-                "description": "Raw official pension regime.",
-                "example": "CUENTAS INDIVIDUALES"
-              }
-            }
-          },
-          "employment": {
-            "type": "array",
-            "description": "Worker positions (PLAZAS TRABAJADOR). Empty for PENSIONISTA or INACTIVO without an active position.",
-            "items": {
-              "type": "object",
-              "properties": {
-                "agency": {
-                  "type": "string",
-                  "description": "Ramo / government agency.",
-                  "example": "SECRETARIA DE HACIENDA Y CREDITO PUBLICO (SHCP)"
-                },
-                "payrollOffice": {
-                  "type": "string",
-                  "description": "Pagaduría.",
-                  "example": "SHCP. SERVICIO DE ADMINISTRACION TRIBUTARIA"
-                },
-                "startDate": {
-                  "type": "string",
-                  "format": "date",
-                  "example": "2018-07-01"
-                },
-                "baseSalary": {
-                  "type": "string",
-                  "description": "Salario base de cotización (MXN).",
-                  "example": "9451.20"
-                },
-                "positionType": {
-                  "type": "string",
-                  "description": "Tipo de plaza/pensión (e.g. CONFIANZA, BECARIO).",
-                  "example": "CONFIANZA"
-                },
-                "totalCompensation": {
-                  "type": "string",
-                  "description": "Remuneración total (MXN).",
-                  "example": "22590.16"
-                },
-                "coverage": {
-                  "type": "string",
-                  "description": "Modalidad de seguros/prestaciones (source field `modilidad` [sic] corrected to `coverage`).",
-                  "example": "TODOS LOS SEGUROS, PRESTACIONES Y SERVICIOS"
-                }
-              }
-            }
-          },
-          "pensions": {
-            "type": "array",
-            "description": "Pension records (survivor/retirement pensions, PENSIONES). Empty when none.",
-            "items": {
-              "type": "object",
-              "properties": {
-                "category": {
-                  "type": "string",
-                  "nullable": true,
-                  "enum": [
-                    "DIRECT",
-                    "SURVIVOR",
-                    "INSURANCE",
-                    "DISABILITY"
-                  ],
-                  "description": "Derived pension class from the payroll office: DIRECT (own retirement, pagaduria DIRECTOS), SURVIVOR (deudos), INSURANCE (cuenta individual aseguradora), DISABILITY (ITP/IPP).",
-                  "example": "DIRECT"
-                },
-                "agency": {
-                  "type": "string",
-                  "example": "PENSIONISTAS Y JUBILADOS CON CARGO AL I.S.S.S.T.E."
-                },
-                "payrollOffice": {
-                  "type": "string",
-                  "example": "I.S.S.S.T.E. PENSIONISTAS DEUDOS GUANAJUATO"
-                },
-                "startDate": {
-                  "type": "string",
-                  "format": "date",
-                  "example": "2022-08-24"
-                },
-                "pensionNumber": {
-                  "type": "string",
-                  "example": "9000000"
-                },
-                "pensionType": {
-                  "type": "string",
-                  "description": "Numeric ISSSTE pension-type code (e.g. `101` retirement, `316` survivor). 21+ codes.",
-                  "example": "316"
-                },
-                "pensionAmount": {
-                  "type": "number",
-                  "description": "Monthly pension amount (MXN).",
-                  "example": 25731.3
-                }
-              }
-            }
-          },
-          "contributionHistory": {
-            "type": "array",
-            "description": "Contribution (cotización) timeline. May be empty for `INACTIVO` without archived data.",
-            "items": {
-              "type": "object",
-              "properties": {
-                "agency": {
-                  "type": "string",
-                  "example": "SECRETARIA DE HACIENDA Y CREDITO PUBLICO (SHCP)"
-                },
-                "payrollOffice": {
-                  "type": "string",
-                  "example": "SHCP. SERVICIO DE ADMINISTRACION TRIBUTARIA"
-                },
-                "periodType": {
-                  "type": "string",
-                  "example": "NORMAL"
-                },
-                "startDate": {
-                  "type": "string",
-                  "format": "date",
-                  "example": "2014-09-01"
-                },
-                "endDate": {
-                  "type": "string",
-                  "format": "date",
-                  "nullable": true,
-                  "example": "2016-05-17"
-                },
-                "baseSalary": {
-                  "type": "string",
-                  "description": "Sueldo básico (MXN).",
-                  "example": "5906.45"
-                }
-              }
-            }
-          },
-          "fovissteHistory": {
-            "type": "array",
-            "description": "FOVISSSTE contribution history (housing fund) — HISTORIAL DE COTIZACIÓN FOVISSSTE. Same shape as contributionHistory; may mirror it or be a subset.",
-            "items": {
-              "type": "object",
-              "properties": {
-                "agency": {
-                  "type": "string",
-                  "example": "SECRETARIA DE HACIENDA Y CREDITO PUBLICO (SHCP)"
-                },
-                "payrollOffice": {
-                  "type": "string",
-                  "example": "SHCP. SERVICIO DE ADMINISTRACION TRIBUTARIA"
-                },
-                "periodType": {
-                  "type": "string",
-                  "example": "NORMAL"
-                },
-                "startDate": {
-                  "type": "string",
-                  "format": "date",
-                  "example": "2014-09-01"
-                },
-                "endDate": {
-                  "type": "string",
-                  "format": "date",
-                  "nullable": true,
-                  "example": "2016-05-17"
-                },
-                "baseSalary": {
-                  "type": "string",
-                  "description": "Sueldo básico (MXN).",
-                  "example": "5906.45"
-                }
-              }
-            }
-          },
-          "family": {
-            "type": "array",
-            "description": "Registered family members / dependants (FAMILIARES). Empty when none.",
-            "items": {
-              "type": "object",
-              "properties": {
-                "curp": {
-                  "type": "string",
-                  "example": "GOTL120418HDFMRS00"
-                },
-                "firstSurname": {
-                  "type": "string",
-                  "example": "GOMEZ"
-                },
-                "secondSurname": {
-                  "type": "string",
-                  "example": "TORRES"
-                },
-                "givenNames": {
-                  "type": "string",
-                  "example": "LUIS"
-                },
-                "relationship": {
-                  "type": "string",
-                  "enum": [
-                    "HIJO",
-                    "HIJA",
-                    "ESPOSO",
-                    "ESPOSA",
-                    "CONCUBINA",
-                    "CONCUBINO",
-                    "MADRE",
-                    "PADRE",
-                    "ABUELA",
-                    "ABUELO",
-                    "HIJA DE CONYUGE"
-                  ],
-                  "description": "Parentesco (official raw value).",
-                  "example": "HIJO"
-                },
-                "status": {
-                  "type": "string",
-                  "enum": [
-                    "ACTIVO",
-                    "SIN DERECHO",
-                    "EN CONSERVACIÓN DE DERECHOS",
-                    "POSIBLE DEUDO"
-                  ],
-                  "description": "Derechohabiencia status of the family member (raw).",
-                  "example": "ACTIVO"
-                },
-                "dateOfBirth": {
-                  "type": "string",
-                  "format": "date",
-                  "example": "2012-04-18"
-                },
-                "registrationDate": {
-                  "type": "string",
-                  "format": "date",
-                  "description": "Fecha de alta as a dependant.",
-                  "example": "2012-05-01"
-                }
-              }
-            }
-          },
-          "address": {
-            "type": "object",
-            "description": "Domicilio.",
-            "properties": {
-              "street": {
-                "type": "string",
-                "example": "AVENIDA EJEMPLO"
-              },
-              "exteriorNumber": {
-                "type": "string",
-                "example": "100"
-              },
-              "interiorNumber": {
-                "type": "string",
-                "nullable": true,
-                "example": "A"
-              },
-              "neighborhood": {
-                "type": "string",
-                "description": "Colonia.",
-                "example": "CENTRO"
-              },
-              "municipality": {
-                "type": "string",
-                "description": "Delegación / municipio.",
-                "example": "CUAUHTEMOC"
-              },
-              "state": {
-                "type": "string",
-                "example": "CIUDAD DE MEXICO"
-              },
-              "postalCode": {
-                "type": "string",
-                "example": "00000"
-              }
-            }
-          },
-          "clinic": {
-            "type": "object",
-            "description": "Assigned medical unit (clínica de adscripción).",
-            "properties": {
-              "code": {
-                "type": "string",
-                "description": "Clave.",
-                "example": "9121200"
-              },
-              "type": {
-                "type": "string",
-                "enum": [
-                  "CMF",
-                  "UMF",
-                  "CMFE",
-                  "CH",
-                  "CAF",
-                  "HAE",
-                  "HG",
-                  "CMFEQ"
-                ],
-                "description": "Medical-unit type (raw).",
-                "example": "CMF"
-              },
-              "name": {
-                "type": "string",
-                "example": "JUAREZ"
-              },
-              "address": {
-                "type": "string",
-                "example": "JALAPA Nº 252, ROMA"
-              },
-              "issteDelegation": {
-                "type": "string",
-                "example": "DELEGACION EN LA ZONA NORTE DE LA CDMX"
-              },
-              "phone": {
-                "type": "string",
-                "description": "May be `NO DISPONIBLE` or comma-separated numbers.",
-                "example": "55-84-49-81,55-74-13-19"
-              }
-            }
-          },
-          "files": {
-            "type": "array",
-            "description": "Binary assets (inline base64). The expediente PDF is always present. face is included only when the PDF contains a usable face; it is omitted when no face is present or its quality is too low.",
-            "items": {
-              "$ref": "#/components/schemas/Asset"
-            }
           }
         }
       },
@@ -10266,7 +9815,7 @@
         "properties": {
           "kind": {
             "type": "string",
-            "description": "Semantic asset name (e.g. face, signature, expediente, csf, cfdi, constancia, cep, comprobante)."
+            "description": "Semantic asset name (e.g. document, face, signature)."
           },
           "contentType": {
             "type": "string",
@@ -10279,6 +9828,457 @@
           "content": {
             "type": "string",
             "description": "Base64-encoded bytes."
+          }
+        }
+      },
+      "IssteRecordData": {
+        "type": "object",
+        "description": "Full ISSSTE record for a government worker. Present only when `type` is `SUCCESS`.",
+        "properties": {
+          "personalInfo": {
+            "type": "object",
+            "properties": {
+              "curp": {
+                "type": "string",
+                "example": "GOTM850312MDFMRX05"
+              },
+              "givenNames": {
+                "type": "string",
+                "example": "MARIA FERNANDA"
+              },
+              "firstSurname": {
+                "type": "string",
+                "example": "GOMEZ"
+              },
+              "secondSurname": {
+                "type": "string",
+                "example": "TORRES"
+              },
+              "rfc": {
+                "type": "string",
+                "description": "RFC as printed in the record. May be incomplete (10-char base without homoclave) or empty when the source PDF omits it.",
+                "example": "GOTM850312AB1"
+              },
+              "gender": {
+                "type": "string",
+                "enum": [
+                  "H",
+                  "M"
+                ],
+                "description": "Normalized from source HOMBRE/MUJER.",
+                "example": "M"
+              },
+              "dateOfBirth": {
+                "type": "string",
+                "format": "date",
+                "description": "ISO `YYYY-MM-DD` (normalized from source DD/MM/YYYY).",
+                "example": "1985-03-12"
+              },
+              "maritalStatus": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  "SOLTERO",
+                  "CASADO",
+                  "DIVORCIADO",
+                  "VIUDO",
+                  "UNION_LIBRE"
+                ],
+                "description": "Civil status, normalized (source prints a gender-neutral '(A)' suffix, removed here). `null` when ISSSTE does not report it. Only SOLTERO/CASADO seen in the current corpus.",
+                "example": "SOLTERO"
+              },
+              "nss": {
+                "type": "string",
+                "description": "Social security number (NSS).",
+                "example": "10567890123"
+              }
+            }
+          },
+          "affiliation": {
+            "type": "object",
+            "properties": {
+              "beneficiaryType": {
+                "type": "string",
+                "enum": [
+                  "TRABAJADOR",
+                  "PENSIONISTA",
+                  "BECARIO"
+                ],
+                "description": "Authoritative standing, derived from the record: a holder of a DIRECT pension is reported as PENSIONISTA even when the source document labels them TRABAJADOR. ISSSTE only exposes titulares.",
+                "example": "TRABAJADOR"
+              },
+              "affiliationStatus": {
+                "type": "string",
+                "enum": [
+                  "ACTIVO",
+                  "INACTIVO",
+                  "FINADO",
+                  ""
+                ],
+                "description": "Raw official value. Empty string when not reported.",
+                "example": "ACTIVO"
+              },
+              "governmentEntryDate": {
+                "type": "string",
+                "format": "date",
+                "nullable": true,
+                "description": "Date the worker entered federal government employment (ISO).",
+                "example": "2014-09-01"
+              },
+              "currentPositionStartDate": {
+                "type": "string",
+                "format": "date",
+                "nullable": true,
+                "example": "2018-07-01"
+              },
+              "terminationDate": {
+                "type": "string",
+                "format": "date",
+                "nullable": true,
+                "description": "`null` while `ACTIVO`; set for `INACTIVO`/`FINADO`.",
+                "example": null
+              }
+            }
+          },
+          "pensionRegime": {
+            "type": "object",
+            "properties": {
+              "seniorityYears": {
+                "type": "integer",
+                "nullable": true,
+                "description": "Years of seniority (parsed from the source `N año(s)`). `null` when not reported.",
+                "example": 10
+              },
+              "scheme": {
+                "type": "string",
+                "enum": [
+                  "CUENTAS INDIVIDUALES",
+                  "DÉCIMO TRANSITORIO",
+                  "SIN RÉGIMEN",
+                  ""
+                ],
+                "description": "Raw official pension regime.",
+                "example": "CUENTAS INDIVIDUALES"
+              }
+            }
+          },
+          "employment": {
+            "type": "array",
+            "description": "Worker positions (PLAZAS TRABAJADOR). Empty for PENSIONISTA or INACTIVO without an active position.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "agency": {
+                  "type": "string",
+                  "description": "Ramo / government agency.",
+                  "example": "SECRETARIA DE HACIENDA Y CREDITO PUBLICO (SHCP)"
+                },
+                "payrollOffice": {
+                  "type": "string",
+                  "description": "Pagaduría.",
+                  "example": "SHCP. SERVICIO DE ADMINISTRACION TRIBUTARIA"
+                },
+                "startDate": {
+                  "type": "string",
+                  "format": "date",
+                  "example": "2018-07-01"
+                },
+                "baseSalary": {
+                  "type": "string",
+                  "description": "Salario base de cotización (MXN).",
+                  "example": "9451.20"
+                },
+                "positionType": {
+                  "type": "string",
+                  "description": "Tipo de plaza/pensión (e.g. CONFIANZA, BECARIO).",
+                  "example": "CONFIANZA"
+                },
+                "totalCompensation": {
+                  "type": "string",
+                  "description": "Remuneración total (MXN).",
+                  "example": "22590.16"
+                },
+                "coverage": {
+                  "type": "string",
+                  "description": "Modalidad de seguros/prestaciones (source field `modilidad` [sic] corrected to `coverage`).",
+                  "example": "TODOS LOS SEGUROS, PRESTACIONES Y SERVICIOS"
+                }
+              }
+            }
+          },
+          "pensions": {
+            "type": "array",
+            "description": "Pension records (survivor/retirement pensions, PENSIONES). Empty when none.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "string",
+                  "nullable": true,
+                  "enum": [
+                    "DIRECT",
+                    "SURVIVOR",
+                    "INSURANCE",
+                    "DISABILITY"
+                  ],
+                  "description": "Derived pension class from the payroll office: DIRECT (own retirement, pagaduria DIRECTOS), SURVIVOR (deudos), INSURANCE (cuenta individual aseguradora), DISABILITY (ITP/IPP).",
+                  "example": "DIRECT"
+                },
+                "agency": {
+                  "type": "string",
+                  "example": "PENSIONISTAS Y JUBILADOS CON CARGO AL I.S.S.S.T.E."
+                },
+                "payrollOffice": {
+                  "type": "string",
+                  "example": "I.S.S.S.T.E. PENSIONISTAS DEUDOS GUANAJUATO"
+                },
+                "startDate": {
+                  "type": "string",
+                  "format": "date",
+                  "example": "2022-08-24"
+                },
+                "pensionNumber": {
+                  "type": "string",
+                  "example": "9000000"
+                },
+                "pensionType": {
+                  "type": "string",
+                  "description": "Numeric ISSSTE pension-type code (e.g. `101` retirement, `316` survivor). 21+ codes.",
+                  "example": "316"
+                },
+                "pensionAmount": {
+                  "type": "number",
+                  "description": "Monthly pension amount (MXN).",
+                  "example": 25731.3
+                }
+              }
+            }
+          },
+          "contributionHistory": {
+            "type": "array",
+            "description": "Contribution (cotización) timeline. May be empty for `INACTIVO` without archived data.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "agency": {
+                  "type": "string",
+                  "example": "SECRETARIA DE HACIENDA Y CREDITO PUBLICO (SHCP)"
+                },
+                "payrollOffice": {
+                  "type": "string",
+                  "example": "SHCP. SERVICIO DE ADMINISTRACION TRIBUTARIA"
+                },
+                "periodType": {
+                  "type": "string",
+                  "example": "NORMAL"
+                },
+                "startDate": {
+                  "type": "string",
+                  "format": "date",
+                  "example": "2014-09-01"
+                },
+                "endDate": {
+                  "type": "string",
+                  "format": "date",
+                  "nullable": true,
+                  "example": "2016-05-17"
+                },
+                "baseSalary": {
+                  "type": "string",
+                  "description": "Sueldo básico (MXN).",
+                  "example": "5906.45"
+                }
+              }
+            }
+          },
+          "fovissteHistory": {
+            "type": "array",
+            "description": "FOVISSSTE contribution history (housing fund) — HISTORIAL DE COTIZACIÓN FOVISSSTE. Same shape as contributionHistory; may mirror it or be a subset.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "agency": {
+                  "type": "string",
+                  "example": "SECRETARIA DE HACIENDA Y CREDITO PUBLICO (SHCP)"
+                },
+                "payrollOffice": {
+                  "type": "string",
+                  "example": "SHCP. SERVICIO DE ADMINISTRACION TRIBUTARIA"
+                },
+                "periodType": {
+                  "type": "string",
+                  "example": "NORMAL"
+                },
+                "startDate": {
+                  "type": "string",
+                  "format": "date",
+                  "example": "2014-09-01"
+                },
+                "endDate": {
+                  "type": "string",
+                  "format": "date",
+                  "nullable": true,
+                  "example": "2016-05-17"
+                },
+                "baseSalary": {
+                  "type": "string",
+                  "description": "Sueldo básico (MXN).",
+                  "example": "5906.45"
+                }
+              }
+            }
+          },
+          "family": {
+            "type": "array",
+            "description": "Registered family members / dependants (FAMILIARES). Empty when none.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "curp": {
+                  "type": "string",
+                  "example": "GOTL120418HDFMRS00"
+                },
+                "firstSurname": {
+                  "type": "string",
+                  "example": "GOMEZ"
+                },
+                "secondSurname": {
+                  "type": "string",
+                  "example": "TORRES"
+                },
+                "givenNames": {
+                  "type": "string",
+                  "example": "LUIS"
+                },
+                "relationship": {
+                  "type": "string",
+                  "enum": [
+                    "HIJO",
+                    "HIJA",
+                    "ESPOSO",
+                    "ESPOSA",
+                    "CONCUBINA",
+                    "CONCUBINO",
+                    "MADRE",
+                    "PADRE",
+                    "ABUELA",
+                    "ABUELO",
+                    "HIJA DE CONYUGE"
+                  ],
+                  "description": "Parentesco (official raw value).",
+                  "example": "HIJO"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "ACTIVO",
+                    "SIN DERECHO",
+                    "EN CONSERVACIÓN DE DERECHOS",
+                    "POSIBLE DEUDO"
+                  ],
+                  "description": "Derechohabiencia status of the family member (raw).",
+                  "example": "ACTIVO"
+                },
+                "dateOfBirth": {
+                  "type": "string",
+                  "format": "date",
+                  "example": "2012-04-18"
+                },
+                "registrationDate": {
+                  "type": "string",
+                  "format": "date",
+                  "description": "Fecha de alta as a dependant.",
+                  "example": "2012-05-01"
+                }
+              }
+            }
+          },
+          "address": {
+            "type": "object",
+            "description": "Domicilio.",
+            "properties": {
+              "street": {
+                "type": "string",
+                "example": "AVENIDA EJEMPLO"
+              },
+              "exteriorNumber": {
+                "type": "string",
+                "example": "100"
+              },
+              "interiorNumber": {
+                "type": "string",
+                "nullable": true,
+                "example": "A"
+              },
+              "neighborhood": {
+                "type": "string",
+                "description": "Colonia.",
+                "example": "CENTRO"
+              },
+              "municipality": {
+                "type": "string",
+                "description": "Delegación / municipio.",
+                "example": "CUAUHTEMOC"
+              },
+              "state": {
+                "type": "string",
+                "example": "CIUDAD DE MEXICO"
+              },
+              "postalCode": {
+                "type": "string",
+                "example": "00000"
+              }
+            }
+          },
+          "clinic": {
+            "type": "object",
+            "description": "Assigned medical unit (clínica de adscripción).",
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Clave.",
+                "example": "9121200"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "CMF",
+                  "UMF",
+                  "CMFE",
+                  "CH",
+                  "CAF",
+                  "HAE",
+                  "HG",
+                  "CMFEQ"
+                ],
+                "description": "Medical-unit type (raw).",
+                "example": "CMF"
+              },
+              "name": {
+                "type": "string",
+                "example": "JUAREZ"
+              },
+              "address": {
+                "type": "string",
+                "example": "JALAPA Nº 252, ROMA"
+              },
+              "issteDelegation": {
+                "type": "string",
+                "example": "DELEGACION EN LA ZONA NORTE DE LA CDMX"
+              },
+              "phone": {
+                "type": "string",
+                "description": "May be `NO DISPONIBLE` or comma-separated numbers.",
+                "example": "55-84-49-81,55-74-13-19"
+              }
+            }
+          },
+          "files": {
+            "type": "array",
+            "description": "Binary assets (inline base64). The document (PDF) is always present. A face is included only when the record contains a usable face; it is omitted when no face is present or its quality is too low.",
+            "items": {
+              "$ref": "#/components/schemas/Asset"
+            }
           }
         }
       }
