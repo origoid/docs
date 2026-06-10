@@ -7907,7 +7907,7 @@
                   "includePdf": {
                     "type": "boolean",
                     "default": false,
-                    "description": "Include the CEP PDF in `data.documents.pdf`. The XML is always returned; the PDF requires a second request to Banxico, so it is opt-in."
+                    "description": "Include the CEP PDF in `files` (kind `document`, `application/pdf`). The XML is always returned for settled payments; the PDF only when this flag is true."
                   }
                 },
                 "oneOf": [
