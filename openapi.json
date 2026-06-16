@@ -4054,6 +4054,7 @@
     },
     "/global/biometrics/v1/liveness-checks": {
       "post": {
+        "x-hidden": true,
         "tags": [
           "Biometrics"
         ],
