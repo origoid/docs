@@ -18,7 +18,10 @@
     }
   },
   "favicon": "/favicon.svg",
-  "languages": ["en", "es"],
+  "languages": [
+    "en",
+    "es"
+  ],
   "navigation": {
     "languages": [
       {
@@ -52,7 +55,8 @@
                   "en/sdks/node",
                   "en/sdks/python",
                   "en/sdks/go",
-                  "en/sdks/mcp"
+                  "en/sdks/mcp",
+                  "en/sdks/postman"
                 ]
               }
             ]
@@ -97,7 +101,8 @@
                   "es/sdks/node",
                   "es/sdks/python",
                   "es/sdks/go",
-                  "es/sdks/mcp"
+                  "es/sdks/mcp",
+                  "es/sdks/postman"
                 ]
               }
             ]

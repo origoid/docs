@@ -1,0 +1,31 @@
+---
+title: Colección Postman
+description: "Colección oficial de OrigoID para Postman — todos los endpoints, con un request por cada forma de invocación."
+---
+
+Importa la colección oficial en Postman para probar todos los endpoints sin escribir código. Se genera desde nuestra especificación OpenAPI, así que siempre refleja la API en producción.
+
+[**Descargar `OrigoID.postman_collection.json`**](https://raw.githubusercontent.com/origoid/postman/main/OrigoID.postman_collection.json) — 21 endpoints, 34 requests (incluye cada opción de los endpoints multi-forma).
+
+## Importar
+
+1. En Postman → **Import**: arrastra el archivo descargado, **o** pega esta URL directamente (Postman importa desde link): `https://raw.githubusercontent.com/origoid/postman/main/OrigoID.postman_collection.json`
+2. Cada request ya apunta a `https://api.origoid.com` (URL literal, lista para copiar a tu código).
+3. **Agrega tu API key manualmente.** No viene incluida. En cada request, pestaña **Headers**, añade `x-api-key` con tu key (`ogid_live_...`). Para no repetirla, ponla una sola vez en la pestaña **Authorization** de la colección → tipo **API Key**, Key `x-api-key`, *Add to* **Header**.
+
+## Endpoints multi-opción
+
+Los endpoints que aceptan varias formas de invocación traen **un request por cada opción**, por ejemplo:
+
+- **PEPs** — por nombre simple, nombre separado, nombre + CURP, nombre + RFC, o sólo identificador.
+- **OFAC** — sólo nombre, nombre + pasaporte, o nombre + ID nacional.
+- **Lista Nominal (INE)** — CIC + clave de elector, o CIC + OCR.
+- **CFDI** — por datos (UUID + RFCs + total) o por documento (QR).
+
+## Token JWT (opcional)
+
+`POST /auth/token` intercambia tu API key por un JWT de corta vida. Si prefieres autenticar con `Authorization: Bearer <token>` en lugar de `x-api-key`, copia el `token` de la respuesta y agrégalo manualmente.
+
+## Campos de imagen
+
+Los endpoints de OCR y biometría (INE, comprobante de domicilio, face match, liveness) esperan la imagen en base64 — reemplaza el placeholder `<base64 de la imagen…>` por tu contenido real. Ver [Manejo de imágenes](/es/image-handling).

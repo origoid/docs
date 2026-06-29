@@ -1,0 +1,31 @@
+---
+title: Postman collection
+description: "Official OrigoID Postman collection — every endpoint, with one request per invocation form."
+---
+
+Import the official collection into Postman to try every endpoint without writing code. It's generated from our OpenAPI specification, so it always mirrors the production API.
+
+[**Download `OrigoID.postman_collection.json`**](https://raw.githubusercontent.com/origoid/postman/main/OrigoID.postman_collection.json) — 21 endpoints, 34 requests (includes every option of the multi-form endpoints).
+
+## Import
+
+1. In Postman → **Import**: drop the downloaded file, **or** paste this URL directly (Postman imports from a link): `https://raw.githubusercontent.com/origoid/postman/main/OrigoID.postman_collection.json`
+2. Every request already points to `https://api.origoid.com` (literal URL, ready to copy into your code).
+3. **Add your API key manually.** It is not bundled. On each request, under the **Headers** tab, add `x-api-key` with your key (`ogid_live_...`). To avoid repeating it, set it once under the collection's **Authorization** tab → type **API Key**, Key `x-api-key`, *Add to* **Header**.
+
+## Multi-option endpoints
+
+Endpoints that accept several invocation forms ship **one request per option**, for example:
+
+- **PEPs** — by single name, separated name, name + CURP, name + RFC, or identifier only.
+- **OFAC** — name only, name + passport, or name + national ID.
+- **Voter list (INE)** — CIC + voter key, or CIC + OCR.
+- **CFDI** — by data (UUID + RFCs + total) or by document (QR).
+
+## JWT token (optional)
+
+`POST /auth/token` exchanges your API key for a short-lived JWT. If you prefer authenticating with `Authorization: Bearer <token>` instead of `x-api-key`, copy the `token` from the response and add it manually.
+
+## Image fields
+
+OCR and biometric endpoints (INE, proof of address, face match, liveness) expect the image as base64 — replace the `<base64 image…>` placeholder with your real content. See [Image handling](/en/image-handling).
