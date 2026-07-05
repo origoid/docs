@@ -704,7 +704,7 @@
           },
           {
             "lang": "Python",
-            "source": "import os\nimport requests\n\nresponse = requests.post(\n    \"https://api.origoid.com/mex/renapo/v1/curp-validations\",\n    headers={\n        \"x-api-key\": os.environ[\"ORIGOID_API_KEY\"],\n        \"content-type\": \"application/json\",\n    },\n    json={\n        \"curp\": \"TEST900101HDFRRN09\",\n        \"generateRfc\": true\n    },\n    timeout=30,\n)\nresponse.raise_for_status()\nresult = response.json()\nprint(result)"
+            "source": "import os\nimport requests\n\nresponse = requests.post(\n    \"https://api.origoid.com/mex/renapo/v1/curp-validations\",\n    headers={\n        \"x-api-key\": os.environ[\"ORIGOID_API_KEY\"],\n        \"content-type\": \"application/json\",\n    },\n    json={\n        \"curp\": \"TEST900101HDFRRN09\",\n        \"generateRfc\": True\n    },\n    timeout=30,\n)\nresponse.raise_for_status()\nresult = response.json()\nprint(result)"
           },
           {
             "lang": "Java",
