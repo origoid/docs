@@ -1843,13 +1843,13 @@
                   "Operation Limit": {
                     "summary": "Operation Limit",
                     "value": {
-                      "status": "ERROR",
+                      "status": "OK",
                       "type": "IMSS_OPERATION_LIMIT",
                       "message": "IMSS daily limit reached",
                       "data": null,
                       "transactionId": "53124f18-ef45-4628-8a92-169bc9a72965",
                       "processedAt": "2026-03-15T19:23:00-06:00",
-                      "billable": false
+                      "billable": true
                     }
                   },
                   "Service Unavailable": {
