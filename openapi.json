@@ -1586,7 +1586,7 @@
                   "Not Found": {
                     "summary": "CURP_NOT_FOUND",
                     "value": {
-                      "status": "ERROR",
+                      "status": "OK",
                       "type": "CURP_NOT_FOUND",
                       "message": "CURP not found",
                       "data": null,
