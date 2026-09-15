@@ -6,8 +6,8 @@ description: "`@origoid/mcp-server` — official Model Context Protocol server. 
 The MCP server is OrigoID's official integration point for AI coding
 assistants and chat clients that speak the
 [Model Context Protocol](https://modelcontextprotocol.io). Install it
-once in your client and the LLM gains 29 tools: 10 for **building** an
-OrigoID integration (free, no API key needed) and 19 for **running**
+once in your client and the LLM gains 32 tools: 10 for **building** an
+OrigoID integration (free, no API key needed) and 22 for **running**
 real calls (require your API key).
 
 ## Why it exists
@@ -292,7 +292,7 @@ The server speaks MCP over standard stdio transport.
 ## API key is optional
 
 If you do not set `ORIGOID_API_KEY`, the server boots in **docs-only
-mode**. The 10 documentation tools work as usual; the 19 API tools
+mode**. The 10 documentation tools work as usual; the 22 API tools
 return a clear error if invoked. This is the right mode for the design
 phase — the LLM can describe, scaffold, and write your integration
 without you having an account yet.
@@ -325,11 +325,14 @@ per the [Credits page](/en/credits).
 | `issue_token` | `POST /auth/token` |
 | `validate_curp` | `POST /mex/renapo/v1/curp-validations` |
 | `lookup_curp` | `POST /mex/renapo/v1/curp-lookups` |
+| `extract_curp_document` | `POST /mex/renapo/v1/curp-documents` |
 | `validate_rfc` | `POST /mex/fiscal/v1/rfc-validations` |
 | `extract_csf` | `POST /mex/fiscal/v1/csf-extractions` |
 | `validate_cfdi` | `POST /mex/fiscal/v1/cfdi-validations` |
+| `validate_cep` | `POST /mex/banking/v1/cep-validations` |
 | `lookup_nss` | `POST /mex/social-security/v1/imss-nss-lookups` |
 | `get_employment_status` | `POST /mex/social-security/v1/imss-employment-status` |
+| `get_issste_record` | `POST /mex/social-security/v1/issste-records` |
 | `validate_voter_list` | `POST /mex/id/v1/voter-list-validations` |
 | `extract_voter_id_data` | `POST /mex/id/v1/voter-id-extractions` |
 | `extract_qr_data` | `POST /mex/id/v1/qr-extractions` |
