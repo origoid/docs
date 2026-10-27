@@ -1,0 +1,1053 @@
+---
+title: Webhooks
+description: "How asynchronous endpoints deliver their result to your webhook."
+---
+
+Some IMSS queries take longer than a client should wait on an open HTTP request, so they are offered as **asynchronous** endpoints. You send the request with a `webhook` object and we deliver the result to your URL when it is ready.
+
+| Endpoint | Credits | Result |
+|---|---|---|
+| [Get NSS (Async)](/en/api-reference/social-security/get-nss-async) | 2 | Delivered to your webhook |
+| [Employment Status (Async)](/en/api-reference/social-security/employment-status-async) | 2 | Delivered to your webhook |
+| [Contribution Weeks](/en/api-reference/social-security/contribution-weeks) | 3 | Delivered to your webhook, with a 24-hour fallback |
+
+## How it works
+
+1. **Create the request.** `POST` the query together with a `webhook` object. The API answers right away with `type: ACCEPTED` and a `transactionId`. Accepting a request is free (`billable: false`).
+2. **Receive the result.** When the query resolves, we send an HTTP `POST` to your `webhook.url`. The body is the standard [envelope](/en/envelope), with the **same `transactionId`** returned in step 1.
+
+Request:
+
+```json
+{
+  "curp": "RATL850312HDFMRS07",
+  "webhook": {
+    "url": "https://your-domain.com/hooks/origoid",
+    "headers": {
+      "Authorization": "Bearer YOUR_WEBHOOK_TOKEN"
+    }
+  }
+}
+```
+
+Immediate response:
+
+```json
+{
+  "status": "OK",
+  "type": "ACCEPTED",
+  "message": "Request accepted, result will be sent to the webhook",
+  "data": null,
+  "transactionId": "322e6c8b-0124-5c84-95db-4da04842d0da",
+  "processedAt": "2026-03-15T19:23:30-06:00",
+  "billable": false
+}
+```
+
+If the request is not valid, you get `INVALID_REQUEST` right away instead of `ACCEPTED`, and it is never charged:
+
+```json
+{
+  "status": "ERROR",
+  "type": "INVALID_REQUEST",
+  "message": "Validation failed",
+  "data": null,
+  "errors": [
+    {
+      "field": "curp",
+      "code": "INVALID_FORMAT",
+      "message": "curp is not a valid CURP"
+    },
+    {
+      "field": "nss",
+      "code": "INVALID_FORMAT",
+      "message": "Invalid NSS format (must be 11 digits)"
+    },
+    {
+      "field": "webhook",
+      "code": "MISSING_REQUIRED_FIELD",
+      "message": "must have required property 'webhook'"
+    }
+  ],
+  "transactionId": "6117e20e-ea53-5424-87a9-da7576d4cd12",
+  "processedAt": "2026-10-26T11:20:00-06:00",
+  "billable": false
+}
+```
+
+## The `webhook` object
+
+| Field | Required | Description |
+|---|---|---|
+| `url` | Yes | Public `http` or `https` URL that receives the result. |
+| `headers` | No | Header names and values we add to the webhook request — for example, your own token, so your endpoint can authenticate the call. |
+
+## Your webhook endpoint
+
+- It receives an HTTP `POST` with a JSON body (`Content-Type: application/json`) and the headers you configured.
+- Answer with any `2xx` status as soon as you receive the body, and process it afterwards.
+- Make it idempotent: the same result may be delivered more than once, so use `transactionId` to de-duplicate.
+
+## Delivery attempts
+
+We try to deliver each result up to **3 times**: right away, then 1 minute and 5 minutes after the previous failed attempt. An attempt fails when your endpoint does not answer with a `2xx` status within 10 seconds (redirects are not followed). After the third failed attempt the result is not sent again.
+
+Keeping your webhook endpoint available is your responsibility: credits are charged when the result resolves, whether or not your endpoint receives it. For Contribution Weeks you can still fetch the result for 24 hours (see [Contribution Weeks fallback](#contribution-weeks-fallback)).
+
+## Billing
+
+Credits are charged once, when the result resolves, under the same rule as every other endpoint (see [Credits](/en/credits)): `billable: true` when the query was performed — even if the outcome is negative, such as `CURP_NOT_FOUND` — and `false` for technical failures. The `billable` field of the body your webhook receives tells you which applies.
+
+## Results by service
+
+Each asynchronous endpoint delivers one of the following results to your webhook. Open a type to see its full example.
+
+### Get NSS (Async)
+
+Same result types as [Get NSS](/en/api-reference/social-security/get-nss), except `INVALID_REQUEST`, which is returned immediately when you create the request.
+
+<AccordionGroup>
+<Accordion title="SUCCESS" description="NSS found">
+
+```json
+{
+  "status": "OK",
+  "type": "SUCCESS",
+  "message": "NSS found",
+  "data": {
+    "nss": "92038109713"
+  },
+  "transactionId": "39b972d3-20a8-539a-acfb-70657588df9b",
+  "processedAt": "2026-03-15T19:23:00-06:00",
+  "billable": true
+}
+```
+
+</Accordion>
+<Accordion title="PERSON_WITHOUT_NSS" description="Person has no NSS assigned">
+
+```json
+{
+  "status": "OK",
+  "type": "PERSON_WITHOUT_NSS",
+  "message": "Person has no NSS assigned",
+  "data": null,
+  "transactionId": "26edf395-0586-5b05-9665-ac5ab83f9c12",
+  "processedAt": "2026-03-15T19:23:00-06:00",
+  "billable": true
+}
+```
+
+</Accordion>
+<Accordion title="IMSS_INCONSISTENT_DATA" description="CURP exists but associated data is inconsistent at IMSS">
+
+```json
+{
+  "status": "OK",
+  "type": "IMSS_INCONSISTENT_DATA",
+  "message": "CURP exists but associated data is inconsistent at IMSS",
+  "data": null,
+  "transactionId": "9e4376e2-785f-5a88-9465-49249ab0984e",
+  "processedAt": "2026-03-15T19:23:00-06:00",
+  "billable": true
+}
+```
+
+</Accordion>
+<Accordion title="CURP_NOT_FOUND" description="CURP not found">
+
+```json
+{
+  "status": "OK",
+  "type": "CURP_NOT_FOUND",
+  "message": "CURP not found",
+  "data": null,
+  "transactionId": "e126cc45-37ea-5dfa-8454-78327e63524c",
+  "processedAt": "2026-03-15T19:23:00-06:00",
+  "billable": true
+}
+```
+
+</Accordion>
+<Accordion title="IMSS_OPERATION_LIMIT" description="IMSS daily limit reached">
+
+```json
+{
+  "status": "OK",
+  "type": "IMSS_OPERATION_LIMIT",
+  "message": "IMSS daily limit reached",
+  "data": null,
+  "transactionId": "e6adb7fc-b222-539e-a33a-cdb797b57a05",
+  "processedAt": "2026-03-15T19:23:00-06:00",
+  "billable": true
+}
+```
+
+</Accordion>
+<Accordion title="SERVICE_UNAVAILABLE" description="IMSS service is currently unavailable">
+
+```json
+{
+  "status": "ERROR",
+  "type": "SERVICE_UNAVAILABLE",
+  "message": "IMSS service is currently unavailable",
+  "data": null,
+  "transactionId": "79aa0dde-76ac-55f1-9f78-28181122512d",
+  "processedAt": "2026-03-15T19:23:00-06:00",
+  "billable": false
+}
+```
+
+</Accordion>
+<Accordion title="INTERNAL_ERROR" description="Unexpected internal error">
+
+```json
+{
+  "status": "ERROR",
+  "type": "INTERNAL_ERROR",
+  "message": "Unexpected internal error",
+  "data": null,
+  "transactionId": "50c67b21-e3ff-5a9c-95db-552eb0c203fa",
+  "processedAt": "2026-03-15T19:23:00-06:00",
+  "billable": false
+}
+```
+
+</Accordion>
+</AccordionGroup>
+
+### Employment Status (Async)
+
+Same result types and `data` as [Employment Status](/en/api-reference/social-security/employment-status), except `INVALID_REQUEST`, which is returned immediately when you create the request. `MISMATCH_CURP_NSS` only happens when you send `nss`, and `data.files[]` is only included with `includePdf: true` (the PDF content is shortened in the example).
+
+<AccordionGroup>
+<Accordion title="SUCCESS" description="Active employment found">
+
+```json
+{
+  "status": "OK",
+  "type": "SUCCESS",
+  "message": "Active employment found",
+  "data": {
+    "nss": "92038109713",
+    "personalInfo": {
+      "curp": "GARM900101HDFRZA01",
+      "givenNames": "SANTIAGO FORTINO",
+      "firstSurname": "ESPINOZA",
+      "secondSurname": "SANCHEZ",
+      "gender": "H"
+    },
+    "employmentInformation": [
+      {
+        "employerRegistration": "Y5473416",
+        "modality": "10",
+        "employerRfc": "FDM020722442",
+        "employerName": "LOGISTICA GLOBAL DE MEXICO S DE RL DE CV",
+        "state": "CIUDAD DE MEXICO",
+        "stateCode": "09",
+        "baseSalary": {
+          "amount": "2932.75",
+          "currency": "MXN"
+        },
+        "contributedDays": 28
+      }
+    ],
+    "reportDetails": {
+      "reportPeriod": "2026-02",
+      "issueDate": "2026-03-15",
+      "currentMonth": "2026-03",
+      "nextReportMonth": "2026-04"
+    }
+  },
+  "transactionId": "b9e6b314-cb08-5274-9049-e02e64c68acb",
+  "processedAt": "2026-03-15T19:24:00-06:00",
+  "billable": true
+}
+```
+
+</Accordion>
+<Accordion title="SUCCESS (includePdf: true)" description="Active employment found — with the official PDF in data.files[]">
+
+```json
+{
+  "status": "OK",
+  "type": "SUCCESS",
+  "message": "Active employment found",
+  "data": {
+    "nss": "92038109713",
+    "personalInfo": {
+      "curp": "GARM900101HDFRZA01",
+      "givenNames": "SANTIAGO FORTINO",
+      "firstSurname": "ESPINOZA",
+      "secondSurname": "SANCHEZ",
+      "gender": "H"
+    },
+    "employmentInformation": [
+      {
+        "employerRegistration": "Y5473416",
+        "modality": "10",
+        "employerRfc": "FDM020722442",
+        "employerName": "LOGISTICA GLOBAL DE MEXICO S DE RL DE CV",
+        "state": "CIUDAD DE MEXICO",
+        "stateCode": "09",
+        "baseSalary": {
+          "amount": "2932.75",
+          "currency": "MXN"
+        },
+        "contributedDays": 28
+      }
+    ],
+    "reportDetails": {
+      "reportPeriod": "2026-02",
+      "issueDate": "2026-03-15",
+      "currentMonth": "2026-03",
+      "nextReportMonth": "2026-04"
+    },
+    "files": [
+      {
+        "kind": "document",
+        "contentType": "application/pdf",
+        "sizeBytes": 19219,
+        "content": "JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PC9UeXBlL0NhdGFsb2cvUGFnZXMgMiAwIFI+PgplbmRvYmoK..."
+      }
+    ]
+  },
+  "transactionId": "322e6c8b-0124-5c84-95db-4da04842d0da",
+  "processedAt": "2026-03-15T19:24:00-06:00",
+  "billable": true
+}
+```
+
+</Accordion>
+<Accordion title="INACTIVE_EMPLOYMENT" description="No active employment found">
+
+```json
+{
+  "status": "OK",
+  "type": "INACTIVE_EMPLOYMENT",
+  "message": "No active employment found",
+  "data": {
+    "nss": "07774410915",
+    "personalInfo": {
+      "curp": "VIRD881122MDFRZS04",
+      "givenNames": "DIANA PATRICIA",
+      "firstSurname": "VILLALOBOS",
+      "secondSurname": "RIVERA",
+      "gender": "M"
+    },
+    "employmentInformation": [],
+    "reportDetails": {
+      "reportPeriod": "2026-02",
+      "issueDate": "2026-03-15",
+      "currentMonth": "2026-03",
+      "nextReportMonth": "2026-04"
+    }
+  },
+  "transactionId": "d664457b-4fc0-5037-b138-694b668edac0",
+  "processedAt": "2026-03-15T19:24:00-06:00",
+  "billable": true
+}
+```
+
+</Accordion>
+<Accordion title="MISMATCH_CURP_NSS" description="CURP and NSS do not match">
+
+```json
+{
+  "status": "OK",
+  "type": "MISMATCH_CURP_NSS",
+  "message": "CURP and NSS do not match",
+  "data": null,
+  "transactionId": "71cf04cb-043d-58dd-96d3-daa7245b7af1",
+  "processedAt": "2026-03-15T19:24:00-06:00",
+  "billable": true
+}
+```
+
+</Accordion>
+<Accordion title="CURP_NOT_FOUND" description="CURP not found in IMSS">
+
+```json
+{
+  "status": "OK",
+  "type": "CURP_NOT_FOUND",
+  "message": "CURP not found in IMSS",
+  "data": null,
+  "transactionId": "1bef5aa4-ee30-5eaa-8d79-b4707df0c9e9",
+  "processedAt": "2026-03-15T19:24:00-06:00",
+  "billable": true
+}
+```
+
+</Accordion>
+<Accordion title="PERSON_WITHOUT_NSS" description="Person exists at IMSS but has no own NSS assigned">
+
+```json
+{
+  "status": "OK",
+  "type": "PERSON_WITHOUT_NSS",
+  "message": "Person exists at IMSS but has no own NSS assigned",
+  "data": null,
+  "transactionId": "218f2f13-cd4b-57d4-bbec-44a37a7c8e83",
+  "processedAt": "2026-03-15T19:24:00-06:00",
+  "billable": true
+}
+```
+
+</Accordion>
+<Accordion title="IMSS_INCONSISTENT_DATA" description="CURP exists but associated data is inconsistent at IMSS">
+
+```json
+{
+  "status": "OK",
+  "type": "IMSS_INCONSISTENT_DATA",
+  "message": "CURP exists but associated data is inconsistent at IMSS",
+  "data": null,
+  "transactionId": "17fb4794-f097-5e10-87e8-4816dd8cabdc",
+  "processedAt": "2026-03-15T19:24:00-06:00",
+  "billable": true
+}
+```
+
+</Accordion>
+<Accordion title="IMSS_OPERATION_LIMIT" description="IMSS daily limit reached">
+
+```json
+{
+  "status": "OK",
+  "type": "IMSS_OPERATION_LIMIT",
+  "message": "IMSS daily limit reached",
+  "data": null,
+  "transactionId": "2b7d7d85-6aa1-5cdb-b5a8-e5b5379de5bb",
+  "processedAt": "2026-03-15T19:24:00-06:00",
+  "billable": true
+}
+```
+
+</Accordion>
+<Accordion title="SERVICE_UNAVAILABLE" description="IMSS service is currently unavailable">
+
+```json
+{
+  "status": "ERROR",
+  "type": "SERVICE_UNAVAILABLE",
+  "message": "IMSS service is currently unavailable",
+  "data": null,
+  "transactionId": "fd552d15-51b9-53af-9f50-49fb30a9a6e7",
+  "processedAt": "2026-03-15T19:24:00-06:00",
+  "billable": false
+}
+```
+
+</Accordion>
+<Accordion title="INTERNAL_ERROR" description="Unexpected internal error">
+
+```json
+{
+  "status": "ERROR",
+  "type": "INTERNAL_ERROR",
+  "message": "Unexpected internal error",
+  "data": null,
+  "transactionId": "c08beb84-05d4-5c0e-a4e8-cecca8b35ee8",
+  "processedAt": "2026-03-15T19:24:00-06:00",
+  "billable": false
+}
+```
+
+</Accordion>
+</AccordionGroup>
+
+### Contribution Weeks
+
+How to read `data` (`SUCCESS` and `INACTIVE_EMPLOYMENT`):
+
+- Official fields, taken from the IMSS document: `nss`, `personalInfo`, `contributionWeeks` (`total` = `contributed` − `discounted` + `reinstated`), `employmentHistory` (one row per job, newest first) and `reportDetails` (`folio`, `issueDate`, `digitalSeal`, …). `files[0]` is the official PDF in base64 (shortened in the examples).
+- The active job is the `employmentHistory` row with `endDate: null`; in `INACTIVE_EMPLOYMENT` there is none.
+- Everything computed lives in `derivedSignals` — `currentStatus`, `jobTenure` (months), `stability`, `salary` and `salaryTimeline`. They are facts, not a credit score.
+- Salaries (`baseSalary`, `*Salary`) are the **daily** base contribution salary (SBC); the monthly equivalent is SBC × 30.44. `salaryAtLegalCap: true` means the salary hit the legal cap (25 UMA), so real income may be higher.
+- Every field is always present; values that do not apply are `null`.
+
+<AccordionGroup>
+<Accordion title="SUCCESS" description="Active employment found">
+
+```json
+{
+  "status": "OK",
+  "type": "SUCCESS",
+  "message": "Active employment found",
+  "data": {
+    "nss": "45028712309",
+    "personalInfo": {
+      "curp": "RATL850312HDFMRS07",
+      "givenNames": "LUIS ALBERTO",
+      "firstSurname": "RAMIREZ",
+      "secondSurname": "TORRES",
+      "gender": "H",
+      "dateOfBirth": "1985-03-12"
+    },
+    "contributionWeeks": {
+      "total": 612,
+      "contributed": 612,
+      "discounted": 0,
+      "reinstated": 0
+    },
+    "derivedSignals": {
+      "currentStatus": {
+        "employed": true,
+        "monthsInCurrentStatus": 60.0,
+        "lastDailySalary": {
+          "amount": "685.50",
+          "currency": "MXN"
+        },
+        "lastMonthlySalary": {
+          "amount": "20866.62",
+          "currency": "MXN"
+        },
+        "salaryAtLegalCap": false
+      },
+      "jobTenure": {
+        "currentJobMonths": 60.0,
+        "averageJobMonths": 42.0,
+        "longestJobMonths": 60.0,
+        "shortestJobMonths": 4.5,
+        "monthsSinceFirstJob": 210.0
+      },
+      "stability": {
+        "employerCount": 4,
+        "distinctEmployerCount": 4,
+        "monthsPerEmployer": 52.5,
+        "jobChanges": 3,
+        "jobChangesLast5Years": 1,
+        "simultaneousJobsDetected": 0,
+        "unemploymentPeriods": {
+          "count": 3,
+          "totalMonths": 22.0,
+          "longestMonths": 11.5,
+          "monthsSinceLastUnemployment": 60.0
+        },
+        "monthsActuallyEmployed": 188.0,
+        "percentOfTimeEmployed": 89.5
+      },
+      "salary": {
+        "first": {
+          "amount": "210.00",
+          "currency": "MXN"
+        },
+        "latest": {
+          "amount": "685.50",
+          "currency": "MXN"
+        },
+        "highest": {
+          "amount": "685.50",
+          "currency": "MXN"
+        },
+        "lowest": {
+          "amount": "210.00",
+          "currency": "MXN"
+        },
+        "changePercentFirstToLatest": 226.4,
+        "firstMonthly": {
+          "amount": "6392.40",
+          "currency": "MXN"
+        },
+        "latestMonthly": {
+          "amount": "20866.62",
+          "currency": "MXN"
+        },
+        "employerChanges": {
+          "withRaise": 3,
+          "withCut": 0
+        },
+        "snapshots": {
+          "oneYearAgo": {
+            "dailySalary": {
+              "amount": "685.50",
+              "currency": "MXN"
+            },
+            "monthlySalary": {
+              "amount": "20866.62",
+              "currency": "MXN"
+            },
+            "changePercentToLatest": 0
+          },
+          "threeYearsAgo": {
+            "dailySalary": {
+              "amount": "620.00",
+              "currency": "MXN"
+            },
+            "monthlySalary": {
+              "amount": "18872.80",
+              "currency": "MXN"
+            },
+            "changePercentToLatest": 10.6
+          },
+          "fiveYearsAgo": {
+            "dailySalary": {
+              "amount": "480.00",
+              "currency": "MXN"
+            },
+            "monthlySalary": {
+              "amount": "14611.20",
+              "currency": "MXN"
+            },
+            "changePercentToLatest": 42.8
+          }
+        }
+      },
+      "salaryTimeline": [
+        {
+          "event": "HIRED",
+          "date": "2009-02-10",
+          "employerName": "ABARROTES EL SURTIDOR",
+          "dailySalary": {
+            "amount": "210.00",
+            "currency": "MXN"
+          },
+          "monthlySalary": {
+            "amount": "6392.40",
+            "currency": "MXN"
+          }
+        },
+        {
+          "event": "TERMINATED",
+          "date": "2009-06-28",
+          "employerName": "ABARROTES EL SURTIDOR",
+          "dailySalary": {
+            "amount": "210.00",
+            "currency": "MXN"
+          },
+          "monthlySalary": {
+            "amount": "6392.40",
+            "currency": "MXN"
+          }
+        },
+        {
+          "event": "HIRED",
+          "date": "2021-08-16",
+          "employerName": "SERVICIOS INTEGRALES DEL NORTE SA DE CV",
+          "dailySalary": {
+            "amount": "685.50",
+            "currency": "MXN"
+          },
+          "monthlySalary": {
+            "amount": "20866.62",
+            "currency": "MXN"
+          }
+        }
+      ]
+    },
+    "employmentHistory": [
+      {
+        "employerName": "SERVICIOS INTEGRALES DEL NORTE SA DE CV",
+        "employerRegistration": "A5512340987",
+        "state": "CIUDAD DE MÉXICO",
+        "startDate": "2021-08-16",
+        "endDate": null,
+        "baseSalary": {
+          "amount": "685.50",
+          "currency": "MXN"
+        }
+      },
+      {
+        "employerName": "DISTRIBUIDORA GAMMA SA DE CV",
+        "employerRegistration": "B7788990011",
+        "state": "JALISCO",
+        "startDate": "2016-05-02",
+        "endDate": "2021-06-30",
+        "baseSalary": {
+          "amount": "540.00",
+          "currency": "MXN"
+        }
+      },
+      {
+        "employerName": "ABARROTES EL SURTIDOR",
+        "employerRegistration": "C4433221100",
+        "state": "JALISCO",
+        "startDate": "2009-02-10",
+        "endDate": "2009-06-28",
+        "baseSalary": {
+          "amount": "210.00",
+          "currency": "MXN"
+        }
+      }
+    ],
+    "reportDetails": {
+      "source": "IMSS",
+      "documentType": "CONSTANCIA DE SEMANAS COTIZADAS",
+      "folio": "20481135900274651093824",
+      "issueDate": "2026-08-12",
+      "serialNumber": "00000000000000004821",
+      "notarialSequence": "b28f4c19-6a03-41e2-9c15-7dd0a2e51b47",
+      "digitalSeal": "Qm9ndXNTZWFsRXhhbXBsZURhdGFOb3RSZWFsRm9yRG9jdW1lbnRhdGlvbk9ubHk9PQ=="
+    },
+    "files": [
+      {
+        "kind": "document",
+        "contentType": "application/pdf",
+        "sizeBytes": 73412,
+        "content": "JVBERi0xLjQKJeLjz9MKMyAwIG9iago8PC9GaWx0ZXIvRmxhdGVEZWNvZGUvTGVuZ3Ro..."
+      }
+    ]
+  },
+  "transactionId": "975cf12f-f270-51cc-9037-d710134940c9",
+  "processedAt": "2026-08-13T11:20:00-06:00",
+  "billable": true
+}
+```
+
+</Accordion>
+<Accordion title="INACTIVE_EMPLOYMENT" description="No active employment found">
+
+```json
+{
+  "status": "OK",
+  "type": "INACTIVE_EMPLOYMENT",
+  "message": "No active employment found",
+  "data": {
+    "nss": "07774410915",
+    "personalInfo": {
+      "curp": "VIRD881122MDFRZS04",
+      "givenNames": "DIANA PATRICIA",
+      "firstSurname": "VILLALOBOS",
+      "secondSurname": "RIVERA",
+      "gender": "M",
+      "dateOfBirth": "1988-11-22"
+    },
+    "contributionWeeks": {
+      "total": 318,
+      "contributed": 318,
+      "discounted": 0,
+      "reinstated": 0
+    },
+    "derivedSignals": {
+      "currentStatus": {
+        "employed": false,
+        "monthsInCurrentStatus": 14.4,
+        "lastDailySalary": {
+          "amount": "512.30",
+          "currency": "MXN"
+        },
+        "lastMonthlySalary": {
+          "amount": "15594.41",
+          "currency": "MXN"
+        },
+        "salaryAtLegalCap": false
+      },
+      "jobTenure": {
+        "currentJobMonths": null,
+        "averageJobMonths": 47.0,
+        "longestJobMonths": 74.9,
+        "shortestJobMonths": 19.2,
+        "monthsSinceFirstJob": 163.0
+      },
+      "stability": {
+        "employerCount": 2,
+        "distinctEmployerCount": 2,
+        "monthsPerEmployer": 81.5,
+        "jobChanges": 1,
+        "jobChangesLast5Years": 0,
+        "simultaneousJobsDetected": 0,
+        "unemploymentPeriods": {
+          "count": 2,
+          "totalMonths": 68.7,
+          "longestMonths": 54.3,
+          "monthsSinceLastUnemployment": null
+        },
+        "monthsActuallyEmployed": 94.1,
+        "percentOfTimeEmployed": 57.7
+      },
+      "salary": {
+        "first": {
+          "amount": "198.60",
+          "currency": "MXN"
+        },
+        "latest": {
+          "amount": "512.30",
+          "currency": "MXN"
+        },
+        "highest": {
+          "amount": "512.30",
+          "currency": "MXN"
+        },
+        "lowest": {
+          "amount": "198.60",
+          "currency": "MXN"
+        },
+        "changePercentFirstToLatest": 158.0,
+        "firstMonthly": {
+          "amount": "6045.38",
+          "currency": "MXN"
+        },
+        "latestMonthly": {
+          "amount": "15594.41",
+          "currency": "MXN"
+        },
+        "employerChanges": {
+          "withRaise": 1,
+          "withCut": 0
+        },
+        "snapshots": {
+          "oneYearAgo": null,
+          "threeYearsAgo": {
+            "dailySalary": {
+              "amount": "512.30",
+              "currency": "MXN"
+            },
+            "monthlySalary": {
+              "amount": "15594.41",
+              "currency": "MXN"
+            },
+            "changePercentToLatest": 0
+          },
+          "fiveYearsAgo": {
+            "dailySalary": {
+              "amount": "512.30",
+              "currency": "MXN"
+            },
+            "monthlySalary": {
+              "amount": "15594.41",
+              "currency": "MXN"
+            },
+            "changePercentToLatest": 0
+          }
+        }
+      },
+      "salaryTimeline": [
+        {
+          "event": "HIRED",
+          "date": "2013-01-14",
+          "employerName": "COMERCIAL MAYA SA DE CV",
+          "dailySalary": {
+            "amount": "198.60",
+            "currency": "MXN"
+          },
+          "monthlySalary": {
+            "amount": "6045.38",
+            "currency": "MXN"
+          }
+        },
+        {
+          "event": "TERMINATED",
+          "date": "2014-08-22",
+          "employerName": "COMERCIAL MAYA SA DE CV",
+          "dailySalary": {
+            "amount": "198.60",
+            "currency": "MXN"
+          },
+          "monthlySalary": {
+            "amount": "6045.38",
+            "currency": "MXN"
+          }
+        },
+        {
+          "event": "HIRED",
+          "date": "2019-03-04",
+          "employerName": "LOGISTICA PENINSULAR SA DE CV",
+          "dailySalary": {
+            "amount": "512.30",
+            "currency": "MXN"
+          },
+          "monthlySalary": {
+            "amount": "15594.41",
+            "currency": "MXN"
+          }
+        },
+        {
+          "event": "TERMINATED",
+          "date": "2025-05-30",
+          "employerName": "LOGISTICA PENINSULAR SA DE CV",
+          "dailySalary": {
+            "amount": "512.30",
+            "currency": "MXN"
+          },
+          "monthlySalary": {
+            "amount": "15594.41",
+            "currency": "MXN"
+          }
+        }
+      ]
+    },
+    "employmentHistory": [
+      {
+        "employerName": "LOGISTICA PENINSULAR SA DE CV",
+        "employerRegistration": "D9911223344",
+        "state": "YUCATAN",
+        "startDate": "2019-03-04",
+        "endDate": "2025-05-30",
+        "baseSalary": {
+          "amount": "512.30",
+          "currency": "MXN"
+        }
+      },
+      {
+        "employerName": "COMERCIAL MAYA SA DE CV",
+        "employerRegistration": "E5566778899",
+        "state": "YUCATAN",
+        "startDate": "2013-01-14",
+        "endDate": "2014-08-22",
+        "baseSalary": {
+          "amount": "198.60",
+          "currency": "MXN"
+        }
+      }
+    ],
+    "reportDetails": {
+      "source": "IMSS",
+      "documentType": "CONSTANCIA DE SEMANAS COTIZADAS",
+      "folio": "20481135900274651093825",
+      "issueDate": "2026-08-12",
+      "serialNumber": "00000000000000004822",
+      "notarialSequence": "c39a5d20-7b14-42f3-8d26-8ee1b3f62c58",
+      "digitalSeal": "Qm9ndXNTZWFsRXhhbXBsZURhdGFOb3RSZWFsRm9yRG9jdW1lbnRhdGlvbk9ubHk9PQ=="
+    },
+    "files": [
+      {
+        "kind": "document",
+        "contentType": "application/pdf",
+        "sizeBytes": 69850,
+        "content": "JVBERi0xLjQKJeLjz9MKMyAwIG9iago8PC9GaWx0ZXIvRmxhdGVEZWNvZGUvTGVuZ3Ro..."
+      }
+    ]
+  },
+  "transactionId": "438e0f23-264a-58bc-a7a8-8d7567f32d5f",
+  "processedAt": "2026-08-13T11:21:40-06:00",
+  "billable": true
+}
+```
+
+</Accordion>
+<Accordion title="CURP_NOT_FOUND" description="CURP not found in IMSS">
+
+```json
+{
+  "status": "OK",
+  "type": "CURP_NOT_FOUND",
+  "message": "CURP not found in IMSS",
+  "data": null,
+  "transactionId": "f14734e4-1a52-5766-bfba-40e1473a8c49",
+  "processedAt": "2026-08-13T11:19:12-06:00",
+  "billable": true
+}
+```
+
+</Accordion>
+<Accordion title="PERSON_WITHOUT_NSS" description="Person has no NSS assigned">
+
+```json
+{
+  "status": "OK",
+  "type": "PERSON_WITHOUT_NSS",
+  "message": "Person has no NSS assigned",
+  "data": null,
+  "transactionId": "ac19560e-783d-5c07-8e4a-145a379d9c8b",
+  "processedAt": "2026-08-13T11:19:20-06:00",
+  "billable": true
+}
+```
+
+</Accordion>
+<Accordion title="IMSS_INCONSISTENT_DATA" description="CURP exists but associated data is inconsistent at IMSS">
+
+```json
+{
+  "status": "OK",
+  "type": "IMSS_INCONSISTENT_DATA",
+  "message": "CURP exists but associated data is inconsistent at IMSS",
+  "data": null,
+  "transactionId": "e090b58e-5078-5958-9ce8-930dd27172e5",
+  "processedAt": "2026-08-13T11:19:33-06:00",
+  "billable": true
+}
+```
+
+</Accordion>
+<Accordion title="IMSS_OPERATION_LIMIT" description="IMSS daily limit reached">
+
+```json
+{
+  "status": "OK",
+  "type": "IMSS_OPERATION_LIMIT",
+  "message": "IMSS daily limit reached",
+  "data": null,
+  "transactionId": "c439937d-befd-5728-92df-b8805171619b",
+  "processedAt": "2026-08-13T11:19:47-06:00",
+  "billable": true
+}
+```
+
+</Accordion>
+<Accordion title="SERVICE_UNAVAILABLE" description="IMSS service is currently unavailable">
+
+```json
+{
+  "status": "ERROR",
+  "type": "SERVICE_UNAVAILABLE",
+  "message": "IMSS service is currently unavailable",
+  "data": null,
+  "transactionId": "ab121d70-98ec-5c2b-b166-a7eb6f751ace",
+  "processedAt": "2026-08-13T11:25:00-06:00",
+  "billable": false
+}
+```
+
+</Accordion>
+<Accordion title="INTERNAL_ERROR" description="Unexpected internal error">
+
+```json
+{
+  "status": "ERROR",
+  "type": "INTERNAL_ERROR",
+  "message": "Unexpected internal error",
+  "data": null,
+  "transactionId": "78daea74-df26-5c49-863b-54205213b026",
+  "processedAt": "2026-08-13T11:25:00-06:00",
+  "billable": false
+}
+```
+
+</Accordion>
+<Accordion title="IMSS_REPORT_UNAVAILABLE" description="IMSS could not generate the report for this record">
+
+```json
+{
+  "status": "ERROR",
+  "type": "IMSS_REPORT_UNAVAILABLE",
+  "message": "IMSS could not generate the report for this record",
+  "data": null,
+  "transactionId": "c64c28cd-c889-529f-a1d6-ee4a3a8c4dd3",
+  "processedAt": "2026-08-13T11:26:00-06:00",
+  "billable": false
+}
+```
+
+</Accordion>
+<Accordion title="IMSS_RECORD_ERROR" description="Unexpected IMSS error for this record">
+
+```json
+{
+  "status": "ERROR",
+  "type": "IMSS_RECORD_ERROR",
+  "message": "Unexpected IMSS error for this record",
+  "data": null,
+  "transactionId": "8d29ec2b-1e4f-5e6a-a541-53cba7b7d6d2",
+  "processedAt": "2026-08-13T11:26:30-06:00",
+  "billable": false
+}
+```
+
+</Accordion>
+</AccordionGroup>
+
+`IMSS_REPORT_UNAVAILABLE` and `IMSS_RECORD_ERROR` are specific to that record while the service is working; they are not charged and the same CURP can be submitted again on a later day.
+
+## Contribution Weeks fallback
+
+If your webhook could not receive a Contribution Weeks result, fetch it for 24 hours with [Contribution Weeks Result](/en/api-reference/social-security/contribution-weeks-result) (free), sending the `transactionId`:
+
+```json
+{
+  "transactionId": "975cf12f-f270-51cc-9037-d710134940c9"
+}
+```
+
+It answers `RESULT_FOUND` (with the original result envelope inside `data`), `RESULT_PENDING` or `RESULT_EXPIRED`. Use it only as a fallback: the result is always sent to your webhook.

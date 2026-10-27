@@ -17,6 +17,7 @@ Privacy: No PII is persisted from successful responses. Operational metadata onl
 - [Errors (EN)](https://docs.origoid.com/en/errors): Stable `type` codes and handling
 - [Catalogs (EN)](https://docs.origoid.com/en/catalogs): Stable code tables (CURP status, IMSS modalities, SAT lists, etc.)
 - [Image handling (EN)](https://docs.origoid.com/en/image-handling): Sending images for OCR/biometric endpoints
+- [Webhooks (EN)](https://docs.origoid.com/en/webhooks): How asynchronous endpoints deliver results to your webhook, with every result type
 - [Credits (EN)](https://docs.origoid.com/en/credits): Per-endpoint usage costs
 
 ## SDKs
@@ -25,7 +26,7 @@ Privacy: No PII is persisted from successful responses. Operational metadata onl
 - [Node / TypeScript SDK](https://docs.origoid.com/en/sdks/node): `npm install @origoid/sdk`
 - [Python SDK](https://docs.origoid.com/en/sdks/python): `pip install origoid`
 - [Go SDK](https://docs.origoid.com/en/sdks/go): `go get github.com/origoid/sdk-go`
-- [MCP server](https://docs.origoid.com/en/sdks/mcp): `npx @origoid/mcp-server` — Model Context Protocol server, exposes the API to Claude/Gemini/Codex/Cursor/Windsurf/etc. 29 tools: 19 live API tools (require key) + 10 offline docs tools (no key needed). Highlights: `get_endpoint`, `get_sdk_example`, `get_response_types`, `get_typescript_types`, `get_pydantic_model`, `get_full_integration_starter` — AI assistants can scaffold a complete integration without burning credits.
+- [MCP server](https://docs.origoid.com/en/sdks/mcp): `npx @origoid/mcp-server` — Model Context Protocol server, exposes the API to Claude/Gemini/Codex/Cursor/Windsurf/etc. 32 tools: 22 live API tools (require key) + 10 offline docs tools (no key needed). Highlights: `get_endpoint`, `get_sdk_example`, `get_response_types`, `get_typescript_types`, `get_pydantic_model`, `get_full_integration_starter` — AI assistants can scaffold a complete integration without burning credits.
 
 ## OpenAPI specification
 
@@ -36,6 +37,7 @@ Privacy: No PII is persisted from successful responses. Operational metadata onl
 ### Identity (RENAPO)
 - `POST /mex/renapo/v1/curp-validations` — Validate a CURP and return personal record from RENAPO
 - `POST /mex/renapo/v1/curp-lookups` — Reconstruct CURP from name + date of birth + state
+- `POST /mex/renapo/v1/curp-documents` — Official CURP document (PDF) from RENAPO
 
 ### Voter ID (INE)
 - `POST /mex/id/v1/voter-list-validations` — Validate voter credential against INE roll
@@ -43,13 +45,18 @@ Privacy: No PII is persisted from successful responses. Operational metadata onl
 - `POST /mex/id/v1/qr-extractions` — Decrypt voter ID QR codes (RSA-signed)
 
 ### Social security (IMSS)
-- `POST /mex/imss/v1/nss-lookups` — Get NSS from CURP
-- `POST /mex/imss/v1/employment-status` — Current employment status
+- `POST /mex/social-security/v1/imss-nss-lookups` — Get NSS from CURP
+- `POST /mex/social-security/v1/imss-nss-lookup-async` — Get NSS from CURP, result delivered to your webhook
+- `POST /mex/social-security/v1/imss-employment-status` — Current employment status
+- `POST /mex/social-security/v1/imss-employment-status-async` — Current employment status, result delivered to your webhook
+- `POST /mex/social-security/v1/imss-contribution-weeks` — IMSS contribution weeks certificate (official PDF + employment history), result delivered to your webhook
+- `POST /mex/social-security/v1/imss-contribution-weeks-results` — Fetch a contribution weeks result (24-hour fallback)
+- `POST /mex/social-security/v1/issste-records` — ISSSTE record of a government worker
 
 ### Tax (SAT)
-- `POST /mex/sat/v1/rfc-validations` — Validate RFC structure and status
-- `POST /mex/sat/v1/csf-extractions` — Extract data from Constancia de Situación Fiscal (PDF or RFC+CIF)
-- `POST /mex/sat/v1/cfdi-validations` — Validate CFDI status (active/canceled)
+- `POST /mex/fiscal/v1/rfc-validations` — Validate RFC structure and status
+- `POST /mex/fiscal/v1/csf-extractions` — Extract data from Constancia de Situación Fiscal (PDF or RFC+CIF)
+- `POST /mex/fiscal/v1/cfdi-validations` — Validate CFDI status (active/canceled)
 
 ### Compliance
 - `POST /mex/compliance/v1/sat-69-searches` — SAT Article 69 sub-lists
@@ -60,6 +67,9 @@ Privacy: No PII is persisted from successful responses. Operational metadata onl
 ### Biometrics
 - `POST /global/biometrics/v1/face-matches` — 1:1 facial match (selfie vs ID)
 - `POST /global/biometrics/v1/liveness-checks` — Liveness detection (anti-spoof)
+
+### Banking
+- `POST /mex/banking/v1/cep-validations` — Validate a SPEI payment (CEP)
 
 ### Other
 - `POST /global/email/v1/email-validations` — Email deliverability scoring

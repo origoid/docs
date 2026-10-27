@@ -11,7 +11,7 @@ Este modelo es **justo**: las operaciones ligeras consumen menos créditos que l
 
 ## Créditos por endpoint
 
-La mayoría de endpoints consumen **1 crédito** por llamada. Un grupo pequeño consume **2 créditos** porque requiere procesamiento adicional.
+La mayoría de endpoints consumen **1 crédito** por llamada. Un grupo pequeño consume **2 o 3 créditos** porque requiere procesamiento adicional.
 
 El consumo exacto de cada endpoint aparece en su página de la [referencia API](/es/api-reference).
 
@@ -25,6 +25,7 @@ Un call consume créditos **sólo cuando el request fue efectivamente procesado*
 |---|---|
 | `SUCCESS` | Sí |
 | Resultados de negocio (`CURP_NOT_FOUND`, `CFDI_CANCELED`, etc.) | Sí |
+| `ACCEPTED` (petición asíncrona recibida — los créditos se cobran cuando su resultado se resuelve, no cuando tu webhook lo recibe; ver [Webhooks](/es/webhooks)) | No |
 | `INVALID_REQUEST` (body inválido) | No |
 | `UNAUTHORIZED` (falló auth) | No |
 | `RATE_LIMIT_EXCEEDED` | No |

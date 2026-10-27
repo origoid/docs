@@ -45,7 +45,8 @@
                 "pages": [
                   "en/errors",
                   "en/catalogs",
-                  "en/image-handling"
+                  "en/image-handling",
+                  "en/webhooks"
                 ]
               },
               {
@@ -91,7 +92,8 @@
                 "pages": [
                   "es/errors",
                   "es/catalogs",
-                  "es/image-handling"
+                  "es/image-handling",
+                  "es/webhooks"
                 ]
               },
               {

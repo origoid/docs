@@ -11,7 +11,7 @@ This model is **fair**: lightweight operations consume fewer credits than operat
 
 ## Credits per endpoint
 
-Most endpoints consume **1 credit** per call. A small set consume **2 credits** because they require additional processing.
+Most endpoints consume **1 credit** per call. A small set consume **2 or 3 credits** because they require additional processing.
 
 The exact credit consumption for each endpoint is shown on its page in the [API reference](/en/api-reference).
 
@@ -25,6 +25,7 @@ A call consumes credits **only when the request was actually processed**:
 |---|---|
 | `SUCCESS` | Yes |
 | Business results (`CURP_NOT_FOUND`, `CFDI_CANCELED`, etc.) | Yes |
+| `ACCEPTED` (asynchronous request received — credits are charged when its result resolves, not when your webhook receives it; see [Webhooks](/en/webhooks)) | No |
 | `INVALID_REQUEST` (bad body) | No |
 | `UNAUTHORIZED` (auth failed) | No |
 | `RATE_LIMIT_EXCEEDED` | No |
