@@ -135,17 +135,23 @@ Taxonomía estable de OrigoID. Se mantiene consistente en el tiempo para que tus
 
 #### 8. Listas OFAC (`listType`)
 
-Cada entrada también expone `complianceDetails.programs[]` (códigos de programa de sanciones como CUBA, IRAN, RUSSIA, etc.) y `complianceDetails.entityType` (`INDIVIDUAL` | `ENTITY` | `VESSEL` | `AIRCRAFT`).
+Actualizamos a diario las listas oficiales de sanciones de OFAC y de la ONU (no se consultan en tiempo real) y las consolidamos bajo los códigos `listType` de abajo. Cada coincidencia trae `recordType` (`INDIVIDUAL` | `ENTITY` | `VESSEL` | `AIRCRAFT`) y `complianceDetails.programs[]` (códigos de programa de sanciones como CUBA, IRAN, RUSSIA, etc.; cambian continuamente y no se catalogan de forma fija). `riskLevel` es binario: `NONE` si no hay coincidencias y `CRITICAL` si hay coincidencia en cualquier `listType`.
 
-| `listType` | Lista oficial OFAC | Nivel de Riesgo |
-| :--- | :--- | :--- |
-| `OFAC_SDN` | Specially Designated Nationals & Blocked Persons | CRÍTICO |
-| `OFAC_NON_SDN` | Consolidated Non-SDN List | ALTO |
-| `OFAC_FSE` | Foreign Sanctions Evaders | CRÍTICO |
-| `OFAC_NS_ISA` | Non-SDN Iran Sanctions Act List | ALTO |
-| `OFAC_SSI` | Sectoral Sanctions Identifications List | MEDIO |
-| `OFAC_CAPTA` | Foreign Financial Institutions sujetas a sanciones de cuentas corresponsales | ALTO |
-| `OFAC_NS_PLC` | Non-SDN Palestinian Legislative Council | BAJO |
+Una persona o entidad que está en la lista SDN y también en una lista Non-SDN aparece como dos coincidencias separadas, una por lista.
+
+| `listType` | Lista oficial |
+| :--- | :--- |
+| `OFAC_SDN` | Specially Designated Nationals and Blocked Persons List (SDN List) |
+| `OFAC_SDGT` | SDN List — Specially Designated Global Terrorists |
+| `OFAC_SDNTK` | SDN List — Narcotics Traffickers (Kingpin Act) |
+| `OFAC_SSI` | Sectoral Sanctions Identifications List |
+| `OFAC_NS_MBS` | Non-SDN Menu-Based Sanctions List |
+| `OFAC_NS_CMIC` | Non-SDN Chinese Military-Industrial Complex List |
+| `OFAC_CAPTA` | CAPTA List (Correspondent Account or Payable-Through Account Sanctions) |
+| `OFAC_NS_PLC` | Non-SDN Palestinian Legislative Council List |
+| `OFAC_FSE` | Foreign Sanctions Evaders List |
+| `OFAC_NS_ISA` | Non-SDN Iran Sanctions Act List |
+| `OFAC_UN` | UN Security Council Consolidated List |
 
 #### 9. Efecto CFDI (`effect`)
 
