@@ -6,8 +6,8 @@ description: "`@origoid/mcp-server` — servidor oficial Model Context Protocol.
 El servidor MCP es el punto de integración oficial de OrigoID con
 asistentes AI de programación y chats que hablan
 [Model Context Protocol](https://modelcontextprotocol.io). Instálalo
-una vez en tu cliente y el LLM gana 32 tools: 10 para **construir** una
-integración OrigoID (gratis, sin API key) y 22 para **ejecutar** calls
+una vez en tu cliente y el LLM gana 35 tools: 10 para **construir** una
+integración OrigoID (gratis, sin API key) y 25 para **ejecutar** calls
 reales (requieren tu API key).
 
 ## Por qué existe
@@ -295,7 +295,7 @@ El servidor habla MCP sobre el transport estándar stdio.
 
 Si no defines `ORIGOID_API_KEY`, el servidor arranca en **modo
 docs-only**. Las 10 tools de documentación funcionan normalmente; las
-22 tools de API devuelven un error claro si las invocan. Este es el
+25 tools de API devuelven un error claro si las invocan. Este es el
 modo correcto para la fase de diseño — el LLM puede describir,
 scaffold, y escribir tu integración sin que tengas cuenta todavía.
 
@@ -334,6 +334,8 @@ la [página de créditos](/es/credits).
 | `validate_cep` | `POST /mex/banking/v1/cep-validations` |
 | `lookup_nss` | `POST /mex/social-security/v1/imss-nss-lookups` |
 | `get_employment_status` | `POST /mex/social-security/v1/imss-employment-status` |
+| `create_contribution_weeks` | `POST /mex/social-security/v1/imss-contribution-weeks` |
+| `get_contribution_weeks_result` | `POST /mex/social-security/v1/imss-contribution-weeks-results` |
 | `get_issste_record` | `POST /mex/social-security/v1/issste-records` |
 | `validate_voter_list` | `POST /mex/id/v1/voter-list-validations` |
 | `extract_voter_id_data` | `POST /mex/id/v1/voter-id-extractions` |
@@ -342,6 +344,7 @@ la [página de créditos](/es/credits).
 | `search_sat_69b` | `POST /mex/compliance/v1/sat-69b-searches` |
 | `search_ofac` | `POST /global/compliance/v1/ofac-searches` |
 | `search_peps` | `POST /mex/compliance/v1/peps-searches` |
+| `search_professional_licenses` | `POST /mex/education/v1/professional-license-searches` |
 | `match_faces` | `POST /global/biometrics/v1/face-matches` |
 | `check_liveness` | `POST /global/biometrics/v1/liveness-checks` |
 | `validate_email` | `POST /global/email/v1/email-validations` |
