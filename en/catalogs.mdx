@@ -185,3 +185,16 @@ Reflects SAT's 2022 cancellation rules ("cancelación con aceptación"), which r
 | `CANCELABLE_WITH_ACCEPTANCE` | The issuer can request cancellation, but the receiver must accept it within 72 hours. |
 | `CANCELED_WITHOUT_ACCEPTANCE` | Already canceled; acceptance was not required. |
 | `CANCELED_WITH_ACCEPTANCE` | Already canceled; the receiver approved the cancellation. |
+
+#### 12. Education Level (`educationLevel`)
+
+Normalized education level of a degree, ordered from lowest to highest. `null` when it cannot be determined. New levels may be added as new education sources are supported.
+
+| `educationLevel` | Degree (examples) |
+| :--- | :--- |
+| `TECHNICIAN` | Técnico, Profesional Técnico, Profesional Técnico Bachiller |
+| `ASSOCIATE` | Técnico Superior Universitario, Profesional Asociado |
+| `BACHELOR` | Licenciatura (licenciado, ingeniero, arquitecto, médico cirujano, etc.) |
+| `SPECIALTY` | Especialidad |
+| `MASTER` | Maestría |
+| `DOCTORATE` | Doctorado |

@@ -185,3 +185,16 @@ Refleja las reglas de cancelación SAT 2022 ("cancelación con aceptación"), qu
 | `CANCELABLE_WITH_ACCEPTANCE` | El emisor puede solicitar cancelación, pero el receptor debe aceptarla dentro de 72 horas. |
 | `CANCELED_WITHOUT_ACCEPTANCE` | Ya cancelada; no se requirió aceptación. |
 | `CANCELED_WITH_ACCEPTANCE` | Ya cancelada; el receptor aprobó la cancelación. |
+
+#### 12. Nivel educativo (`educationLevel`)
+
+Nivel educativo normalizado de un grado, ordenado de menor a mayor. `null` cuando no se puede determinar. Se pueden agregar niveles nuevos conforme se integren nuevas fuentes educativas.
+
+| `educationLevel` | Grado (ejemplos) |
+| :--- | :--- |
+| `TECHNICIAN` | Técnico, Profesional Técnico, Profesional Técnico Bachiller |
+| `ASSOCIATE` | Técnico Superior Universitario, Profesional Asociado |
+| `BACHELOR` | Licenciatura (licenciado, ingeniero, arquitecto, médico cirujano, etc.) |
+| `SPECIALTY` | Especialidad |
+| `MASTER` | Maestría |
+| `DOCTORATE` | Doctorado |
